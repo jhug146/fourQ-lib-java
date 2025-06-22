@@ -9,4 +9,8 @@ public class CryptoUtil {
         secureRandom.nextBytes(bytes);
         return new Key(bytes);
     }
+
+    static Key toMontgomery(Key key) {}
+
+    static Key fromMontgomery(Key key) {}
 }

@@ -5,6 +5,8 @@ import types.Key;
 
 public class HashFunction {
     static Key computeHash(Key input) {
-
+        return computeHash(input.key.toByteArray());
     }
+
+    static Key computeHash(byte[] bytes) {}
 }
