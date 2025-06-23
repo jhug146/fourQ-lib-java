@@ -1,6 +1,9 @@
-import types.*;
+import types.ExtendedAffinePoint;
+import types.ExtendedPoint;
+import types.F2Elem;
+import types.Key;
+import types.FieldPoint;
 
-import java.awt.*;
 
 public class ECCUtil {
     private static final int W_FIXEDBASE = 5;
