@@ -6,4 +6,6 @@ public class FP {
     static Key montgomeryMultiplyModOrder(Key key, Key order) {}
 
     static Key subtractModOrder(Key a, Key b) {}
+
+    static Key conversionToOdd(Key key) {}
 }

@@ -1,3 +1,4 @@
+import java.math.BigInteger;
 import java.util.Arrays;
 
 import types.Pair;
@@ -5,22 +6,23 @@ import types.FieldPoint;
 import types.Key;
 
 
+// TODO: Error handling in all methods
 public class SchnorrQ {
     static final int KEY_SIZE = 32;
 
-    static Key schnorrQKeyGeneration(Key secretKey) {
+    public static Key schnorrQKeyGeneration(Key secretKey) {
         final Key hash = HashFunction.computeHash(secretKey);     // Returns 64-byte hash of secret key
         final FieldPoint<Integer> point = ECCUtil.eccMulFixed(hash);
         return ECCUtil.encode(point);
     }
 
-    static Pair<Key, Key> schnorrQFullKeyGeneration() {
+    public static Pair<Key, Key> schnorrQFullKeyGeneration() {
         final Key secretKey = CryptoUtil.randomBytes(KEY_SIZE);
         final Key publicKey = schnorrQKeyGeneration(secretKey);
         return new Pair<>(secretKey, publicKey);
     }
 
-    static Key schnorrQSign(Key secretKey, Key publicKey, byte[] message) {
+    public static Key schnorrQSign(Key secretKey, Key publicKey, byte[] message) {
         final Key kHash = HashFunction.computeHash(secretKey);
         final byte[] bytes = new byte[message.length + 2 * KEY_SIZE];
         System.arraycopy(kHash.key.toByteArray(), 0, bytes, KEY_SIZE, KEY_SIZE);
@@ -44,13 +46,21 @@ public class SchnorrQ {
         sigEnd = CryptoUtil.fromMontgomery(sigEnd);
 
         sigEnd = FP.subtractModOrder(rHash, sigEnd);
-        return new Key(
-                sigStart.key.add(sigEnd.key.shiftLeft(KEY_SIZE)),
-                KEY_SIZE * 2
-        );
+        BigInteger signature = sigStart.key.add(sigEnd.key.shiftLeft(KEY_SIZE));
+        return new Key(signature, KEY_SIZE * 2);
     }
 
-    static boolean schnorrQVerify(Key publicKey, Key signature, byte[] message) {
+    public static boolean schnorrQVerify(Key publicKey, Key signature, byte[] message) {
+        // TODO: Validate arguments
+        // TODO: Verify that 'A' is on the curve
+        final byte[] bytes = new byte[message.length + 2 * KEY_SIZE];
+        System.arraycopy(signature.key.toByteArray(), 0, bytes, 0, KEY_SIZE);
+        System.arraycopy(publicKey.key.toByteArray(), 0, bytes, KEY_SIZE, KEY_SIZE);
+        System.arraycopy(message, 0, bytes, 2 * KEY_SIZE, message.length);
+
+        // TODO: Check this hash worked
+        Key hash = HashFunction.computeHash(bytes);
+        // TODO: Finish this
         return false;
     }
 }
