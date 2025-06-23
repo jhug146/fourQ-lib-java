@@ -1,6 +1,8 @@
 import java.math.BigInteger;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
+import types.F2Elem;
 import types.Pair;
 import types.FieldPoint;
 import types.Key;
@@ -10,26 +12,26 @@ import types.Key;
 public class SchnorrQ {
     static final int KEY_SIZE = 32;
 
-    public static Key schnorrQKeyGeneration(Key secretKey) {
+    public static Key schnorrQKeyGeneration(Key secretKey) throws NoSuchAlgorithmException {
         final Key hash = HashFunction.computeHash(secretKey);     // Returns 64-byte hash of secret key
-        final FieldPoint<Integer> point = ECCUtil.eccMulFixed(hash);
+        final FieldPoint<F2Elem> point = ECCUtil.eccMulFixed(hash);
         return ECCUtil.encode(point);
     }
 
-    public static Pair<Key, Key> schnorrQFullKeyGeneration() {
+    public static Pair<Key, Key> schnorrQFullKeyGeneration() throws NoSuchAlgorithmException {
         final Key secretKey = CryptoUtil.randomBytes(KEY_SIZE);
         final Key publicKey = schnorrQKeyGeneration(secretKey);
         return new Pair<>(secretKey, publicKey);
     }
 
-    public static Key schnorrQSign(Key secretKey, Key publicKey, byte[] message) {
+    public static Key schnorrQSign(Key secretKey, Key publicKey, byte[] message) throws NoSuchAlgorithmException {
         final Key kHash = HashFunction.computeHash(secretKey);
         final byte[] bytes = new byte[message.length + 2 * KEY_SIZE];
         System.arraycopy(kHash.key.toByteArray(), 0, bytes, KEY_SIZE, KEY_SIZE);
         System.arraycopy(message, 0, bytes, 2 * KEY_SIZE, message.length);
 
         Key rHash = HashFunction.computeHash(Arrays.copyOfRange(bytes, KEY_SIZE, bytes.length));
-        final FieldPoint<Integer> rPoint = ECCUtil.eccMulFixed(rHash);
+        final FieldPoint<F2Elem> rPoint = ECCUtil.eccMulFixed(rHash);
         final Key sigStart = ECCUtil.encode(rPoint);
 
         System.arraycopy(sigStart.key.toByteArray(), 0, bytes, 0, KEY_SIZE);
@@ -50,7 +52,7 @@ public class SchnorrQ {
         return new Key(signature, KEY_SIZE * 2);
     }
 
-    public static boolean schnorrQVerify(Key publicKey, Key signature, byte[] message) {
+    public static boolean schnorrQVerify(Key publicKey, Key signature, byte[] message) throws NoSuchAlgorithmException{
         // TODO: Validate arguments
         // TODO: Verify that 'A' is on the curve
         final byte[] bytes = new byte[message.length + 2 * KEY_SIZE];
