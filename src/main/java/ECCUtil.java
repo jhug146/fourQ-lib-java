@@ -12,8 +12,6 @@ public class ECCUtil {
     private static final int D_FIXEDBASE = 54;
     private static final int E_FIXEDBASE = 10;
 
-    private static final Table TABLE = new Table();
-
     static FieldPoint<F2Elem> eccMulFixed(BigInteger val) {
         BigInteger temp = FP.moduloOrder(val);
         temp = FP.conversionToOdd(temp);
@@ -25,8 +23,8 @@ public class ECCUtil {
         }
 
         // TODO: Both instances of TABLE in this function might need updating
-        AffinePoint<F2Elem> point = TableLookup.tableLookupFixedBase(TABLE, digit, digits[D_FIXEDBASE - 1]);
-        ExtendedPoint<F2Elem> exPoint = R5_To_R1(point);
+        AffinePoint<F2Elem> affPoint = Table.tableLookupFixedBase(digit, digits[D_FIXEDBASE - 1]);
+        ExtendedPoint<F2Elem> exPoint = R5_To_R1(affPoint);
 
         for (int j = 0; j < V_FIXEDBASE - 1; j++) {
             digit = digits[W_FIXEDBASE * D_FIXEDBASE - (j + 1) * E_FIXEDBASE - 1];
@@ -37,8 +35,8 @@ public class ECCUtil {
             }
             // Extract point in (x+y,y-x,2dt) representation
             int signDigit = D_FIXEDBASE - (j + 1) * E_FIXEDBASE - 1;
-            point = TableLookup.tableLookupFixedBase(TABLE, digit, digits[signDigit]);
-            exPoint = eccMixedAdd(point, exPoint);
+            affPoint = Table.tableLookupFixedBase(digit, digits[signDigit]);
+            exPoint = eccMixedAdd(affPoint, exPoint);
         }
 
         for (int i = E_FIXEDBASE - 2; i >= 0; i--) {
@@ -51,8 +49,8 @@ public class ECCUtil {
                     digit = 2 * digit + digits[k];
                 }
                 int signDigit = D_FIXEDBASE - j * E_FIXEDBASE + i - E_FIXEDBASE;
-                point = TableLookup.tableLookupFixedBase(TABLE, digit, signDigit);
-                exPoint = eccMixedAdd(point, exPoint);
+                affPoint = Table.tableLookupFixedBase(digit, signDigit);
+                exPoint = eccMixedAdd(affPoint, exPoint);
             }
         }
         return eccNorm(exPoint);
