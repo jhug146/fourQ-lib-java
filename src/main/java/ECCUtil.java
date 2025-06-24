@@ -1,8 +1,9 @@
-import types.ExtendedAffinePoint;
+import types.AffinePoint;
 import types.ExtendedPoint;
 import types.F2Elem;
-import types.Key;
 import types.FieldPoint;
+
+import java.math.BigInteger;
 
 
 public class ECCUtil {
@@ -13,8 +14,8 @@ public class ECCUtil {
 
     private static final Table TABLE = new Table();
 
-    static FieldPoint<F2Elem> eccMulFixed(Key key) {
-        Key temp = FP.moduloOrder(key);
+    static FieldPoint<F2Elem> eccMulFixed(BigInteger val) {
+        BigInteger temp = FP.moduloOrder(val);
         temp = FP.conversionToOdd(temp);
         int[] digits = mLSBSetRecode(temp);  // TODO: No idea how this works
         int digit = digits[W_FIXEDBASE * D_FIXEDBASE - 1];
@@ -24,7 +25,7 @@ public class ECCUtil {
         }
 
         // TODO: Both instances of TABLE in this function might need updating
-        ExtendedAffinePoint<F2Elem> point = TableLookup.tableLookupFixedBase(TABLE, digit, digits[D_FIXEDBASE - 1]);
+        AffinePoint<F2Elem> point = TableLookup.tableLookupFixedBase(TABLE, digit, digits[D_FIXEDBASE - 1]);
         ExtendedPoint<F2Elem> exPoint = R5_To_R1(point);
 
         for (int j = 0; j < V_FIXEDBASE - 1; j++) {
@@ -57,7 +58,7 @@ public class ECCUtil {
         return eccNorm(exPoint);
     }
 
-    static Key encode(FieldPoint<F2Elem> point) {
+    static BigInteger encode(FieldPoint<F2Elem> point) {
         if (point.x.isZero()) {
             int temp = ;
         } else {
@@ -66,11 +67,11 @@ public class ECCUtil {
 
     }
 
-    static int[] mLSBSetRecode(Key scalar) {}
+    static int[] mLSBSetRecode(BigInteger scalar) {}
 
-    static ExtendedPoint<F2Elem> R5_To_R1(ExtendedAffinePoint<F2Elem> P) {}
+    static ExtendedPoint<F2Elem> R5_To_R1(AffinePoint<F2Elem> P) {}
 
-    static ExtendedPoint<F2Elem> eccMixedAdd(ExtendedAffinePoint<F2Elem> Q, ExtendedPoint<F2Elem> P) {}
+    static ExtendedPoint<F2Elem> eccMixedAdd(AffinePoint<F2Elem> Q, ExtendedPoint<F2Elem> P) {}
 
     static ExtendedPoint<F2Elem> eccDouble(ExtendedPoint<F2Elem> P) {}
 

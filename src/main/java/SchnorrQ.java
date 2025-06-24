@@ -5,32 +5,31 @@ import java.util.Arrays;
 import types.F2Elem;
 import types.Pair;
 import types.FieldPoint;
-import types.Key;
 
 
 // TODO: Error handling in all methods
 public class SchnorrQ {
-    static final int KEY_SIZE = 32;
+    private static final int KEY_SIZE = 32;
 
-    public static Key schnorrQKeyGeneration(Key secretKey) throws NoSuchAlgorithmException {
-        final Key hash = HashFunction.computeHash(secretKey);     // Returns 64-byte hash of secret key
+    public static BigInteger schnorrQKeyGeneration(BigInteger secretKey) throws NoSuchAlgorithmException {
+        final BigInteger hash = HashFunction.computeHash(secretKey);     // Returns 64-byte hash of secret key
         final FieldPoint<F2Elem> point = ECCUtil.eccMulFixed(hash);
         return ECCUtil.encode(point);
     }
 
-    public static Pair<Key, Key> schnorrQFullKeyGeneration() throws NoSuchAlgorithmException {
-        final Key secretKey = CryptoUtil.randomBytes(KEY_SIZE);
-        final Key publicKey = schnorrQKeyGeneration(secretKey);
+    public static Pair<BigInteger, BigInteger> schnorrQFullKeyGeneration() throws NoSuchAlgorithmException {
+        final BigInteger secretKey = CryptoUtil.randomBytes(KEY_SIZE);
+        final BigInteger publicKey = schnorrQKeyGeneration(secretKey);
         return new Pair<>(secretKey, publicKey);
     }
 
-    public static Key schnorrQSign(Key secretKey, Key publicKey, byte[] message) throws NoSuchAlgorithmException {
-        final Key kHash = HashFunction.computeHash(secretKey);
+    public static BigInteger schnorrQSign(BigInteger secretKey, BigInteger publicKey, byte[] message) throws NoSuchAlgorithmException {
+        final BigInteger kHash = HashFunction.computeHash(secretKey);
         final byte[] bytes = new byte[message.length + 2 * KEY_SIZE];
         System.arraycopy(kHash.key.toByteArray(), 0, bytes, KEY_SIZE, KEY_SIZE);
         System.arraycopy(message, 0, bytes, 2 * KEY_SIZE, message.length);
 
-        Key rHash = HashFunction.computeHash(Arrays.copyOfRange(bytes, KEY_SIZE, bytes.length));
+        BigInteger rHash = HashFunction.computeHash(Arrays.copyOfRange(bytes, KEY_SIZE, bytes.length));
         final FieldPoint<F2Elem> rPoint = ECCUtil.eccMulFixed(rHash);
         final Key sigStart = ECCUtil.encode(rPoint);
 
