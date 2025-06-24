@@ -8,8 +8,8 @@ import types.FieldPoint;
 public class ECCUtil {
     private static final int W_FIXEDBASE = 5;
     private static final int V_FIXEDBASE = 5;
-    private static final int D_FIXEDBASE = 5;    // TODO: Fix D and E values
-    private static final int E_FIXEDBASE = 5;
+    private static final int D_FIXEDBASE = 54;
+    private static final int E_FIXEDBASE = 10;
 
     private static final Table TABLE = new Table();
 

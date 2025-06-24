@@ -32,7 +32,10 @@ public class FP {
         return new Key(returnVal.key.add(returnEnd.key), 2 * NWORDS_ORDER);
     }
 
-    static Key subtractModOrder(Key a, Key b) {}
+    static Key subtractModOrder(Key a, Key b) {
+        Pair<Key, Integer> returnVal = mpSubtract(a, b);
+        
+    }
 
     static Key conversionToOdd(Key key) {}
 
