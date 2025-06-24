@@ -26,41 +26,40 @@ public class SchnorrQ {
     public static BigInteger schnorrQSign(BigInteger secretKey, BigInteger publicKey, byte[] message) throws NoSuchAlgorithmException {
         final BigInteger kHash = HashFunction.computeHash(secretKey);
         final byte[] bytes = new byte[message.length + 2 * KEY_SIZE];
-        System.arraycopy(kHash.key.toByteArray(), 0, bytes, KEY_SIZE, KEY_SIZE);
+        System.arraycopy(kHash.toByteArray(), 0, bytes, KEY_SIZE, KEY_SIZE);
         System.arraycopy(message, 0, bytes, 2 * KEY_SIZE, message.length);
 
         BigInteger rHash = HashFunction.computeHash(Arrays.copyOfRange(bytes, KEY_SIZE, bytes.length));
         final FieldPoint<F2Elem> rPoint = ECCUtil.eccMulFixed(rHash);
-        final Key sigStart = ECCUtil.encode(rPoint);
+        final BigInteger sigStart = ECCUtil.encode(rPoint);
 
-        System.arraycopy(sigStart.key.toByteArray(), 0, bytes, 0, KEY_SIZE);
-        System.arraycopy(publicKey.key.toByteArray(), 0, bytes, KEY_SIZE, KEY_SIZE);
+        System.arraycopy(sigStart.toByteArray(), 0, bytes, 0, KEY_SIZE);
+        System.arraycopy(publicKey.toByteArray(), 0, bytes, KEY_SIZE, KEY_SIZE);
 
-        final Key hHash = HashFunction.computeHash(bytes);
+        final BigInteger hHash = HashFunction.computeHash(bytes);
         rHash = FP.moduloOrder(rHash);
-        Key hHash2 = new Key(0, KEY_SIZE * 2);
+        BigInteger hHash2 = BigInteger.valueOf(1);
         hHash2 = FP.moduloOrder(hHash2);
 
-        Key sigEnd = CryptoUtil.toMontgomery(kHash);
+        BigInteger sigEnd = CryptoUtil.toMontgomery(kHash);
         hHash2 = CryptoUtil.toMontgomery(hHash2);
         sigEnd = FP.montgomeryMultiplyModOrder(sigEnd, hHash2);
         sigEnd = CryptoUtil.fromMontgomery(sigEnd);
 
         sigEnd = FP.subtractModOrder(rHash, sigEnd);
-        BigInteger signature = sigStart.key.add(sigEnd.key.shiftLeft(KEY_SIZE));
-        return new Key(signature, KEY_SIZE * 2);
+        return sigStart.add(sigEnd.shiftLeft(KEY_SIZE));
     }
 
-    public static boolean schnorrQVerify(Key publicKey, Key signature, byte[] message) throws NoSuchAlgorithmException{
+    public static boolean schnorrQVerify(BigInteger publicKey, BigInteger signature, byte[] message) throws NoSuchAlgorithmException{
         // TODO: Validate arguments
         // TODO: Verify that 'A' is on the curve
         final byte[] bytes = new byte[message.length + 2 * KEY_SIZE];
-        System.arraycopy(signature.key.toByteArray(), 0, bytes, 0, KEY_SIZE);
-        System.arraycopy(publicKey.key.toByteArray(), 0, bytes, KEY_SIZE, KEY_SIZE);
+        System.arraycopy(signature.toByteArray(), 0, bytes, 0, KEY_SIZE);
+        System.arraycopy(publicKey.toByteArray(), 0, bytes, KEY_SIZE, KEY_SIZE);
         System.arraycopy(message, 0, bytes, 2 * KEY_SIZE, message.length);
 
         // TODO: Check this hash worked
-        Key hash = HashFunction.computeHash(bytes);
+        BigInteger hash = HashFunction.computeHash(bytes);
         // TODO: Finish this
         return false;
     }
