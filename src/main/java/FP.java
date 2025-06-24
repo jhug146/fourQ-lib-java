@@ -37,11 +37,19 @@ public class FP {
         
     }
 
-    static Key conversionToOdd(Key key) {}
+    static Key conversionToOdd(Key key) {
 
-    static Key multiply(Key a, Key b) {}
+    }
 
-    static Pair<Key, Integer> mpAdd(Key a, Key b) {}
+    static Key multiply(Key a, Key b) {
 
-    static Pair<Key, Integer> mpSubtract(Key a, Key b) {}
+    }
+
+    static Pair<Key, Integer> mpAdd(Key a, Key b) {
+
+    }
+
+    static Pair<Key, Integer> mpSubtract(Key a, Key b) {
+
+    }
 }
