@@ -70,7 +70,9 @@ public class ECCUtil {
 
     static int[] mLSBSetRecode(BigInteger scalar) {}
 
-    static ExtendedPoint<F2Element> R5_To_R1(AffinePoint<F2Element> p) {}
+    static ExtendedPoint<F2Element> R5_To_R1(AffinePoint<F2Element> p) {
+        F2Element x =
+    }
 
     static ExtendedPoint<F2Element> eccMixedAdd(AffinePoint<F2Element> p, ExtendedPoint<F2Element> q) {}
 
@@ -79,4 +81,16 @@ public class ECCUtil {
     static FieldPoint<F2Element> eccNorm(ExtendedPoint<F2Element> p) {}
 
     static FieldPoint<F2Element> eccMulDouble(BigInteger k, FieldPoint<F2Element> q, BigInteger l) {}
+
+    static F2Element mp2Add(F2Element a, F2Element b) {
+        return new F2Element(FP.mpAdd(a.real, b.real).first, FP.mpAdd(a.im, b.im).first);
+    }
+
+    static F2Element mp2Subtract(F2Element a, F2Element b) {
+        return new F2Element(FP.mpSubtract(a.real, b.real).first, FP.mpSubtract(a.im, b.im).first);
+    }
+
+    static F2Element mp2Div(F2Element x) {
+        return new F2Element(x.real.shiftRight(1), x.im.shiftRight(1));
+    }
 }
