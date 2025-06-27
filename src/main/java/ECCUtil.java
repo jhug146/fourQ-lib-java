@@ -73,14 +73,28 @@ public class ECCUtil {
     static int[] mLSBSetRecode(BigInteger scalar) {}
 
     static ExtendedPoint<F2Element> R5_To_R1(AffinePoint<F2Element> p) {
-        F2Element x = mp2Div(mp2Subtract(p.xy, p.yx));
+        F2Element x = mp2Div(mp2Sub(p.xy, p.yx));
         F2Element y = mp2Div(mp2Add(p.xy, p.yx));
         return new ExtendedPoint<F2Element>(x, y, F2_ONE, x, y);
     }
 
     static ExtendedPoint<F2Element> eccMixedAdd(AffinePoint<F2Element> p, ExtendedPoint<F2Element> q) {}
 
-    static ExtendedPoint<F2Element> eccDouble(ExtendedPoint<F2Element> p) {}
+    static ExtendedPoint<F2Element> eccDouble(ExtendedPoint<F2Element> p) {
+        F2Element t1 = mp2Sqr(p.x);
+        F2Element t2 = mp2Sqr(p.y);
+        F2Element t3 = mp2Add(p.x, p.y);
+        F2Element tb = mp2Add(t1, t2);
+        t1 = mp2Sub(t2, t1);
+        F2Element ta = mp2Sqr(t3);
+        t2 = mp2Sqr(p.z);
+        ta = mp2Sub(ta, tb);
+        t2 = mp2AddSub(t2, t1);
+        final F2Element y = mp2Mul(t1, tb);
+        final F2Element x = mp2Mul(t2, ta);
+        final F2Element z = mp2Mul(t1, t2);
+        return new ExtendedPoint<F2Element>(x, y, z, ta, tb);
+    }
 
     static FieldPoint<F2Element> eccNorm(ExtendedPoint<F2Element> p) {}
 
@@ -90,11 +104,17 @@ public class ECCUtil {
         return new F2Element(FP.mpAdd(a.real, b.real).first, FP.mpAdd(a.im, b.im).first);
     }
 
-    static F2Element mp2Subtract(F2Element a, F2Element b) {
+    static F2Element mp2Sub(F2Element a, F2Element b) {
         return new F2Element(FP.mpSubtract(a.real, b.real).first, FP.mpSubtract(a.im, b.im).first);
     }
 
-    static F2Element mp2Div(F2Element x) {
-        return new F2Element(x.real.shiftRight(1), x.im.shiftRight(1));
+    static F2Element mp2Div(F2Element val) {
+        return new F2Element(val.real.shiftRight(1), val.im.shiftRight(1));
     }
+
+    static F2Element mp2Mul(F2Element a, F2Element b) {}
+
+    static F2Element mp2Sqr(F2Element val) {}
+
+    private static F2Element mp2AddSub(F2Element t2, F2Element t1) {}
 }
