@@ -2,6 +2,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 import exceptions.EncryptionException;
+import exceptions.InvalidArgumentException;
 import types.F2Elem;
 import types.Pair;
 import types.FieldPoint;
@@ -9,6 +10,9 @@ import types.FieldPoint;
 
 public class SchnorrQ {
     private static final int KEY_SIZE = 32;
+    private static final int TEST_BIT = 128;
+    private static final int MAX_SIG_LENGTH = 502;
+    private static final BigInteger MAX_SIG_VERIFY = BigInteger.valueOf(1).shiftLeft(MAX_SIG_LENGTH - 1);  // TODO: Check this
 
     public static BigInteger schnorrQKeyGeneration(BigInteger secretKey) throws EncryptionException {
         final BigInteger hash = HashFunction.computeHash(secretKey);     // Returns 64-byte hash of secret key
@@ -49,17 +53,33 @@ public class SchnorrQ {
         return sigStart.add(sigEnd.shiftLeft(KEY_SIZE));
     }
 
-    public static boolean schnorrQVerify(BigInteger publicKey, BigInteger signature, byte[] message) throws EncryptionException {
-        // TODO: Validate arguments
-        // TODO: Verify that 'A' is on the curve
+    public static boolean schnorrQVerify(BigInteger publicKey, BigInteger signature, byte[] message) throws EncryptionException, InvalidArgumentException {
+        if (!publicKey.testBit(TEST_BIT) || !signature.testBit(TEST_BIT)) {
+            throw new InvalidArgumentException(String.format(
+                    "Invalid argument: Bit %d is not set to zero in both the public key and signature.",
+                    TEST_BIT
+            ));
+        }
+
+        if (signature.compareTo(MAX_SIG_VERIFY) >= 0) {
+            throw new InvalidArgumentException(String.format(
+                    "Invalid argument: Signature must be less than 2^%d.",
+                    MAX_SIG_LENGTH
+            ));
+        }
+
         final byte[] bytes = new byte[message.length + 2 * KEY_SIZE];
         System.arraycopy(signature.toByteArray(), 0, bytes, 0, KEY_SIZE);
         System.arraycopy(publicKey.toByteArray(), 0, bytes, KEY_SIZE, KEY_SIZE);
         System.arraycopy(message, 0, bytes, 2 * KEY_SIZE, message.length);
 
-        // TODO: Check this hash worked
-        BigInteger hash = HashFunction.computeHash(bytes);
-        // TODO: Finish this
-        return false;
+        FieldPoint<F2Elem> affPoint = ECCUtil.eccMulDouble(
+                new BigInteger(Arrays.copyOfRange(bytes, KEY_SIZE, bytes.length - 1)),
+                ECCUtil.decode(publicKey),       // Implicitly checks that public key lies on the curve
+                HashFunction.computeHash(bytes)
+        );
+        BigInteger encoded = ECCUtil.encode(affPoint);
+
+        return encoded.equals(signature);
     }
 }

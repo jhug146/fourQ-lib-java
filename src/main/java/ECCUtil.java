@@ -56,22 +56,19 @@ public class ECCUtil {
         return eccNorm(exPoint);
     }
 
-    static BigInteger encode(FieldPoint<F2Elem> point) {
-        if (point.x.isZero()) {
-            int temp = ;
-        } else {
-            int temp =;
-        }
+    static BigInteger encode(FieldPoint<F2Elem> point) {}
 
-    }
+    static FieldPoint<F2Elem> decode(BigInteger encoded) {}
 
     static int[] mLSBSetRecode(BigInteger scalar) {}
 
-    static ExtendedPoint<F2Elem> R5_To_R1(AffinePoint<F2Elem> P) {}
+    static ExtendedPoint<F2Elem> R5_To_R1(AffinePoint<F2Elem> p) {}
 
-    static ExtendedPoint<F2Elem> eccMixedAdd(AffinePoint<F2Elem> Q, ExtendedPoint<F2Elem> P) {}
+    static ExtendedPoint<F2Elem> eccMixedAdd(AffinePoint<F2Elem> p, ExtendedPoint<F2Elem> q) {}
 
-    static ExtendedPoint<F2Elem> eccDouble(ExtendedPoint<F2Elem> P) {}
+    static ExtendedPoint<F2Elem> eccDouble(ExtendedPoint<F2Elem> p) {}
 
-    static FieldPoint<F2Elem> eccNorm(ExtendedPoint<F2Elem> P) {}
+    static FieldPoint<F2Elem> eccNorm(ExtendedPoint<F2Elem> p) {}
+
+    static FieldPoint<F2Elem> eccMulDouble(BigInteger k, FieldPoint<F2Elem> q, BigInteger l) {}
 }

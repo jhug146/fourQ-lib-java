@@ -2,8 +2,9 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 public class CryptoUtil {
+    private static final SecureRandom secureRandom = new SecureRandom();
+
     static BigInteger randomBytes(int size) {
-        SecureRandom secureRandom = new SecureRandom();    // TODO: Maybe a faster way
         byte[] bytes = new byte[size];
         secureRandom.nextBytes(bytes);
         return new BigInteger(bytes);
