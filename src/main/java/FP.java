@@ -143,4 +143,10 @@ public class FP {
         return a.mod(prime1271);
     }
 
+    // Field multiplication using schoolbook method, c = a*b mod p
+    static BigInteger fpmul1271(BigInteger a, BigInteger b) {
+        BigInteger prime1271 = BigInteger.ONE.shiftLeft(127).subtract(BigInteger.ONE);
+        return multiply(a, b).mod(prime1271);
+    }
+
 }
