@@ -2,7 +2,7 @@ import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-import types.F2Elem;
+import types.F2Element;
 import types.Pair;
 import types.FieldPoint;
 
@@ -13,7 +13,7 @@ public class SchnorrQ {
 
     public static BigInteger schnorrQKeyGeneration(BigInteger secretKey) throws NoSuchAlgorithmException {
         final BigInteger hash = HashFunction.computeHash(secretKey);     // Returns 64-byte hash of secret key
-        final FieldPoint<F2Elem> point = ECCUtil.eccMulFixed(hash);
+        final FieldPoint<F2Element> point = ECCUtil.eccMulFixed(hash);
         return ECCUtil.encode(point);
     }
 
@@ -30,7 +30,7 @@ public class SchnorrQ {
         System.arraycopy(message, 0, bytes, 2 * KEY_SIZE, message.length);
 
         BigInteger rHash = HashFunction.computeHash(Arrays.copyOfRange(bytes, KEY_SIZE, bytes.length));
-        final FieldPoint<F2Elem> rPoint = ECCUtil.eccMulFixed(rHash);
+        final FieldPoint<F2Element> rPoint = ECCUtil.eccMulFixed(rHash);
         final BigInteger sigStart = ECCUtil.encode(rPoint);
 
         System.arraycopy(sigStart.toByteArray(), 0, bytes, 0, KEY_SIZE);

@@ -137,5 +137,10 @@ public class FP {
         return new Pair<>(wrappedResult, 1);
     }
 
+    // Modular correction, a = a mod (2^127-1)
+    static BigInteger mod1271(BigInteger a) {
+        BigInteger prime1271 = BigInteger.ONE.shiftLeft(127).subtract(BigInteger.ONE);
+        return a.mod(prime1271);
+    }
 
 }
