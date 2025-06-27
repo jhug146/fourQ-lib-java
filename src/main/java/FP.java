@@ -1,11 +1,18 @@
+import types.AddResult;
 import types.Pair;
 
 import java.math.BigInteger;
 
 public class FP {
 
-    private static class macros {
-
+    private static class Macros {
+        public static AddResult ADDC(int carryIn, int a, int b) {
+            // Use long to capture overflow
+            long temp = (a & 0xFFFFFFFFL) + (b & 0xFFFFFFFFL) + (carryIn & 0xFFFFFFFFL);
+            int sum = (int) temp;                               // Low 32 bits
+            int carry = (int) (temp >>> FourQConstants.RADIX);  // High 32 bits (carry)
+            return new AddResult(sum, carry);
+        }
     }
 
     private static final int NWORDS_ORDER = 8;
@@ -57,12 +64,36 @@ public class FP {
         return scalar.add(FourQConstants.CURVE_ORDER);
     }
 
+    /**
+     * The following assumes that BigInteger performance limitations are negligible.
+     *
+     * @param a first argument in multiply
+     * @param b second argument in multiply
+     * @return a * b
+     */
     static BigInteger multiply(BigInteger a, BigInteger b) {
-
+        return a.multiply(b);
     }
 
     static Pair<BigInteger, Integer> mpAdd(BigInteger a, BigInteger b) {
+        // Add the two numbers
+        BigInteger sum = a.add(b);
 
+        // Calculate the maximum value for NWORDS_ORDER words
+        // Assuming 32-bit words: max = 2^(NWORDS_ORDER * 32) - 1
+        int bitsPerWord = 32;  // TODO or 64 if using 64-bit words
+        int totalBits = NWORDS_ORDER * bitsPerWord;
+        BigInteger maxValue = BigInteger.ONE.shiftLeft(totalBits); //First value that cannot be represented in system
+
+        // Check if overflow occurred
+        if (sum.compareTo(maxValue) >= 0) {
+            // Overflow, return sum mod 2^totalBits, carry = 1
+            BigInteger wrappedSum = sum.remainder(maxValue);
+            return new Pair<>(wrappedSum, 1);
+        } else {
+            // Nooverflow, return sum as-is, carry = 0
+            return new Pair<>(sum, 0);
+        }
     }
 
     static Pair<BigInteger, Integer> mpSubtract(BigInteger a, BigInteger b) {
