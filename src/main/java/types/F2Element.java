@@ -2,10 +2,10 @@ package types;
 
 import java.math.BigInteger;
 
-public class F2Elem {
+public class F2Element {
     public BigInteger first;
     public BigInteger second;
-    public F2Elem(BigInteger _first, BigInteger _second) {
+    public F2Element(BigInteger _first, BigInteger _second) {
         first = _first;
         second = _second;
     }
