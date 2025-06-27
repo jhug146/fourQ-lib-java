@@ -6,7 +6,7 @@ public class ExtendedPoint<Field> {
     Field z;
     Field ta;
     Field tb;
-    ExtendedPoint(Field _x, Field _y, Field _z, Field _ta, Field _tb) {
+    public ExtendedPoint(Field _x, Field _y, Field _z, Field _ta, Field _tb) {
         x = _x;
         y = _y;
         z = _z;

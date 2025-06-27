@@ -3,14 +3,14 @@ package types;
 import java.math.BigInteger;
 
 public class F2Elem {
-    public BigInteger first;
-    public BigInteger second;
-    public F2Elem(BigInteger _first, BigInteger _second) {
-        first = _first;
-        second = _second;
+    public BigInteger real;
+    public BigInteger im;
+    public F2Elem(BigInteger _real, BigInteger _im) {
+        real = _real;
+        im = _im;
     }
 
     public boolean isZero() {
-        return first.signum() == 0 && second.signum() == 0;
+        return real.signum() == 0 && im.signum() == 0;
     }
 }

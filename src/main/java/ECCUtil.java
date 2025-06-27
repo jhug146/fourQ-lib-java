@@ -57,8 +57,8 @@ public class ECCUtil {
     }
 
     static BigInteger encode(FieldPoint<F2Elem> point) {
-        BigInteger y = point.y.first.add(point.y.second.shiftLeft(128));
-        boolean ySignBit = point.y.first.compareTo(BigInteger.ZERO) <= 0;
+        BigInteger y = point.y.real.add(point.y.im.shiftLeft(128));
+        boolean ySignBit = point.y.real.compareTo(BigInteger.ZERO) <= 0;
 
         if (ySignBit) {
             y = y.setBit(255);
@@ -70,7 +70,12 @@ public class ECCUtil {
 
     static int[] mLSBSetRecode(BigInteger scalar) {}
 
-    static ExtendedPoint<F2Elem> R5_To_R1(AffinePoint<F2Elem> p) {}
+    static ExtendedPoint<F2Elem> R5_To_R1(AffinePoint<F2Elem> p) {
+        F2Elem x = mp2Div(mp2Subtract(p.xy, p.yx));
+        F2Elem y = mp2Div(mp2Add(p.xy, p.yx));
+        F2Elem one = new F2Elem(BigInteger.ONE, BigInteger.ONE);
+        return new ExtendedPoint<F2Elem>(x, y, one, x, y);
+    }
 
     static ExtendedPoint<F2Elem> eccMixedAdd(AffinePoint<F2Elem> p, ExtendedPoint<F2Elem> q) {}
 
@@ -79,4 +84,16 @@ public class ECCUtil {
     static FieldPoint<F2Elem> eccNorm(ExtendedPoint<F2Elem> p) {}
 
     static FieldPoint<F2Elem> eccMulDouble(BigInteger k, FieldPoint<F2Elem> q, BigInteger l) {}
+
+    static F2Elem mp2Add(F2Elem a, F2Elem b) {
+        return new F2Elem(FP.mpAdd(a.real, b.real).first, FP.mpAdd(a.im, b.im).first);
+    }
+
+    static F2Elem mp2Subtract(F2Elem a, F2Elem b) {
+        return new F2Elem(FP.mpSubtract(a.real, b.real).first, FP.mpSubtract(a.im, b.im).first);
+    }
+
+    static F2Elem mp2Div(F2Elem x) {
+        return new F2Elem(FP.mpDiv(x.real).first, FP.mpDiv(x.im).first);
+    }
 }
