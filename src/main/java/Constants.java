@@ -10,5 +10,4 @@ public class Constants {
             "0x2FB2540EC7768CE7DFBD004DFE0F7999F05397829CBC14E50029CBC14E5E0A72",
             HEX_RADIX
     );
-    static final BigInteger ONE = BigInteger.valueOf(1);
 }

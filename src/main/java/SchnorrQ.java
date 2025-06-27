@@ -12,10 +12,10 @@ public class SchnorrQ {
     private static final int KEY_SIZE = 32;
     private static final int TEST_BIT = 128;
     private static final int MAX_SIG_LENGTH = 502;
-    private static final BigInteger MAX_SIG_VERIFY = BigInteger.valueOf(1).shiftLeft(MAX_SIG_LENGTH - 1);  // TODO: Check this
+    private static final BigInteger MAX_SIG_VERIFY = BigInteger.ONE.shiftLeft(MAX_SIG_LENGTH - 1);  // TODO: Check this
 
     public static BigInteger schnorrQKeyGeneration(BigInteger secretKey) throws EncryptionException {
-        final BigInteger hash = HashFunction.computeHash(secretKey);     // Returns 64-byte hash of secret key
+        final BigInteger hash = HashFunction.computeHash(secretKey);
         final FieldPoint<F2Elem> point = ECCUtil.eccMulFixed(hash);
         return ECCUtil.encode(point);
     }

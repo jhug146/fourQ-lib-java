@@ -6,7 +6,7 @@ public class FP {
     private static final int NWORDS_ORDER = 8;
     static BigInteger moduloOrder(BigInteger key) {
         BigInteger temp = montgomeryMultiplyModOrder(key, Constants.MONTGOMERY_R_PRIME);
-        return montgomeryMultiplyModOrder(temp, Constants.ONE);
+        return montgomeryMultiplyModOrder(temp, BigInteger.ONE);
     }
 
     static BigInteger montgomeryMultiplyModOrder(BigInteger a, BigInteger b) {

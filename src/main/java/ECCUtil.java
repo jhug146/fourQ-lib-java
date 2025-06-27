@@ -56,7 +56,15 @@ public class ECCUtil {
         return eccNorm(exPoint);
     }
 
-    static BigInteger encode(FieldPoint<F2Elem> point) {}
+    static BigInteger encode(FieldPoint<F2Elem> point) {
+        BigInteger y = point.y.first.add(point.y.second.shiftLeft(128));
+        boolean ySignBit = point.y.first.compareTo(BigInteger.ZERO) <= 0;
+
+        if (ySignBit) {
+            y = y.setBit(255);
+        }
+        return y;
+    }
 
     static FieldPoint<F2Elem> decode(BigInteger encoded) {}
 

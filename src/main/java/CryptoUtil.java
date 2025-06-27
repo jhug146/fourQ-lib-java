@@ -15,6 +15,6 @@ public class CryptoUtil {
     }
 
     static BigInteger fromMontgomery(BigInteger key) {
-        return FP.montgomeryMultiplyModOrder(key, Constants.ONE);
+        return FP.montgomeryMultiplyModOrder(key, BigInteger.ONE);
     }
 }
