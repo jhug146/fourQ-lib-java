@@ -144,6 +144,7 @@ public class FP {
     }
 
     // Field multiplication using schoolbook method, c = a*b mod p
+    // TODO for efficiency use the mersenne reduction algorithm
     static BigInteger fpmul1271(BigInteger a, BigInteger b) {
         BigInteger prime1271 = BigInteger.ONE.shiftLeft(127).subtract(BigInteger.ONE);
         return multiply(a, b).mod(prime1271);
