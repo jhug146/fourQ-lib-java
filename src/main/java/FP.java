@@ -16,9 +16,10 @@ public class FP {
     }
 
     private static final int NWORDS_ORDER = 8;
+
     static BigInteger moduloOrder(BigInteger key) {
-        BigInteger temp = montgomeryMultiplyModOrder(key, FourQConstants.MONTGOMERY_R_PRIME);
-        return montgomeryMultiplyModOrder(temp, FourQConstants.ONE);
+        return montgomeryMultiplyModOrder
+                (montgomeryMultiplyModOrder(key, FourQConstants.MONTGOMERY_R_PRIME), BigInteger.ONE);
     }
 
     static BigInteger montgomeryMultiplyModOrder(BigInteger a, BigInteger b) {
