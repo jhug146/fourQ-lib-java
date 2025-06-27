@@ -38,11 +38,26 @@ public class FP {
         byte[] k = scalar.toByteArray();
 
         int carry = 0; //NB this should be unsigned.
+        byte[] order = FourQConstants.CURVE_ORDER.toByteArray();
+
         byte mask = (byte) ~-(k[0] & 1);
 
+        byte[] kOdd = new byte[k.length];
         for (int i = 0; i < NWORDS_ORDER; i++) {  // If (k is odd) then k_odd = k else k_odd = k + r
-            ADDC(carry, order[i] & mask, k[i], carry, k_odd[i]);
+            ADDC(carry, order[i] & mask, k[i], carry, kOdd[i]);
         }
+
+        return new BigInteger(kOdd);
+    }
+
+    private static void ADDC(int carryIn, int addend1, byte addend2, int carryOut, int sumOut) {
+        int tempReg = (addend1) + (int)(carryIn);
+        (sumOut) = (addend2) + tempReg;
+        (carryOut) = (isDigitLessthanCt(tempReg, (carryIn)) | isDigitLessthanCt((sumOut), tempReg));
+    }
+
+    private static int isDigitLessthanCt(int x, int y) { // Is x < y?
+        return ((x ^ ((x ^ y) | ((x - y) ^ y))) >> (FourQConstants.RADIX-1));
     }
 
     static BigInteger multiply(BigInteger a, BigInteger b) {
