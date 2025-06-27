@@ -1,6 +1,6 @@
 import java.math.BigInteger;
 
-public class Constants {
+public class FourQConstants {
     private static final int HEX_RADIX = 16;
     static final BigInteger MONTGOMERY_R_PRIME = new BigInteger(
             "0xC81DB8795FF3D621173EA5AAEA6B387D3D01B7C72136F61C0006A5F16AC8F9D3",

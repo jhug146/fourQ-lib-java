@@ -10,10 +10,10 @@ public class CryptoUtil {
     }
 
     static BigInteger toMontgomery(BigInteger key) {        // TODO: I'm unsure about the argument type here
-        return FP.montgomeryMultiplyModOrder(key, Constants.MONTGOMERY_R_PRIME);
+        return FP.montgomeryMultiplyModOrder(key, FourQConstants.MONTGOMERY_R_PRIME);
     }
 
     static BigInteger fromMontgomery(BigInteger key) {
-        return FP.montgomeryMultiplyModOrder(key, Constants.ONE);
+        return FP.montgomeryMultiplyModOrder(key, FourQConstants.ONE);
     }
 }
