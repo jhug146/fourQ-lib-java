@@ -22,6 +22,7 @@ public class FP {
                 (montgomeryMultiplyModOrder(key, FourQConstants.MONTGOMERY_R_PRIME), BigInteger.ONE);
     }
 
+    /*
     static BigInteger montgomeryMultiplyModOrder(BigInteger a, BigInteger b) {
         BigInteger product = multiply(a, b), quotient = multiply(product, FourQConstants.MONTGOMERY_R_PRIME);
         BigInteger returnEnd = multiply(quotient, FourQConstants.CURVE_ORDER);
@@ -41,9 +42,34 @@ public class FP {
         returnEnd = returnEnd.add(FourQConstants.CURVE_ORDER.and(BigInteger.valueOf(mask)));
         return returnVal.add(returnEnd);
     }
+    */ // <-Previous implementation.
+    static BigInteger montgomeryMultiplyModOrder(BigInteger a, BigInteger b) {
+        BigInteger product = a.multiply(b);
 
+        // Compute Montgomery quotient
+        BigInteger quotient = product.multiply(FourQConstants.MONTGOMERY_R_PRIME);
+        int wordBits = NWORDS_ORDER * 32; //TODO Change based on system
+        BigInteger rMask = BigInteger.ONE.shiftLeft(wordBits).subtract(BigInteger.ONE);
+        quotient = quotient.and(rMask);  // quotient mod R
+
+        // Montgomery reduction: (product + quotient * modulus) / R
+        BigInteger numerator = product.add(quotient.multiply(FourQConstants.CURVE_ORDER));
+        BigInteger result = numerator.shiftRight(wordBits);
+
+        // Final conditional subtraction
+        return result.compareTo(FourQConstants.CURVE_ORDER) >= 0
+                ? result.subtract(FourQConstants.CURVE_ORDER)
+                : result;
+    }
+
+    // Subtraction modulo the curve order, c = a+b mod order
     static BigInteger subtractModOrder(BigInteger a, BigInteger b) {
         return a.subtract(b).mod(FourQConstants.CURVE_ORDER);
+    }
+
+    // Addition modulo the curve order, c = a+b mod order
+    static BigInteger addModOrder(BigInteger a, BigInteger b) {
+        return a.add(b).mod(FourQConstants.CURVE_ORDER);
     }
 
     // Convert scalar to odd if even using the prime subgroup order r
@@ -110,4 +136,6 @@ public class FP {
         BigInteger modulus = BigInteger.ONE.shiftLeft(totalBits), wrappedResult = a.subtract(b).add(modulus);
         return new Pair<>(wrappedResult, 1);
     }
+
+
 }
