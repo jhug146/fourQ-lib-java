@@ -12,6 +12,7 @@ public class FP {
             int sum = (int) temp;                               // Low 32 bits
             int carry = (int) (temp >>> FourQConstants.RADIX);  // High 32 bits (carry)
             return new AddResult(sum, carry);
+
         }
     }
 
