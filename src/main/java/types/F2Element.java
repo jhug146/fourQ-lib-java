@@ -2,11 +2,11 @@ package types;
 
 import java.math.BigInteger;
 
-<<<<<<< HEAD:src/main/java/types/F2Elem.java
-public class F2Elem {
+<<<<<<< HEAD:src/main/java/types/F2Element.java
+public class F2Element {
     public BigInteger real;
     public BigInteger im;
-    public F2Elem(BigInteger _real, BigInteger _im) {
+    public F2Element(BigInteger _real, BigInteger _im) {
         real = _real;
         im = _im;
 =======
