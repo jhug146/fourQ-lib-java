@@ -1,29 +1,28 @@
 import java.math.BigInteger;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
+import exceptions.EncryptionException;
 import types.F2Elem;
 import types.Pair;
 import types.FieldPoint;
 
 
-// TODO: Error handling in all methods
 public class SchnorrQ {
     private static final int KEY_SIZE = 32;
 
-    public static BigInteger schnorrQKeyGeneration(BigInteger secretKey) throws NoSuchAlgorithmException {
+    public static BigInteger schnorrQKeyGeneration(BigInteger secretKey) throws EncryptionException {
         final BigInteger hash = HashFunction.computeHash(secretKey);     // Returns 64-byte hash of secret key
         final FieldPoint<F2Elem> point = ECCUtil.eccMulFixed(hash);
         return ECCUtil.encode(point);
     }
 
-    public static Pair<BigInteger, BigInteger> schnorrQFullKeyGeneration() throws NoSuchAlgorithmException {
+    public static Pair<BigInteger, BigInteger> schnorrQFullKeyGeneration() throws EncryptionException {
         final BigInteger secretKey = CryptoUtil.randomBytes(KEY_SIZE);
         final BigInteger publicKey = schnorrQKeyGeneration(secretKey);
         return new Pair<>(secretKey, publicKey);
     }
 
-    public static BigInteger schnorrQSign(BigInteger secretKey, BigInteger publicKey, byte[] message) throws NoSuchAlgorithmException {
+    public static BigInteger schnorrQSign(BigInteger secretKey, BigInteger publicKey, byte[] message) throws EncryptionException {
         final BigInteger kHash = HashFunction.computeHash(secretKey);
         final byte[] bytes = new byte[message.length + 2 * KEY_SIZE];
         System.arraycopy(kHash.toByteArray(), 0, bytes, KEY_SIZE, KEY_SIZE);
@@ -50,7 +49,7 @@ public class SchnorrQ {
         return sigStart.add(sigEnd.shiftLeft(KEY_SIZE));
     }
 
-    public static boolean schnorrQVerify(BigInteger publicKey, BigInteger signature, byte[] message) throws NoSuchAlgorithmException{
+    public static boolean schnorrQVerify(BigInteger publicKey, BigInteger signature, byte[] message) throws EncryptionException {
         // TODO: Validate arguments
         // TODO: Verify that 'A' is on the curve
         final byte[] bytes = new byte[message.length + 2 * KEY_SIZE];
