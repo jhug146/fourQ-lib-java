@@ -3,6 +3,11 @@ import types.Pair;
 import java.math.BigInteger;
 
 public class FP {
+
+    private static class macros {
+
+    }
+
     private static final int NWORDS_ORDER = 8;
     static BigInteger moduloOrder(BigInteger key) {
         BigInteger temp = montgomeryMultiplyModOrder(key, FourQConstants.MONTGOMERY_R_PRIME);
@@ -37,27 +42,19 @@ public class FP {
     static BigInteger conversionToOdd(BigInteger scalar) {
         byte[] k = scalar.toByteArray();
 
-        int carry = 0; //NB this should be unsigned.
-        byte[] order = FourQConstants.CURVE_ORDER.toByteArray();
+        // Check if scalar is even (use last byte for parity)
+        /*
+        Java uses big-endian for the BigInteger class (msb comes first here)
+        Hence, the least significant bit will determine odd/even: i.e. the last digit
+         */
+        boolean isEven = (k[k.length-1] & 1) == 0;
 
-        byte mask = (byte) ~-(k[0] & 1);
-
-        byte[] kOdd = new byte[k.length];
-        for (int i = 0; i < NWORDS_ORDER; i++) {  // If (k is odd) then k_odd = k else k_odd = k + r
-            ADDC(carry, order[i] & mask, k[i], carry, kOdd[i]);
+        if (!isEven) {
+            return scalar;  // Already odd
         }
 
-        return new BigInteger(kOdd);
-    }
-
-    private static void ADDC(int carryIn, int addend1, byte addend2, int carryOut, int sumOut) {
-        int tempReg = (addend1) + (int)(carryIn);
-        (sumOut) = (addend2) + tempReg;
-        (carryOut) = (isDigitLessthanCt(tempReg, (carryIn)) | isDigitLessthanCt((sumOut), tempReg));
-    }
-
-    private static int isDigitLessthanCt(int x, int y) { // Is x < y?
-        return ((x ^ ((x ^ y) | ((x - y) ^ y))) >> (FourQConstants.RADIX-1));
+        // Add curve order to make odd
+        return scalar.add(FourQConstants.CURVE_ORDER);
     }
 
     static BigInteger multiply(BigInteger a, BigInteger b) {
