@@ -12,6 +12,8 @@ public class ECCUtil {
     private static final int D_FIXEDBASE = 54;
     private static final int E_FIXEDBASE = 10;
 
+    private static final F2Element F2_ONE = new F2Element(BigInteger.ONE, BigInteger.ONE);
+
     static FieldPoint<F2Element> eccMulFixed(BigInteger val) {
         BigInteger temp = FP.moduloOrder(val);
         temp = FP.conversionToOdd(temp);
@@ -71,7 +73,9 @@ public class ECCUtil {
     static int[] mLSBSetRecode(BigInteger scalar) {}
 
     static ExtendedPoint<F2Element> R5_To_R1(AffinePoint<F2Element> p) {
-        F2Element x =
+        F2Element x = mp2Div(mp2Subtract(p.xy, p.yx));
+        F2Element y = mp2Div(mp2Add(p.xy, p.yx));
+        return new ExtendedPoint<F2Element>(x, y, F2_ONE, x, y);
     }
 
     static ExtendedPoint<F2Element> eccMixedAdd(AffinePoint<F2Element> p, ExtendedPoint<F2Element> q) {}
