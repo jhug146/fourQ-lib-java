@@ -3,7 +3,7 @@ import java.util.Arrays;
 
 import exceptions.EncryptionException;
 import exceptions.InvalidArgumentException;
-import types.F2Elem;
+import types.F2Element;
 import types.Pair;
 import types.FieldPoint;
 
@@ -16,7 +16,7 @@ public class SchnorrQ {
 
     public static BigInteger schnorrQKeyGeneration(BigInteger secretKey) throws EncryptionException {
         final BigInteger hash = HashFunction.computeHash(secretKey);
-        final FieldPoint<F2Elem> point = ECCUtil.eccMulFixed(hash);
+        final FieldPoint<F2Element> point = ECCUtil.eccMulFixed(hash);
         return ECCUtil.encode(point);
     }
 
@@ -33,7 +33,7 @@ public class SchnorrQ {
         System.arraycopy(message, 0, bytes, 2 * KEY_SIZE, message.length);
 
         BigInteger rHash = HashFunction.computeHash(Arrays.copyOfRange(bytes, KEY_SIZE, bytes.length));
-        final FieldPoint<F2Elem> rPoint = ECCUtil.eccMulFixed(rHash);
+        final FieldPoint<F2Element> rPoint = ECCUtil.eccMulFixed(rHash);
         final BigInteger sigStart = ECCUtil.encode(rPoint);
 
         System.arraycopy(sigStart.toByteArray(), 0, bytes, 0, KEY_SIZE);
@@ -73,7 +73,7 @@ public class SchnorrQ {
         System.arraycopy(publicKey.toByteArray(), 0, bytes, KEY_SIZE, KEY_SIZE);
         System.arraycopy(message, 0, bytes, 2 * KEY_SIZE, message.length);
 
-        FieldPoint<F2Elem> affPoint = ECCUtil.eccMulDouble(
+        FieldPoint<F2Element> affPoint = ECCUtil.eccMulDouble(
                 new BigInteger(Arrays.copyOfRange(bytes, KEY_SIZE, bytes.length - 1)),
                 ECCUtil.decode(publicKey),       // Implicitly checks that public key lies on the curve
                 HashFunction.computeHash(bytes)
