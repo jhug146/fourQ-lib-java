@@ -23,19 +23,20 @@ public class FP {
     }
 
     static BigInteger montgomeryMultiplyModOrder(BigInteger a, BigInteger b) {
-        BigInteger p = multiply(a, b);
-        BigInteger q = multiply(p, FourQConstants.MONTGOMERY_R_PRIME);
-        BigInteger returnEnd = multiply(q, FourQConstants.CURVE_ORDER);
+        BigInteger product = multiply(a, b), quotient = multiply(product, FourQConstants.MONTGOMERY_R_PRIME);
+        BigInteger returnEnd = multiply(quotient, FourQConstants.CURVE_ORDER);
 
-        Pair<BigInteger, Integer> result = mpAdd(p, returnEnd);
+        Pair<BigInteger, Integer> result = mpAdd(product, returnEnd);
         returnEnd = result.first;
-        int cout = result.second;
+        int carryOut = result.second;
 
         BigInteger returnVal = returnEnd.shiftRight(NWORDS_ORDER);
+
         Pair<BigInteger, Integer> result2 = mpSubtract(returnVal, FourQConstants.CURVE_ORDER);
+
         returnVal = returnVal.add(result2.first);
         Integer bout = result2.second;
-        int mask = cout - bout;
+        int mask = carryOut - bout;
 
         returnEnd = returnEnd.add(FourQConstants.CURVE_ORDER.and(BigInteger.valueOf(mask)));
         return returnVal.add(returnEnd);
