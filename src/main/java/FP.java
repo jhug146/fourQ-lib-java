@@ -97,6 +97,16 @@ public class FP {
     }
 
     static Pair<BigInteger, Integer> mpSubtract(BigInteger a, BigInteger b) {
+        // For fixed-width arithmetic, handle negative results
+        if (a.compareTo(b) >= 0) {
+            // No borrow
+            return new Pair<>(a.subtract(b), 0);
+        }
 
+        // Borrow occurred
+        // Simulate fixed-width wraparound: a - b + 2^n
+        int totalBits = NWORDS_ORDER * 32; //TODO make '32' change based on system
+        BigInteger modulus = BigInteger.ONE.shiftLeft(totalBits), wrappedResult = a.subtract(b).add(modulus);
+        return new Pair<>(wrappedResult, 1);
     }
 }
