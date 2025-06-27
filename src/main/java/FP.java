@@ -41,8 +41,7 @@ public class FP {
     }
 
     static BigInteger subtractModOrder(BigInteger a, BigInteger b) {
-        Pair<BigInteger, Integer> returnVal = mpSubtract(a, b);
-        
+        return a.subtract(b).mod(FourQConstants.CURVE_ORDER);
     }
 
     // Convert scalar to odd if even using the prime subgroup order r
