@@ -141,7 +141,7 @@ public class FP {
         return new Pair<>(wrappedResult, 1);
     }
 
-    //namespace for prime-based utility functions.
+    // namespace for prime-based utility functions.
     public interface putil {
         // Modular correction, output = a mod (2^127-1)
         static BigInteger mod1271(BigInteger a) {
