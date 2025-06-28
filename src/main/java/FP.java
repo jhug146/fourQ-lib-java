@@ -156,6 +156,20 @@ public class FP {
         static BigInteger fpsqr1271(BigInteger a) {
             return putil.fpmul1271(a, a);
         }
+
+        // Zeroing a field element, a = 0
+        //  NB: There is no mutable BigInteger interface, which renders this functionality
+        //          heavily redundant.
+        static BigInteger fpzero1271(BigInteger a) {
+            return BigInteger.ZERO;
+        }
+
+        // Copy of a field element, out = a
+        static BigInteger fpcopy1271(BigInteger a) {
+            return a.subtract(BigInteger.ZERO);
+        }
+
+
     }
 
 
