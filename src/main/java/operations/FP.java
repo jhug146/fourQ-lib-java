@@ -2,7 +2,7 @@ package operations;
 
 import types.AddResult;
 import types.Pair;
-import constants.FourQConstants;
+import constants.Params;
 
 import java.math.BigInteger;
 
@@ -13,9 +13,8 @@ public class FP {
             // Use long to capture overflow
             long temp = (a & 0xFFFFFFFFL) + (b & 0xFFFFFFFFL) + (carryIn & 0xFFFFFFFFL);
             int sum = (int) temp;                               // Low 32 bits
-            int carry = (int) (temp >>> FourQConstants.RADIX);  // High 32 bits (carry)
+            int carry = (int) (temp >>> Params.RADIX);          // High 32 bits (carry)
             return new AddResult(sum, carry);
-
         }
     }
 
@@ -23,7 +22,7 @@ public class FP {
 
     public static BigInteger moduloOrder(BigInteger key) {
         return montgomeryMultiplyModOrder
-                (montgomeryMultiplyModOrder(key, FourQConstants.MONTGOMERY_R_PRIME), BigInteger.ONE);
+                (montgomeryMultiplyModOrder(key, Params.MONTGOMERY_R_PRIME), BigInteger.ONE);
     }
 
     /*
@@ -51,29 +50,29 @@ public class FP {
         BigInteger product = a.multiply(b);
 
         // Compute Montgomery quotient
-        BigInteger quotient = product.multiply(FourQConstants.MONTGOMERY_R_PRIME);
+        BigInteger quotient = product.multiply(Params.MONTGOMERY_R_PRIME);
         int wordBits = NWORDS_ORDER * 32; //TODO Change based on system
         BigInteger rMask = BigInteger.ONE.shiftLeft(wordBits).subtract(BigInteger.ONE);
         quotient = quotient.and(rMask);  // quotient mod R
 
         // Montgomery reduction: (product + quotient * modulus) / R
-        BigInteger numerator = product.add(quotient.multiply(FourQConstants.CURVE_ORDER));
+        BigInteger numerator = product.add(quotient.multiply(Params.CURVE_ORDER));
         BigInteger result = numerator.shiftRight(wordBits);
 
         // Final conditional subtraction
-        return result.compareTo(FourQConstants.CURVE_ORDER) >= 0
-                ? result.subtract(FourQConstants.CURVE_ORDER)
+        return result.compareTo(Params.CURVE_ORDER) >= 0
+                ? result.subtract(Params.CURVE_ORDER)
                 : result;
     }
 
     // Subtraction modulo the curve order, c = a+b mod order
     public static BigInteger subtractModOrder(BigInteger a, BigInteger b) {
-        return a.subtract(b).mod(FourQConstants.CURVE_ORDER);
+        return a.subtract(b).mod(Params.CURVE_ORDER);
     }
 
     // Addition modulo the curve order, c = a+b mod order
     public static BigInteger addModOrder(BigInteger a, BigInteger b) {
-        return a.add(b).mod(FourQConstants.CURVE_ORDER);
+        return a.add(b).mod(Params.CURVE_ORDER);
     }
 
     // Convert scalar to odd if even using the prime subgroup order r
@@ -92,7 +91,7 @@ public class FP {
         }
 
         // Add curve order to make odd
-        return scalar.add(FourQConstants.CURVE_ORDER);
+        return scalar.add(Params.CURVE_ORDER);
     }
 
     /**
@@ -145,7 +144,7 @@ public class FP {
     public interface putil {
         // Modular correction, output = a mod (2^127-1)
         static BigInteger mod1271(BigInteger a) {
-            return a.mod(FourQConstants.PRIME_1271);
+            return a.mod(Params.PRIME_1271);
         }
 
         // Field multiplication using schoolbook method, c = a*b mod p
@@ -173,12 +172,12 @@ public class FP {
         // Field negation, a = -a mod (2^127-1)
         static BigInteger fpneg1271(BigInteger a) {
             // Ensure input is in valid range first
-            a = a.mod(FourQConstants.PRIME_1271);
+            a = a.mod(Params.PRIME_1271);
 
             if (a.equals(BigInteger.ZERO)) {
                 return BigInteger.ZERO;
             }
-            return FourQConstants.PRIME_1271.subtract(a);
+            return Params.PRIME_1271.subtract(a);
         }
 
         // Field inversion, af = a^-1 = a^(p-2) mod p
@@ -200,7 +199,7 @@ public class FP {
         // Optimized modular exponentiation for 2^127-1
         static BigInteger modPow1271(BigInteger base, BigInteger exponent) {
             // Use Java's built-in with Mersenne optimization
-            BigInteger result = base.modPow(exponent, FourQConstants.PRIME_1271);
+            BigInteger result = base.modPow(exponent, Params.PRIME_1271);
             return Mersenne.mersenneReduce127(result);
         }
 
@@ -210,17 +209,17 @@ public class FP {
 
             // Quick path: if sum < 2^127, no reduction needed
             if (sum.bitLength() <= 127) {
-                return sum.equals(FourQConstants.PRIME_1271) ? BigInteger.ZERO : sum;
+                return sum.equals(Params.PRIME_1271) ? BigInteger.ZERO : sum;
             }
 
             // Handle the single overflow case (sum has 128 bits)
             if (sum.bitLength() == 128) {
                 // Extract bit 127 and add it back to lower 127 bits
-                BigInteger lower127 = sum.and(FourQConstants.MASK_127);  // sum & (2^127-1)
+                BigInteger lower127 = sum.and(Params.MASK_127);  // sum & (2^127-1)
                 BigInteger overflow = sum.shiftRight(127); // sum >> 127 (will be 1)
 
                 BigInteger result = lower127.add(overflow);
-                return result.equals(FourQConstants.PRIME_1271) ? BigInteger.ZERO : result;
+                return result.equals(Params.PRIME_1271) ? BigInteger.ZERO : result;
             }
 
             // Fallback for unexpected cases (shouldn't happen with valid inputs)
@@ -233,7 +232,7 @@ public class FP {
 
             // If result is negative, add the prime to make it positive
             if (diff.signum() < 0) {
-                return diff.add(FourQConstants.PRIME_1271);
+                return diff.add(Params.PRIME_1271);
             }
 
             return diff;

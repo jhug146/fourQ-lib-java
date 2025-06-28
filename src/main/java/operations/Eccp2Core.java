@@ -1,18 +1,18 @@
 package operations;
 
+import constants.Params;
 import types.F2Element;
+import types.FieldPoint;
 
 import java.math.BigInteger;
 
-import static operations.FP.putil.fpmul1271;
-
 public class Eccp2Core {
 
-    // namespace for prime-based utility functions.
+    // namespace for prime-based utility functions in p^2.
     public interface p2util {
         // Copy of a GF(p^2) element, output = a
         static F2Element fp2copy1271(F2Element a) {
-           return new F2Element(FP.putil.fpcopy1271(a.first), FP.putil.fpcopy1271(a.second));
+            return a;  // BigInteger is immutable, so copy is not needed
         }
 
         // Zeroing a GF(p^2) element, a = 0
@@ -27,9 +27,9 @@ public class Eccp2Core {
 
         // GF(p^2) squaring, c = a^2 in GF((2^127-1)^2)
         static F2Element fp2sqr1271(F2Element a) {
-            BigInteger t3 = fpmul1271(a.first, a.second);
+            BigInteger t3 = FP.putil.fpmul1271(a.first, a.second);
             return new F2Element(
-                    fpmul1271(
+                    FP.putil.fpmul1271(
                             FP.putil.fpadd1271(a.first, a.second),
                             FP.putil.fpsub1271(a.first, a.second)
                     ), // first = (a0+a1)(a0-a1)
@@ -39,12 +39,12 @@ public class Eccp2Core {
 
         // GF(p^2) multiplication, c = a*b in GF((2^127-1)^2)
         static F2Element fp2mul1271(F2Element a, F2Element b) {
-            BigInteger t1 = fpmul1271(a.first, b.first);   // t1 = a0*b0
-            BigInteger t2 = fpmul1271(a.second, b.second); // t2 = a1*b1
+            BigInteger t1 = FP.putil.fpmul1271(a.first, b.first);   // t1 = a0*b0
+            BigInteger t2 = FP.putil.fpmul1271(a.second, b.second); // t2 = a1*b1
             BigInteger t3 = FP.putil.fpadd1271(a.first, a.second);  // t2 = a1*b1
             BigInteger t4 = FP.putil.fpadd1271(b.first, b.second);  // t4 = b0+b1
 
-            t3 = fpmul1271(t3, t4);                        // t3 = (a0+a1)*(b0+b1)
+            t3 = FP.putil.fpmul1271(t3, t4);                        // t3 = (a0+a1)*(b0+b1)
             t3 = FP.putil.fpsub1271(t3, t1);                        // t3 = (a0+a1)*(b0+b1) - a0*b0
 
             return new F2Element(
@@ -94,6 +94,16 @@ public class Eccp2Core {
     /*
      CURVE/SCALAR FUNCTIONS
      */
+
+    // TODO CLEAR WORDS IMPLEMENTATION NEEDED?
+
+    // Set generator
+    // Output: P = (x,y)
+    // TODO VeRy unsure about this.
+    public static void eccset(FieldPoint P) {
+        P.x = Params.GENERATOR_X;    // X1
+        P.y = Params.GENERATOR_Y;    // Y1
+    }
 
 
 

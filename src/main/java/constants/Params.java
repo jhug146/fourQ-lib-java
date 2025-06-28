@@ -2,7 +2,7 @@ package constants;
 
 import java.math.BigInteger;
 
-public class FourQConstants {
+public class Params {
     private static final int HEX_RADIX = 16;
 
     public static final int RADIX = 32; //TODO confirm this and below
@@ -20,5 +20,14 @@ public class FourQConstants {
             "0x2FB2540EC7768CE7DFBD004DFE0F7999F05397829CBC14E50029CBC14E5E0A72",
             HEX_RADIX
     );
-    public static final BigInteger ONE = BigInteger.ONE;
+
+    public static final BigInteger GENERATOR_X = new BigInteger(
+            "286592AD7B3833AA1A3472237C2FB30596869FB360AC77F61E1F553F2878AA9C",
+            HEX_RADIX
+    );
+
+    public static final BigInteger GENERATOR_Y = new BigInteger(
+            "B924A2462BCBB2870E3FEE9BA120785A49A7C344844C8B5C6E1C4AF8630E0242",
+            HEX_RADIX
+    );
 }

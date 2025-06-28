@@ -3,8 +3,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
 
-import static constants.FourQConstants.MASK_127;
-import static constants.FourQConstants.PRIME_1271;
+import static constants.Params.MASK_127;
+import static constants.Params.PRIME_1271;
 
 /**
  * Performance Benefits:
