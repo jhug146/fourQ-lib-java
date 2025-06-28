@@ -140,7 +140,7 @@ public class FP {
 
     //namespace for prime-based utility functions.
     public interface putil {
-        // Modular correction, a = a mod (2^127-1)
+        // Modular correction, output = a mod (2^127-1)
         static BigInteger mod1271(BigInteger a) {
             return a.mod(FourQConstants.prime1271);
         }
@@ -150,6 +150,11 @@ public class FP {
         //  This is actually a really important thing for speed.
         static BigInteger fpmul1271(BigInteger a, BigInteger b) {
             return multiply(a, b).mod(FourQConstants.prime1271);
+        }
+
+        // Field squaring using schoolbook method, output = a^2 mod p
+        static BigInteger fpsqr1271(BigInteger a) {
+            return putil.fpmul1271(a, a);
         }
     }
 
