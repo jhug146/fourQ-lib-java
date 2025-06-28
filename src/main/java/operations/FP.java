@@ -8,8 +8,8 @@ import java.math.BigInteger;
 
 public class FP {
 
-    private static class Macros {
-        public static AddResult ADDC(int carryIn, int a, int b) {
+    private interface Macros {
+        static AddResult ADDC(int carryIn, int a, int b) {
             // Use long to capture overflow
             long temp = (a & 0xFFFFFFFFL) + (b & 0xFFFFFFFFL) + (carryIn & 0xFFFFFFFFL);
             int sum = (int) temp;                               // Low 32 bits
@@ -149,10 +149,8 @@ public class FP {
         }
 
         // Field multiplication using schoolbook method, c = a*b mod p
-        // TODO for efficiency use the mersenne reduction algorithm
-        //  This is actually a really important thing for speed.
         static BigInteger fpmul1271(BigInteger a, BigInteger b) {
-            return multiply(a, b).mod(FourQConstants.prime1271);
+            return Mersenne.mersenneReduce127Fast(multiply(a, b));
         }
 
         // Field squaring using schoolbook method, output = a^2 mod p
@@ -170,6 +168,40 @@ public class FP {
         // Copy of a field element, out = a
         static BigInteger fpcopy1271(BigInteger a) {
             return a.subtract(BigInteger.ZERO);
+        }
+
+        // Field negation, a = -a mod (2^127-1)
+        static BigInteger fpneg1271(BigInteger a) {
+            // Ensure input is in valid range first
+            a = a.mod(FourQConstants.prime1271);
+
+            if (a.equals(BigInteger.ZERO)) {
+                return BigInteger.ZERO;
+            }
+            return FourQConstants.prime1271.subtract(a);
+        }
+
+        // Field inversion, af = a^-1 = a^(p-2) mod p
+        static BigInteger fpinv1271(BigInteger a) {
+            BigInteger outputBuilder = fpexp1251(a);
+            outputBuilder = fpsqr1271(outputBuilder);
+            outputBuilder = fpsqr1271(outputBuilder);
+            outputBuilder = fpmul1271(a, outputBuilder);
+            return outputBuilder;
+        }
+
+        static BigInteger fpexp1251(BigInteger a) {
+            // TODO ASSM: The "1251" in the name might refer to a specific windowing or addition chain strategy,
+            //  not the literal exponent 1251
+            BigInteger exponent = BigInteger.ONE.shiftLeft(125).subtract(BigInteger.ONE);
+            return modPow1271(a, exponent);
+        }
+
+        // Optimized modular exponentiation for 2^127-1
+        static BigInteger modPow1271(BigInteger base, BigInteger exponent) {
+            // Use Java's built-in with Mersenne optimization
+            BigInteger result = base.modPow(exponent, FourQConstants.prime1271);
+            return Mersenne.mersenneReduce127(result);
         }
     }
 }
