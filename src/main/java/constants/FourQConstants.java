@@ -8,9 +8,9 @@ public class FourQConstants {
     public static final int RADIX = 32; //TODO confirm this and below
     public static final int RADIX64 = 64; //TODO confirm this
 
-    public static final BigInteger prime1271
+    public static final BigInteger PRIME_1271
             = BigInteger.ONE.shiftLeft(127).subtract(BigInteger.ONE);
-    public static final BigInteger MASK_127 = prime1271;  // Same as 2^127 - 1
+    public static final BigInteger MASK_127 = PRIME_1271;  // Same as 2^127 - 1
 
     public static final BigInteger MONTGOMERY_R_PRIME = new BigInteger(
             "0xC81DB8795FF3D621173EA5AAEA6B387D3D01B7C72136F61C0006A5F16AC8F9D3",

@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import java.math.BigInteger;
 
 import static constants.FourQConstants.MASK_127;
-import static constants.FourQConstants.prime1271;
+import static constants.FourQConstants.PRIME_1271;
 
 /**
  * Performance Benefits:
@@ -20,7 +20,7 @@ public class Mersenne {
         // So any bits beyond position 126 can be added back to the lower bits
 
         if (x.bitLength() <= 127) {
-            return x.equals(prime1271) ? BigInteger.ZERO : x;
+            return x.equals(PRIME_1271) ? BigInteger.ZERO : x;
         }
 
         // Keep reducing until we have at most 127 bits
@@ -34,7 +34,7 @@ public class Mersenne {
         }
 
         // Handle the case where x equals 2^127 - 1 (which should become 0)
-        if (x.equals(prime1271)) {
+        if (x.equals(PRIME_1271)) {
             return BigInteger.ZERO;
         }
 
@@ -45,7 +45,7 @@ public class Mersenne {
     static BigInteger mersenneReduce127Fast(BigInteger x) {
         // Quick path for numbers that already fit
         if (x.bitLength() <= 127) {
-            return x.equals(prime1271) ? BigInteger.ZERO : x;
+            return x.equals(PRIME_1271) ? BigInteger.ZERO : x;
         }
 
         BigInteger result = BigInteger.ZERO;
@@ -72,7 +72,7 @@ public class Mersenne {
         }
 
         // Handle the edge case where result equals the prime
-        return result.equals(prime1271) ? BigInteger.ZERO : result;
+        return result.equals(PRIME_1271) ? BigInteger.ZERO : result;
     }
 
     // Generic Mersenne reduction for any 2^n - 1
