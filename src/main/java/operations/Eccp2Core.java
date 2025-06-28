@@ -17,5 +17,12 @@ public class eccp2_core {
         static F2Element fp2zero1271(F2Element a) {
             return new F2Element(FP.putil.fpzero1271(a.first), FP.putil.fpzero1271(a.second))
         }
+
+        // GF(p^2) negation, a = -a in GF((2^127-1)^2)
+        static F2Element fp2neg1271(F2Element a) {
+            return new F2Element(FP.putil.)
+            fpneg1271(a[0]);
+            fpneg1271(a[1]);
+        }
     }
 }
