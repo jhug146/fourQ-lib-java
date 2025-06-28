@@ -145,7 +145,7 @@ public class FP {
     public interface putil {
         // Modular correction, output = a mod (2^127-1)
         static BigInteger mod1271(BigInteger a) {
-            return a.mod(FourQConstants.prime1271);
+            return a.mod(FourQConstants.PRIME_1271);
         }
 
         // Field multiplication using schoolbook method, c = a*b mod p
@@ -173,12 +173,12 @@ public class FP {
         // Field negation, a = -a mod (2^127-1)
         static BigInteger fpneg1271(BigInteger a) {
             // Ensure input is in valid range first
-            a = a.mod(FourQConstants.prime1271);
+            a = a.mod(FourQConstants.PRIME_1271);
 
             if (a.equals(BigInteger.ZERO)) {
                 return BigInteger.ZERO;
             }
-            return FourQConstants.prime1271.subtract(a);
+            return FourQConstants.PRIME_1271.subtract(a);
         }
 
         // Field inversion, af = a^-1 = a^(p-2) mod p
@@ -200,8 +200,43 @@ public class FP {
         // Optimized modular exponentiation for 2^127-1
         static BigInteger modPow1271(BigInteger base, BigInteger exponent) {
             // Use Java's built-in with Mersenne optimization
-            BigInteger result = base.modPow(exponent, FourQConstants.prime1271);
+            BigInteger result = base.modPow(exponent, FourQConstants.PRIME_1271);
             return Mersenne.mersenneReduce127(result);
+        }
+
+        // Field addition, c = a+b mod (2^127-1)
+        static BigInteger fpadd1271(BigInteger a, BigInteger b) {
+            BigInteger sum = a.add(b);
+
+            // Quick path: if sum < 2^127, no reduction needed
+            if (sum.bitLength() <= 127) {
+                return sum.equals(FourQConstants.PRIME_1271) ? BigInteger.ZERO : sum;
+            }
+
+            // Handle the single overflow case (sum has 128 bits)
+            if (sum.bitLength() == 128) {
+                // Extract bit 127 and add it back to lower 127 bits
+                BigInteger lower127 = sum.and(FourQConstants.MASK_127);  // sum & (2^127-1)
+                BigInteger overflow = sum.shiftRight(127); // sum >> 127 (will be 1)
+
+                BigInteger result = lower127.add(overflow);
+                return result.equals(FourQConstants.PRIME_1271) ? BigInteger.ZERO : result;
+            }
+
+            // Fallback for unexpected cases (shouldn't happen with valid inputs)
+            return Mersenne.mersenneReduce127(sum);
+        }
+
+        // Field subtraction, c = a-b mod (2^127-1)
+        static BigInteger fpsub1271(BigInteger a, BigInteger b) {
+            BigInteger diff = a.subtract(b);
+
+            // If result is negative, add the prime to make it positive
+            if (diff.signum() < 0) {
+                return diff.add(FourQConstants.PRIME_1271);
+            }
+
+            return diff;
         }
     }
 }
