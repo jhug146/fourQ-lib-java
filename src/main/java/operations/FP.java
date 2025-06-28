@@ -1,5 +1,8 @@
+package operations;
+
 import types.AddResult;
 import types.Pair;
+import constants.FourQConstants;
 
 import java.math.BigInteger;
 
@@ -18,15 +21,15 @@ public class FP {
 
     private static final int NWORDS_ORDER = 8;
 
-    static BigInteger moduloOrder(BigInteger key) {
+    public static BigInteger moduloOrder(BigInteger key) {
         return montgomeryMultiplyModOrder
                 (montgomeryMultiplyModOrder(key, FourQConstants.MONTGOMERY_R_PRIME), BigInteger.ONE);
     }
 
     /*
     static BigInteger montgomeryMultiplyModOrder(BigInteger a, BigInteger b) {
-        BigInteger product = multiply(a, b), quotient = multiply(product, FourQConstants.MONTGOMERY_R_PRIME);
-        BigInteger returnEnd = multiply(quotient, FourQConstants.CURVE_ORDER);
+        BigInteger product = multiply(a, b), quotient = multiply(product, constants.FourQConstants.MONTGOMERY_R_PRIME);
+        BigInteger returnEnd = multiply(quotient, constants.FourQConstants.CURVE_ORDER);
 
         Pair<BigInteger, Integer> result = mpAdd(product, returnEnd);
         returnEnd = result.first;
@@ -34,17 +37,17 @@ public class FP {
 
         BigInteger returnVal = returnEnd.shiftRight(NWORDS_ORDER);
 
-        Pair<BigInteger, Integer> result2 = mpSubtract(returnVal, FourQConstants.CURVE_ORDER);
+        Pair<BigInteger, Integer> result2 = mpSubtract(returnVal, constants.FourQConstants.CURVE_ORDER);
 
         returnVal = returnVal.add(result2.first);
         Integer bout = result2.second;
         int mask = carryOut - bout;
 
-        returnEnd = returnEnd.add(FourQConstants.CURVE_ORDER.and(BigInteger.valueOf(mask)));
+        returnEnd = returnEnd.add(constants.FourQConstants.CURVE_ORDER.and(BigInteger.valueOf(mask)));
         return returnVal.add(returnEnd);
     }
     */ // <-Previous implementation.
-    static BigInteger montgomeryMultiplyModOrder(BigInteger a, BigInteger b) {
+    public static BigInteger montgomeryMultiplyModOrder(BigInteger a, BigInteger b) {
         BigInteger product = a.multiply(b);
 
         // Compute Montgomery quotient
@@ -64,17 +67,17 @@ public class FP {
     }
 
     // Subtraction modulo the curve order, c = a+b mod order
-    static BigInteger subtractModOrder(BigInteger a, BigInteger b) {
+    public static BigInteger subtractModOrder(BigInteger a, BigInteger b) {
         return a.subtract(b).mod(FourQConstants.CURVE_ORDER);
     }
 
     // Addition modulo the curve order, c = a+b mod order
-    static BigInteger addModOrder(BigInteger a, BigInteger b) {
+    public static BigInteger addModOrder(BigInteger a, BigInteger b) {
         return a.add(b).mod(FourQConstants.CURVE_ORDER);
     }
 
     // Convert scalar to odd if even using the prime subgroup order r
-    static BigInteger conversionToOdd(BigInteger scalar) {
+    public static BigInteger conversionToOdd(BigInteger scalar) {
         byte[] k = scalar.toByteArray();
 
         // Check if scalar is even (use last byte for parity)
@@ -99,11 +102,11 @@ public class FP {
      * @param b second argument in multiply
      * @return a * b
      */
-    static BigInteger multiply(BigInteger a, BigInteger b) {
+    public static BigInteger multiply(BigInteger a, BigInteger b) {
         return a.multiply(b);
     }
 
-    static Pair<BigInteger, Integer> mpAdd(BigInteger a, BigInteger b) {
+    public static Pair<BigInteger, Integer> mpAdd(BigInteger a, BigInteger b) {
         // Add the two numbers
         BigInteger sum = a.add(b);
 
@@ -124,7 +127,7 @@ public class FP {
         }
     }
 
-    static Pair<BigInteger, Integer> mpSubtract(BigInteger a, BigInteger b) {
+    public static Pair<BigInteger, Integer> mpSubtract(BigInteger a, BigInteger b) {
         // For fixed-width arithmetic, handle negative results
         if (a.compareTo(b) >= 0) {
             // No borrow
@@ -168,9 +171,5 @@ public class FP {
         static BigInteger fpcopy1271(BigInteger a) {
             return a.subtract(BigInteger.ZERO);
         }
-
-
     }
-
-
 }
