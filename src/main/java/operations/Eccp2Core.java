@@ -37,7 +37,18 @@ public class Eccp2Core {
 
         // GF(p^2) multiplication, c = a*b in GF((2^127-1)^2)
         static F2Element fp2mul1271(F2Element a, F2Element b) {
-            return null;
+            BigInteger t1 = FP.putil.fpmul1271(a.first, b.first);   // t1 = a0*b0
+            BigInteger t2 = FP.putil.fpmul1271(a.second, b.second); // t2 = a1*b1
+            BigInteger t3 = FP.putil.fpadd1271(a.first, a.second);  // t2 = a1*b1
+            BigInteger t4 = FP.putil.fpadd1271(b.first, b.second);  // t4 = b0+b1
+
+            t3 = FP.putil.fpmul1271(t3, t4);                        // t3 = (a0+a1)*(b0+b1)
+            t3 = FP.putil.fpsub1271(t3, t1);                        // t3 = (a0+a1)*(b0+b1) - a0*b0
+
+            return new F2Element(
+                    FP.putil.fpsub1271(t1, t2),                     // first = a0*b0 - a1*b1
+                    FP.putil.fpsub1271(t3, t2)                      // second = (a0+a1)*(b0+b1) - a0*b0 - a1*b1
+            );
         }
 
         // GF(p^2) addition, c = a+b in GF((2^127-1)^2)
