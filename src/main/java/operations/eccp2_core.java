@@ -12,5 +12,10 @@ public class eccp2_core {
         static F2Element fp2copy1271(F2Element a) {
            return new F2Element(FP.putil.fpcopy1271(a.first), FP.putil.fpcopy1271(a.second));
         }
+
+        // Zeroing a GF(p^2) element, a = 0
+        static F2Element fp2zero1271(F2Element a) {
+            return new F2Element(FP.putil.fpzero1271(a.first), FP.putil.fpzero1271(a.second))
+        }
     }
 }
