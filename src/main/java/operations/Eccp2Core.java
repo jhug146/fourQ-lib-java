@@ -2,9 +2,7 @@ package operations;
 
 import types.F2Element;
 
-import java.math.BigInteger;
-
-public class eccp2_core {
+public class Eccp2Core {
 
     // namespace for prime-based utility functions.
     public interface putil {
