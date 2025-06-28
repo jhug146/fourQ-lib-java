@@ -138,17 +138,20 @@ public class FP {
         return new Pair<>(wrappedResult, 1);
     }
 
-    // Modular correction, a = a mod (2^127-1)
-    static BigInteger mod1271(BigInteger a) {
-        BigInteger prime1271 = BigInteger.ONE.shiftLeft(127).subtract(BigInteger.ONE);
-        return a.mod(prime1271);
+    //namespace for prime-based utility functions.
+    public interface putil {
+        // Modular correction, a = a mod (2^127-1)
+        static BigInteger mod1271(BigInteger a) {
+            return a.mod(FourQConstants.prime1271);
+        }
+
+        // Field multiplication using schoolbook method, c = a*b mod p
+        // TODO for efficiency use the mersenne reduction algorithm
+        //  This is actually a really important thing for speed.
+        static BigInteger fpmul1271(BigInteger a, BigInteger b) {
+            return multiply(a, b).mod(FourQConstants.prime1271);
+        }
     }
 
-    // Field multiplication using schoolbook method, c = a*b mod p
-    // TODO for efficiency use the mersenne reduction algorithm
-    static BigInteger fpmul1271(BigInteger a, BigInteger b) {
-        BigInteger prime1271 = BigInteger.ONE.shiftLeft(127).subtract(BigInteger.ONE);
-        return multiply(a, b).mod(prime1271);
-    }
 
 }

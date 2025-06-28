@@ -6,6 +6,9 @@ public class FourQConstants {
     static final int RADIX = 32; //TODO confirm this and below
     static final int RADIX64 = 64; //TODO confirm this
 
+    static final BigInteger prime1271
+            = BigInteger.ONE.shiftLeft(127).subtract(BigInteger.ONE);
+
     static final BigInteger MONTGOMERY_R_PRIME = new BigInteger(
             "0xC81DB8795FF3D621173EA5AAEA6B387D3D01B7C72136F61C0006A5F16AC8F9D3",
             HEX_RADIX
