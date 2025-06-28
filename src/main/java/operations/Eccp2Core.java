@@ -2,6 +2,8 @@ package operations;
 
 import types.F2Element;
 
+import java.math.BigInteger;
+
 public class Eccp2Core {
 
     // namespace for prime-based utility functions.
@@ -23,7 +25,14 @@ public class Eccp2Core {
 
         // GF(p^2) squaring, c = a^2 in GF((2^127-1)^2)
         static F2Element fp2sqr1271(F2Element a) {
-            return null;
+            BigInteger t3 = FP.putil.fpmul1271(a.first, a.second);
+            return new F2Element(
+                    FP.putil.fpmul1271(
+                            FP.putil.fpadd1271(a.first, a.second),
+                            FP.putil.fpsub1271(a.first, a.second)
+                    ), // first = (a0+a1)(a0-a1)
+                    FP.putil.fpadd1271(t3, t3)  // second = 2a0*a1
+            );
         }
 
         // GF(p^2) multiplication, c = a*b in GF((2^127-1)^2)
@@ -55,6 +64,7 @@ public class Eccp2Core {
     /*
      CURVE/SCALAR FUNCTIONS
      */
+
 
 
 }
