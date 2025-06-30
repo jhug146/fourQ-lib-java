@@ -105,7 +105,10 @@ public class ECCUtil {
         );
     }
 
-    private static ExtendedPoint<F2Element> eccMixedAdd(AffinePoint<F2Element> q, ExtendedPoint<F2Element> p) {
+    private static ExtendedPoint<F2Element> eccMixedAdd(
+            AffinePoint<F2Element> q,
+            ExtendedPoint<F2Element> p
+    ) {
         F2Element ta = FP2.fp2mul1271(p.ta, p.tb);          // Ta = T1
         F2Element t1 = FP2.fp2add1271(p.z, p.z);            // t1 = 2Z1
         ta = FP2.fp2mul1271(ta, q.t);                       // Ta = 2dT1*t2
@@ -153,7 +156,10 @@ public class ECCUtil {
         return new FieldPoint<>(x, y);
     }
 
-    public static FieldPoint<F2Element> eccMulDouble(BigInteger k, FieldPoint<F2Element> q, BigInteger l) {
+    public static FieldPoint<F2Element> eccMulDouble(
+            BigInteger k,
+            FieldPoint<F2Element> q, BigInteger l
+    ) {
         // Step 1: Compute l*Q
         FieldPoint<F2Element> lQ = eccMul(q, l);
         if (lQ == null) { return null; }                    // Point validation failed
@@ -195,11 +201,17 @@ public class ECCUtil {
         );
     }
 
-    private static ExtendedPoint<F2Element> eccAdd(PreComputedExtendedPoint<F2Element> q, ExtendedPoint<F2Element> p) {
+    private static ExtendedPoint<F2Element> eccAdd(
+            PreComputedExtendedPoint<F2Element> q,
+            ExtendedPoint<F2Element> p
+    ) {
         return eccAddCore(q, r1ToR3(p));
     }
 
-    private static FieldPoint<F2Element> eccMul(FieldPoint<F2Element> p, BigInteger k) {
+    private static FieldPoint<F2Element> eccMul(
+            FieldPoint<F2Element> p,
+            BigInteger k
+    ) {
         return null;
     }
 
