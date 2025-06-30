@@ -1,3 +1,4 @@
+import constants.Params;
 import operations.FP;
 import types.AffinePoint;
 import types.ExtendedPoint;
@@ -14,6 +15,23 @@ public class ECCUtil {
     private static final int E_FIXEDBASE = 10;
 
     private static final F2Element F2_ONE = new F2Element(BigInteger.ONE, BigInteger.ONE);
+
+    // Set generator
+    // Output: P = (x,y)
+    // TODO VeRy unsure about this and the helper
+    public static void eccset(AffinePoint<F2Element> P) {
+        P.x = convertToF2Element(Params.GENERATOR_X);    // X1
+        P.y = convertToF2Element(Params.GENERATOR_Y);    // Y1
+    }
+
+    // Helper method to convert BigInteger to F2Element
+    private static F2Element convertToF2Element(BigInteger generator) {
+        // Split the 256-bit generator into two 127-bit parts for GF(p²)
+        BigInteger realPart = generator.and(Params.MASK_127);                           // Lower 127 bits
+        BigInteger imagPart = generator.shiftRight(127).and(Params.MASK_127);        // Upper 127 bits
+
+        return new F2Element(realPart, imagPart);
+    }
 
     static FieldPoint<F2Element> eccMulFixed(BigInteger val) {
         BigInteger temp = FP.moduloOrder(val);
@@ -74,8 +92,8 @@ public class ECCUtil {
     static int[] mLSBSetRecode(BigInteger scalar) {}
 
     private static ExtendedPoint<F2Element> R5_To_R1(AffinePoint<F2Element> p) {
-        F2Element x = mp2Div(mp2Sub(p.xy, p.yx));
-        F2Element y = mp2Div(mp2Add(p.xy, p.yx));
+        F2Element x = mp2Div(mp2Sub(p.x, p.y));
+        F2Element y = mp2Div(mp2Add(p.x, p.y));
         return new ExtendedPoint<F2Element>(x, y, F2_ONE, x, y);
     }
 
@@ -131,6 +149,6 @@ public class ECCUtil {
     private static F2Element mp2Inv(F2Element val) {}
 
     private static F2Element mod1271(F2Element val) {
-        return new F2Element(FP.mod1271(val.real), FP.mod1271(val.im));
+        return new F2Element(FP.putil.mod1271(val.real), FP.putil.mod1271(val.im));
     }
 }
