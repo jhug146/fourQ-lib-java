@@ -93,10 +93,10 @@ public class ECCUtil {
         ta = FP2.fp2mul1271(ta, q.t);
         F2Element pz = FP2.fp2add1271(p.x, p.y);
         F2Element tb = FP2.fp2sub1271(p.y, p.x);
-        F2Element t2 = FP2.fp2sub1271(t1, p.ta);
-        t1 = FP2.fp2add1271(t1, p.ta);
-        ta = FP2.fp2mul1271(q.x, p.z);
-        F2Element x = FP2.fp2mul1271(q.y, p.tb);
+        F2Element t2 = FP2.fp2sub1271(t1, ta);
+        t1 = FP2.fp2add1271(t1, ta);
+        ta = FP2.fp2mul1271(q.x, pz);
+        F2Element x = FP2.fp2mul1271(q.y, tb);
         tb = FP2.fp2sub1271(ta, x);
         ta = FP2.fp2add1271(ta, x);
         return new ExtendedPoint<>(
