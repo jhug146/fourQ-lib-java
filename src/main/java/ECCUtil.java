@@ -153,6 +153,24 @@ public class ECCUtil {
         return eccNorm(t);
     }
 
+    private static ExtendedPoint<F2Element> eccAddCore(PreComputedExtendedPoint<F2Element> p, PreComputedExtendedPoint<F2Element> q) {
+        F2Element z = FP2.fp2mul1271(p.t, q.t);
+        F2Element t1 = FP2.fp2mul1271(p.z, q.z);
+        F2Element x = FP2.fp2mul1271(p.xy, q.xy);
+        F2Element y = FP2.fp2mul1271(p.yx, q.yx);
+        F2Element t2 = FP2.fp2sub1271(t1, z);
+        t1 = FP2.fp2add1271(t1, z);
+        F2Element tb = FP2.fp2sub1271(x, y);
+        F2Element ta = FP2.fp2add1271(x, y);
+        return new ExtendedPoint<>(
+                FP2.fp2mul1271(tb, t2),
+                FP2.fp2mul1271(ta, t1),
+                FP2.fp2mul1271(t1, t2),
+                ta,
+                tb
+        );
+    }
+
     private static ExtendedPoint<F2Element> eccAdd(PreComputedExtendedPoint<F2Element> q, ExtendedPoint<F2Element> p) {
         return eccAddCore(q, r1ToR3(p));
     }
