@@ -5,7 +5,7 @@ import types.*;
 
 import java.math.BigInteger;
 
-public class Eccp2Core {
+public class FP2 {
     // Copy of a GF(p^2) element, output = a
     public static F2Element fp2copy1271(F2Element a) {
         return a;  // BigInteger is immutable, so copy is not needed
