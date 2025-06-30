@@ -1,10 +1,7 @@
 import constants.Params;
 import operations.FP;
 import operations.FP2;
-import types.AffinePoint;
-import types.ExtendedPoint;
-import types.F2Element;
-import types.FieldPoint;
+import types.*;
 
 import java.math.BigInteger;
 
@@ -46,7 +43,7 @@ public class ECCUtil {
 
         // TODO: Both instances of TABLE in this function might need updating
         AffinePoint<F2Element> affPoint = Table.tableLookupFixedBase(digit, digits[D_FIXEDBASE - 1]);
-        ExtendedPoint<F2Element> exPoint = R5_To_R1(affPoint);
+        ExtendedPoint<F2Element> exPoint = r5ToR1(affPoint);
 
         for (int j = 0; j < V_FIXEDBASE - 1; j++) {
             digit = digits[W_FIXEDBASE * D_FIXEDBASE - (j + 1) * E_FIXEDBASE - 1];
@@ -79,12 +76,27 @@ public class ECCUtil {
     }
 
 
-    static int[] mLSBSetRecode(BigInteger scalar) {}
+    static int[] mLSBSetRecode(BigInteger scalar) {
+        return null;
+    }
 
-    private static ExtendedPoint<F2Element> R5_To_R1(AffinePoint<F2Element> p) {
+    private static ExtendedPoint<F2Element> r5ToR1(AffinePoint<F2Element> p) {
         F2Element x = FP2.div1271(FP2.fp2sub1271(p.x, p.y));
         F2Element y = FP2.div1271(FP2.fp2add1271(p.x, p.y));
         return new ExtendedPoint<F2Element>(x, y, F2_ONE, x, y);
+    }
+
+    private static PreComputedExtendedPoint<F2Element> r1ToR2(ExtendedPoint<F2Element> point) {
+        return null;
+    }
+
+    private static PreComputedExtendedPoint<F2Element> r1ToR3(ExtendedPoint<F2Element> point) {
+        return new PreComputedExtendedPoint<>(
+                FP2.fp2add1271(point.x, point.y),
+                FP2.fp2sub1271(point.y, point.x),
+                FP2.fp2mul1271(point.ta, point.tb),
+                point.z
+        );
     }
 
     private static ExtendedPoint<F2Element> eccMixedAdd(AffinePoint<F2Element> q, ExtendedPoint<F2Element> p) {
@@ -131,7 +143,31 @@ public class ECCUtil {
         return new FieldPoint<>(x, y);
     }
 
-    private static FieldPoint<F2Element> eccMulDouble(BigInteger k, FieldPoint<F2Element> q, BigInteger l) {
+    static FieldPoint<F2Element> eccMulDouble(BigInteger k, FieldPoint<F2Element> q, BigInteger l) {
+        FieldPoint<F2Element> a = eccMul(q, l);
+        ExtendedPoint<F2Element> t = pointSetup(a);
+        final PreComputedExtendedPoint<F2Element> s = r1ToR2(t);
+        a = eccMulFixed(k);
+        t = pointSetup(a);
+        t = eccAdd(s, t);
+        return eccNorm(t);
+    }
 
+    private static ExtendedPoint<F2Element> eccAdd(PreComputedExtendedPoint<F2Element> q, ExtendedPoint<F2Element> p) {
+        return eccAddCore(q, r1ToR3(p));
+    }
+
+    private static FieldPoint<F2Element> eccMul(FieldPoint<F2Element> p, BigInteger k) {
+        return null;
+    }
+
+    private static ExtendedPoint<F2Element> pointSetup(FieldPoint<F2Element> point) {
+        return new ExtendedPoint<>(
+                point.x,
+                point.y,
+                new F2Element(BigInteger.ONE, BigInteger.ZERO),
+                point.x,
+                point.y
+        );
     }
 }
