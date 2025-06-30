@@ -87,7 +87,13 @@ public class ECCUtil {
     }
 
     private static PreComputedExtendedPoint<F2Element> r1ToR2(ExtendedPoint<F2Element> point) {
-        return null;
+        F2Element t = FP2.fp2sub1271(FP2.fp2add1271(point.ta, point.ta), point.tb);
+        return new PreComputedExtendedPoint<>(
+                FP2.fp2add1271(point.y, point.x),
+                FP2.fp2sub1271(point.y, point.x),
+                FP2.fp2add1271(point.z, point.z),
+                FP2.fp2mul1271(t, convertToF2Element(Params.PARAMETER_D))
+        );
     }
 
     private static PreComputedExtendedPoint<F2Element> r1ToR3(ExtendedPoint<F2Element> point) {
