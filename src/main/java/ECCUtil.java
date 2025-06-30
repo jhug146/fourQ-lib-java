@@ -106,39 +106,43 @@ public class ECCUtil {
     }
 
     private static ExtendedPoint<F2Element> eccMixedAdd(AffinePoint<F2Element> q, ExtendedPoint<F2Element> p) {
-        F2Element ta = FP2.fp2mul1271(p.ta, p.tb);
-        F2Element t1 = FP2.fp2add1271(p.z, p.z);
-        ta = FP2.fp2mul1271(ta, q.t);
-        F2Element pz = FP2.fp2add1271(p.x, p.y);
-        F2Element tb = FP2.fp2sub1271(p.y, p.x);
-        F2Element t2 = FP2.fp2sub1271(t1, ta);
-        t1 = FP2.fp2add1271(t1, ta);
-        ta = FP2.fp2mul1271(q.x, pz);
-        F2Element x = FP2.fp2mul1271(q.y, tb);
-        tb = FP2.fp2sub1271(ta, x);
-        ta = FP2.fp2add1271(ta, x);
+        F2Element ta = FP2.fp2mul1271(p.ta, p.tb);          // Ta = T1
+        F2Element t1 = FP2.fp2add1271(p.z, p.z);            // t1 = 2Z1
+        ta = FP2.fp2mul1271(ta, q.t);                       // Ta = 2dT1*t2
+        F2Element pz = FP2.fp2add1271(p.x, p.y);            // Z = (X1+Y1)
+        F2Element tb = FP2.fp2sub1271(p.y, p.x);            // Tb = (Y1-X1)
+        F2Element t2 = FP2.fp2sub1271(t1, ta);              // t2 = theta
+        t1 = FP2.fp2add1271(t1, ta);                        // t1 = alpha
+        ta = FP2.fp2mul1271(q.x, pz);                       // Ta = (X1+Y1)(x2+y2)
+        F2Element x = FP2.fp2mul1271(q.y, tb);              // X = (Y1-X1)(y2-x2)
+        tb = FP2.fp2sub1271(ta, x);                         // Tbfinal = beta
+        ta = FP2.fp2add1271(ta, x);                         // Tafinal = omega
         return new ExtendedPoint<>(
-                FP2.fp2mul1271(tb, t2),
-                FP2.fp2mul1271(ta, t1),
-                FP2.fp2mul1271(t1, t2),
+                FP2.fp2mul1271(tb, t2),                     //Xfinal = beta*theta
+                FP2.fp2mul1271(ta, t1),                     // Yfinal = alpha*omega
+                FP2.fp2mul1271(t1, t2),                     // Zfinal = theta*alpha
                 ta,
                 tb
         );
     }
 
+    // Point doubling 2P
+    // Input: P = (X1:Y1:Z1) in twisted Edwards coordinates
+    // Output: 2P = (Xfinal,Yfinal,Zfinal,Tafinal,Tbfinal), where Tfinal = Tafinal*Tbfinal,
+    //         corresponding to (Xfinal:Yfinal:Zfinal:Tfinal) in extended twisted Edwards coordinates
     private static ExtendedPoint<F2Element> eccDouble(ExtendedPoint<F2Element> p) {
-        F2Element t1 = FP2.fp2sqr1271(p.x);
-        F2Element t2 = FP2.fp2sqr1271(p.y);
-        F2Element t3 = FP2.fp2add1271(p.x, p.y);
-        F2Element tb = FP2.fp2add1271(t1, t2);
-        t1 = FP2.fp2sub1271(t2, t1);
-        F2Element ta = FP2.fp2sqr1271(t3);
-        t2 = FP2.fp2sqr1271(p.z);
-        ta = FP2.fp2sub1271(ta, tb);
-        t2 = FP2.fp2addsub1271(t2, t1);
-        final F2Element y = FP2.fp2mul1271(t1, tb);
-        final F2Element x = FP2.fp2mul1271(t2, ta);
-        final F2Element z = FP2.fp2mul1271(t1, t2);
+        F2Element t1 = FP2.fp2sqr1271(p.x);                 // t1 = X1^2
+        F2Element t2 = FP2.fp2sqr1271(p.y);                 // t2 = Y1^2
+        F2Element t3 = FP2.fp2add1271(p.x, p.y);            // t3 = X1+Y1
+        F2Element tb = FP2.fp2add1271(t1, t2);              // Tbfinal = X1^2+Y1^2
+        t1 = FP2.fp2sub1271(t2, t1);                        // t1 = Y1^2-X1^2
+        F2Element ta = FP2.fp2sqr1271(t3);                  // Ta = (X1+Y1)^2
+        t2 = FP2.fp2sqr1271(p.z);                           // t2 = Z1^2
+        ta = FP2.fp2sub1271(ta, tb);                        // Tafinal = 2X1*Y1 = (X1+Y1)^2-(X1^2+Y1^2)
+        t2 = FP2.fp2addsub1271(t2, t1);                     // t2 = 2Z1^2-(Y1^2-X1^2)
+        final F2Element y = FP2.fp2mul1271(t1, tb);         // Yfinal = (X1^2+Y1^2)(Y1^2-X1^2)
+        final F2Element x = FP2.fp2mul1271(t2, ta);         // Xfinal = 2X1*Y1*[2Z1^2-(Y1^2-X1^2)]
+        final F2Element z = FP2.fp2mul1271(t1, t2);         // Zfinal = (Y1^2-X1^2)[2Z1^2-(Y1^2-X1^2)]
         return new ExtendedPoint<>(x, y, z, ta, tb);
     }
 
@@ -149,17 +153,31 @@ public class ECCUtil {
         return new FieldPoint<>(x, y);
     }
 
-    static FieldPoint<F2Element> eccMulDouble(BigInteger k, FieldPoint<F2Element> q, BigInteger l) {
-        FieldPoint<F2Element> a = eccMul(q, l);
-        ExtendedPoint<F2Element> t = pointSetup(a);
-        final PreComputedExtendedPoint<F2Element> s = r1ToR2(t);
-        a = eccMulFixed(k);
-        t = pointSetup(a);
-        t = eccAdd(s, t);
-        return eccNorm(t);
+    public static FieldPoint<F2Element> eccMulDouble(BigInteger k, FieldPoint<F2Element> q, BigInteger l) {
+        // Step 1: Compute l*Q
+        FieldPoint<F2Element> lQ = eccMul(q, l);
+        if (lQ == null) { return null; }                    // Point validation failed
+
+        // Step 2-3: Convert l*Q to precomputed format
+        ExtendedPoint<F2Element> extLQ = pointSetup(lQ);
+        PreComputedExtendedPoint<F2Element> precompLQ = r1ToR2(extLQ);
+
+        // Step 4: Compute k*G (generator multiplication)
+        FieldPoint<F2Element> kG = eccMulFixed(k);
+        if (kG == null) { return null; }
+
+        // Step 5-6: Add k*G + l*Q
+        ExtendedPoint<F2Element> extKG = pointSetup(kG);
+        ExtendedPoint<F2Element> result = eccAdd(precompLQ, extKG);
+
+        // Step 7: Normalize to affine coordinates
+        return eccNorm(result);
     }
 
-    private static ExtendedPoint<F2Element> eccAddCore(PreComputedExtendedPoint<F2Element> p, PreComputedExtendedPoint<F2Element> q) {
+    private static ExtendedPoint<F2Element> eccAddCore(
+            PreComputedExtendedPoint<F2Element> p,
+            PreComputedExtendedPoint<F2Element> q
+    ) {
         F2Element z = FP2.fp2mul1271(p.t, q.t);
         F2Element t1 = FP2.fp2mul1271(p.z, q.z);
         F2Element x = FP2.fp2mul1271(p.xy, q.xy);
