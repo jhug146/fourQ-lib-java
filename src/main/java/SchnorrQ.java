@@ -3,6 +3,7 @@ import java.util.Arrays;
 
 import exceptions.EncryptionException;
 import exceptions.InvalidArgumentException;
+import operations.FP;
 import types.F2Element;
 import types.Pair;
 import types.FieldPoint;

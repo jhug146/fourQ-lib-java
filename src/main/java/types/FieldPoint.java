@@ -3,8 +3,8 @@ package types;
 public class FieldPoint<Field> {
     public Field x;
     public Field y;
-    public FieldPoint(Field _x, Field _y) {
-        x = _x;
-        y = _y;
+    public FieldPoint(Field x, Field y) {
+        this.x = x;
+        this.y = y;
     }
 }

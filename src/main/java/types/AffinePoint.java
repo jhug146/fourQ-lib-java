@@ -1,12 +1,20 @@
 package types;
 
+import java.math.BigInteger;
+
 public class AffinePoint<Field> {
-    public Field xy;
-    public Field yx;
+    public Field x;
+    public Field y;
     public Field t;
-    public AffinePoint(Field _xy, Field _yx, Field _t) {
-        xy = _xy;
-        yx = _yx;
-        t = _t;
+
+    public AffinePoint(Field x, Field y, Field t) {
+        this.x = x;
+        this.y = y;
+        this.t = t;
+    }
+
+    public AffinePoint() {
+        this.x = (Field) new F2Element(BigInteger.ZERO, BigInteger.ZERO);
+        this.y = (Field) new F2Element(BigInteger.ZERO, BigInteger.ZERO);
     }
 }

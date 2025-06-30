@@ -1,3 +1,6 @@
+import constants.Params;
+import operations.FP;
+
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
@@ -11,7 +14,7 @@ public class CryptoUtil {
     }
 
     static BigInteger toMontgomery(BigInteger key) {        // TODO: I'm unsure about the argument type here
-        return FP.montgomeryMultiplyModOrder(key, FourQConstants.MONTGOMERY_R_PRIME);
+        return FP.montgomeryMultiplyModOrder(key, Params.MONTGOMERY_R_PRIME);
     }
 
     static BigInteger fromMontgomery(BigInteger key) {
