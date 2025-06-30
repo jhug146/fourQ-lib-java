@@ -235,5 +235,15 @@ public class FP {
 
             return diff;
         }
+
+        // Field division by two, output = a/2 mod (2^127-1)
+        static BigInteger fpdiv1271(BigInteger a) {
+            // If a is odd, add (2^127-1) to make it even before dividing
+            // Check if least significant bit is 1 (odd)
+            BigInteger dividend = a.testBit(0) ? a.add(Params.PRIME_1271) : a;
+            return Mersenne.mersenneReduce127Fast(dividend.shiftRight(1));
+        }
+
+
     }
 }
