@@ -103,7 +103,9 @@ public class ECCUtil {
         return new FieldPoint<>(mod1271(x), mod1271(y));
     }
 
-    private static FieldPoint<F2Element> eccMulDouble(BigInteger k, FieldPoint<F2Element> q, BigInteger l) {}
+    private static FieldPoint<F2Element> eccMulDouble(BigInteger k, FieldPoint<F2Element> q, BigInteger l) {
+
+    }
 
     private static F2Element mp2Add(F2Element a, F2Element b) {
         return new F2Element(FP.mpAdd(a.real, b.real).first, FP.mpAdd(a.im, b.im).first);
@@ -117,7 +119,9 @@ public class ECCUtil {
         return new F2Element(val.real.shiftRight(1), val.im.shiftRight(1));
     }
 
-    private static F2Element mp2Mul(F2Element a, F2Element b) {}
+    private static F2Element mp2Mul(F2Element a, F2Element b) {
+
+    }
 
     private static F2Element mp2Sqr(F2Element val) {}
 
@@ -125,5 +129,7 @@ public class ECCUtil {
 
     private static F2Element mp2Inv(F2Element val) {}
 
-    private static F2Element mod1271(F2Element val) {}
+    private static F2Element mod1271(F2Element val) {
+        return new F2Element(FP.mod1271(val.real), FP.mod1271(val.im));
+    }
 }
