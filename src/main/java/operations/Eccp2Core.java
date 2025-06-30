@@ -1,8 +1,7 @@
 package operations;
 
 import constants.Params;
-import types.F2Element;
-import types.FieldPoint;
+import types.*;
 
 import java.math.BigInteger;
 
@@ -99,12 +98,37 @@ public class Eccp2Core {
 
     // Set generator
     // Output: P = (x,y)
-    // TODO VeRy unsure about this.
-    public static void eccset(FieldPoint P) {
-        P.x = Params.GENERATOR_X;    // X1
-        P.y = Params.GENERATOR_Y;    // Y1
+    // TODO VeRy unsure about this and the helper
+    public static void eccset(AffinePoint P) {
+        P.x = convertToF2Element(Params.GENERATOR_X);    // X1
+        P.y = convertToF2Element(Params.GENERATOR_Y);    // Y1
+    }
+
+    // Helper method to convert BigInteger to F2Element
+    private static F2Element convertToF2Element(BigInteger generator) {
+        // Split the 256-bit generator into two 127-bit parts for GF(p²)
+        BigInteger realPart = generator.and(Params.MASK_127);                           // Lower 127 bits
+        BigInteger imagPart = generator.shiftRight(127).and(Params.MASK_127);       // Upper 127 bits
+
+        return new F2Element(realPart, imagPart);
     }
 
 
+    // Normalize a projective point (X1:Y1:Z1), including full reduction
+    // Input: P = (X1:Y1:Z1) in twisted Edwards coordinates
+    // Output: Q = (X1/Z1,Y1/Z1), corresponding to (X1:Y1:Z1:T1) in extended twisted Edwards coordinates
+    public static void eccnorm(ExtendedPoint p, AffinePoint q) {
+
+
+        p2util.fp2inv1271(p.z);             // Z1 = Z1^-1
+        q.x = p2util.fp2mul1271(p.x, p.z);  // X1 = X1/Z1
+        q.y = p2util.fp2mul1271(p.y, p.z);  // Y1 = Y1/Z1
+
+        q.
+
+//        FP.putil.mod1271(q.x.first)
+//        mod1271(Q->x[0]); mod1271(Q->x[1]);
+//        mod1271(Q->y[0]); mod1271(Q->y[1]);
+    }
 
 }

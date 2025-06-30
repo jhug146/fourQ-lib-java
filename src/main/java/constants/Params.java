@@ -8,6 +8,9 @@ public class Params {
     public static final int RADIX = 32; //TODO confirm this and below
     public static final int RADIX64 = 64; //TODO confirm this
 
+    public static final int NWORDS_ORDER = 8;
+    public static final int NWORDS_FIELD = 4;
+
     public static final BigInteger PRIME_1271
             = BigInteger.ONE.shiftLeft(127).subtract(BigInteger.ONE);
     public static final BigInteger MASK_127 = PRIME_1271;  // Same as 2^127 - 1

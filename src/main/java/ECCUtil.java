@@ -24,8 +24,8 @@ public class ECCUtil {
         }
 
         // TODO: Both instances of TABLE in this function might need updating
-        AffinePoint<F2Element> affPoint = Table.tableLookupFixedBase(digit, digits[D_FIXEDBASE - 1]);
-        ExtendedPoint<F2Element> exPoint = R5_To_R1(affPoint);
+        AffinePoint affPoint = Table.tableLookupFixedBase(digit, digits[D_FIXEDBASE - 1]);
+        ExtendedPoint exPoint = R5_To_R1(affPoint);
 
         for (int j = 0; j < V_FIXEDBASE - 1; j++) {
             digit = digits[W_FIXEDBASE * D_FIXEDBASE - (j + 1) * E_FIXEDBASE - 1];
@@ -75,11 +75,11 @@ public class ECCUtil {
 
     static ExtendedPoint<F2Element> eccMixedAdd(AffinePoint<F2Element> p, ExtendedPoint<F2Element> q) {}
 
-    static ExtendedPoint<F2Element> eccDouble(ExtendedPoint<F2Element> p) {}
+    static ExtendedPoint eccDouble(ExtendedPoint p) {}
 
-    static FieldPoint<F2Element> eccNorm(ExtendedPoint<F2Element> p) {}
+    static FieldPoint eccNorm(ExtendedPoint p) {}
 
-    static FieldPoint<F2Element> eccMulDouble(BigInteger k, FieldPoint<F2Element> q, BigInteger l) {
+    static FieldPoint eccMulDouble(BigInteger k, FieldPoint q, BigInteger l) {
         return null;
     }
 }

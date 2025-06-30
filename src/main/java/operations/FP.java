@@ -18,8 +18,6 @@ public class FP {
         }
     }
 
-    private static final int NWORDS_ORDER = 8;
-
     public static BigInteger moduloOrder(BigInteger key) {
         return montgomeryMultiplyModOrder
                 (montgomeryMultiplyModOrder(key, Params.MONTGOMERY_R_PRIME), BigInteger.ONE);
@@ -51,7 +49,7 @@ public class FP {
 
         // Compute Montgomery quotient
         BigInteger quotient = product.multiply(Params.MONTGOMERY_R_PRIME);
-        int wordBits = NWORDS_ORDER * 32; //TODO Change based on system
+        int wordBits = Params.NWORDS_ORDER * 32; //TODO Change based on system
         BigInteger rMask = BigInteger.ONE.shiftLeft(wordBits).subtract(BigInteger.ONE);
         quotient = quotient.and(rMask);  // quotient mod R
 
@@ -112,7 +110,7 @@ public class FP {
         // Calculate the maximum value for NWORDS_ORDER words
         // Assuming 32-bit words: max = 2^(NWORDS_ORDER * 32) - 1
         int bitsPerWord = 32;  // TODO or 64 if using 64-bit words
-        int totalBits = NWORDS_ORDER * bitsPerWord;
+        int totalBits = Params.NWORDS_ORDER * bitsPerWord;
         BigInteger maxValue = BigInteger.ONE.shiftLeft(totalBits); //First value that cannot be represented in system
 
         // Check if overflow occurred
@@ -135,7 +133,7 @@ public class FP {
 
         // Borrow occurred
         // Simulate fixed-width wraparound: a - b + 2^n
-        int totalBits = NWORDS_ORDER * 32; //TODO make '32' change based on system
+        int totalBits = Params.NWORDS_ORDER * 32; //TODO make '32' change based on system
         BigInteger modulus = BigInteger.ONE.shiftLeft(totalBits), wrappedResult = a.subtract(b).add(modulus);
         return new Pair<>(wrappedResult, 1);
     }
