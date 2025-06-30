@@ -1,5 +1,6 @@
 import constants.Params;
 import operations.FP;
+import operations.FP2;
 import types.AffinePoint;
 import types.ExtendedPoint;
 import types.F2Element;
@@ -19,7 +20,7 @@ public class ECCUtil {
     // Set generator
     // Output: P = (x,y)
     // TODO VeRy unsure about this and the helper
-    public static void eccset(AffinePoint<F2Element> P) {
+    public static void eccSet(AffinePoint<F2Element> P) {
         P.x = convertToF2Element(Params.GENERATOR_X);    // X1
         P.y = convertToF2Element(Params.GENERATOR_Y);    // Y1
     }
@@ -77,78 +78,60 @@ public class ECCUtil {
         return eccNorm(exPoint);
     }
 
-    static BigInteger encode(FieldPoint<F2Element> point) {
-        BigInteger y = point.y.real.add(point.y.im.shiftLeft(128));
-        boolean ySignBit = point.y.real.compareTo(BigInteger.ZERO) <= 0;
-
-        if (ySignBit) {
-            y = y.setBit(255);
-        }
-        return y;
-    }
-
-    static FieldPoint<F2Element> decode(BigInteger encoded) {}
 
     static int[] mLSBSetRecode(BigInteger scalar) {}
 
     private static ExtendedPoint<F2Element> R5_To_R1(AffinePoint<F2Element> p) {
-        F2Element x = mp2Div(mp2Sub(p.x, p.y));
-        F2Element y = mp2Div(mp2Add(p.x, p.y));
+        F2Element x = FP2.div1271(FP2.fp2sub1271(p.x, p.y));
+        F2Element y = FP2.div1271(FP2.fp2add1271(p.x, p.y));
         return new ExtendedPoint<F2Element>(x, y, F2_ONE, x, y);
     }
 
-    private static ExtendedPoint<F2Element> eccMixedAdd(AffinePoint<F2Element> p, ExtendedPoint<F2Element> q) {}
+    private static ExtendedPoint<F2Element> eccMixedAdd(AffinePoint<F2Element> q, ExtendedPoint<F2Element> p) {
+        F2Element ta = FP2.fp2mul1271(p.ta, p.tb);
+        F2Element t1 = FP2.fp2add1271(p.z, p.z);
+        ta = FP2.fp2mul1271(ta, q.t);
+        F2Element pz = FP2.fp2add1271(p.x, p.y);
+        F2Element tb = FP2.fp2sub1271(p.y, p.x);
+        F2Element t2 = FP2.fp2sub1271(t1, p.ta);
+        t1 = FP2.fp2add1271(t1, p.ta);
+        ta = FP2.fp2mul1271(q.x, p.z);
+        F2Element x = FP2.fp2mul1271(q.y, p.tb);
+        tb = FP2.fp2sub1271(ta, x);
+        ta = FP2.fp2add1271(ta, x);
+        return new ExtendedPoint<>(
+                FP2.fp2mul1271(tb, t2),
+                FP2.fp2mul1271(ta, t1),
+                FP2.fp2mul1271(t1, t2),
+                ta,
+                tb
+        );
+    }
 
     private static ExtendedPoint<F2Element> eccDouble(ExtendedPoint<F2Element> p) {
-        F2Element t1 = mp2Sqr(p.x);
-        F2Element t2 = mp2Sqr(p.y);
-        F2Element t3 = mp2Add(p.x, p.y);
-        F2Element tb = mp2Add(t1, t2);
-        t1 = mp2Sub(t2, t1);
-        F2Element ta = mp2Sqr(t3);
-        t2 = mp2Sqr(p.z);
-        ta = mp2Sub(ta, tb);
-        t2 = mp2AddSub(t2, t1);
-        final F2Element y = mp2Mul(t1, tb);
-        final F2Element x = mp2Mul(t2, ta);
-        final F2Element z = mp2Mul(t1, t2);
+        F2Element t1 = FP2.fp2sqr1271(p.x);
+        F2Element t2 = FP2.fp2sqr1271(p.y);
+        F2Element t3 = FP2.fp2add1271(p.x, p.y);
+        F2Element tb = FP2.fp2add1271(t1, t2);
+        t1 = FP2.fp2sub1271(t2, t1);
+        F2Element ta = FP2.fp2sqr1271(t3);
+        t2 = FP2.fp2sqr1271(p.z);
+        ta = FP2.fp2sub1271(ta, tb);
+        t2 = FP2.fp2addsub1271(t2, t1);
+        final F2Element y = FP2.fp2mul1271(t1, tb);
+        final F2Element x = FP2.fp2mul1271(t2, ta);
+        final F2Element z = FP2.fp2mul1271(t1, t2);
         return new ExtendedPoint<>(x, y, z, ta, tb);
     }
 
     private static FieldPoint<F2Element> eccNorm(ExtendedPoint<F2Element> p) {
-        final F2Element zInv = mp2Inv(p.z);
-        final F2Element x = mp2Mul(p.x, zInv);
-        final F2Element y = mp2Mul(p.y, zInv);
-        return new FieldPoint<>(mod1271(x), mod1271(y));
+        final F2Element zInv = FP2.fp2inv1271(p.z);
+        final F2Element x = FP2.fp2mul1271(p.x, zInv);
+        final F2Element y = FP2.fp2mul1271(p.y, zInv);
+        return new FieldPoint<>(x, y);
     }
 
     private static FieldPoint<F2Element> eccMulDouble(BigInteger k, FieldPoint<F2Element> q, BigInteger l) {
 
-    }
-
-    private static F2Element mp2Add(F2Element a, F2Element b) {
-        return new F2Element(FP.mpAdd(a.real, b.real).first, FP.mpAdd(a.im, b.im).first);
-    }
-
-    private static F2Element mp2Sub(F2Element a, F2Element b) {
-        return new F2Element(FP.mpSubtract(a.real, b.real).first, FP.mpSubtract(a.im, b.im).first);
-    }
-
-    private static F2Element mp2Div(F2Element val) {
-        return new F2Element(val.real.shiftRight(1), val.im.shiftRight(1));
-    }
-
-    private static F2Element mp2Mul(F2Element a, F2Element b) {
-
-    }
-
-    private static F2Element mp2Sqr(F2Element val) {}
-
-    private static F2Element mp2AddSub(F2Element a, F2Element b) {}
-
-    private static F2Element mp2Inv(F2Element val) {}
-
-    private static F2Element mod1271(F2Element val) {
-        return new F2Element(FP.putil.mod1271(val.real), FP.putil.mod1271(val.im));
     }
 }
