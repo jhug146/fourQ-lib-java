@@ -81,8 +81,8 @@ public class ECCUtil {
     }
 
     private static ExtendedPoint<F2Element> r5ToR1(AffinePoint<F2Element> p) {
-        F2Element x = FP2.div1271(FP2.fp2sub1271(p.x, p.y));
-        F2Element y = FP2.div1271(FP2.fp2add1271(p.x, p.y));
+        F2Element x = FP2.fp2div1271(FP2.fp2sub1271(p.x, p.y));
+        F2Element y = FP2.fp2div1271(FP2.fp2add1271(p.x, p.y));
         return new ExtendedPoint<F2Element>(x, y, F2_ONE, x, y);
     }
 
