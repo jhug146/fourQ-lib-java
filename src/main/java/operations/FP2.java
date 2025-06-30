@@ -85,4 +85,12 @@ public class FP2 {
         a.im = FP.putil.fpmul1271(a.im, t1.real);  // a = (a0-i*a1)*(a0^2+a1^2)^-1
         return a;
     }
+
+    // GF(p^2) division by two c = a/2 mod p
+    public static F2Element fp2div1271(F2Element a) {
+        return new F2Element(
+                FP.putil.fpdiv1271(a.im),
+                FP.putil.fpdiv1271(a.real)
+        );
+    }
 }
