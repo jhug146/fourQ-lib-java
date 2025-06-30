@@ -18,7 +18,7 @@ public class SchnorrQ {
     public static BigInteger schnorrQKeyGeneration(BigInteger secretKey) throws EncryptionException {
         final BigInteger hash = HashFunction.computeHash(secretKey);
         final FieldPoint<F2Element> point = ECCUtil.eccMulFixed(hash);
-        return ECCUtil.encode(point);
+        return CryptoUtil.encode(point);
     }
 
     public static Pair<BigInteger, BigInteger> schnorrQFullKeyGeneration() throws EncryptionException {
@@ -35,7 +35,7 @@ public class SchnorrQ {
 
         BigInteger rHash = HashFunction.computeHash(Arrays.copyOfRange(bytes, KEY_SIZE, bytes.length));
         final FieldPoint<F2Element> rPoint = ECCUtil.eccMulFixed(rHash);
-        final BigInteger sigStart = ECCUtil.encode(rPoint);
+        final BigInteger sigStart = CryptoUtil.encode(rPoint);
 
         System.arraycopy(sigStart.toByteArray(), 0, bytes, 0, KEY_SIZE);
         System.arraycopy(publicKey.toByteArray(), 0, bytes, KEY_SIZE, KEY_SIZE);
@@ -76,10 +76,10 @@ public class SchnorrQ {
 
         FieldPoint<F2Element> affPoint = ECCUtil.eccMulDouble(
                 new BigInteger(Arrays.copyOfRange(bytes, KEY_SIZE, bytes.length - 1)),
-                ECCUtil.decode(publicKey),       // Implicitly checks that public key lies on the curve
+                CryptoUtil.decode(publicKey),       // Implicitly checks that public key lies on the curve
                 HashFunction.computeHash(bytes)
         );
-        BigInteger encoded = ECCUtil.encode(affPoint);
+        BigInteger encoded = CryptoUtil.encode(affPoint);
 
         return encoded.equals(signature);
     }

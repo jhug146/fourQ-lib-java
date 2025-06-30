@@ -1,6 +1,5 @@
 package operations;
 
-import constants.Params;
 import types.*;
 
 import java.math.BigInteger;
