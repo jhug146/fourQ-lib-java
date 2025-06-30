@@ -16,21 +16,21 @@ public class Eccp2Core {
 
         // Zeroing a GF(p^2) element, a = 0
         static F2Element fp2zero1271(F2Element a) {
-            return new F2Element(FP.putil.fpzero1271(a.first), FP.putil.fpzero1271(a.second));
+            return new F2Element(FP.putil.fpzero1271(a.real), FP.putil.fpzero1271(a.im));
         }
 
         // GF(p^2) negation, a = -a in GF((2^127-1)^2)
         static F2Element fp2neg1271(F2Element a) {
-            return new F2Element(FP.putil.fpneg1271(a.first), FP.putil.fpneg1271(a.second));
+            return new F2Element(FP.putil.fpneg1271(a.real), FP.putil.fpneg1271(a.im));
         }
 
         // GF(p^2) squaring, c = a^2 in GF((2^127-1)^2)
         static F2Element fp2sqr1271(F2Element a) {
-            BigInteger t3 = FP.putil.fpmul1271(a.first, a.second);
+            BigInteger t3 = FP.putil.fpmul1271(a.real, a.im);
             return new F2Element(
                     FP.putil.fpmul1271(
-                            FP.putil.fpadd1271(a.first, a.second),
-                            FP.putil.fpsub1271(a.first, a.second)
+                            FP.putil.fpadd1271(a.real, a.im),
+                            FP.putil.fpsub1271(a.real, a.im)
                     ), // first = (a0+a1)(a0-a1)
                     FP.putil.fpadd1271(t3, t3)  // second = 2a0*a1
             );
@@ -38,10 +38,10 @@ public class Eccp2Core {
 
         // GF(p^2) multiplication, c = a*b in GF((2^127-1)^2)
         static F2Element fp2mul1271(F2Element a, F2Element b) {
-            BigInteger t1 = FP.putil.fpmul1271(a.first, b.first);   // t1 = a0*b0
-            BigInteger t2 = FP.putil.fpmul1271(a.second, b.second); // t2 = a1*b1
-            BigInteger t3 = FP.putil.fpadd1271(a.first, a.second);  // t2 = a1*b1
-            BigInteger t4 = FP.putil.fpadd1271(b.first, b.second);  // t4 = b0+b1
+            BigInteger t1 = FP.putil.fpmul1271(a.real, b.real);   // t1 = a0*b0
+            BigInteger t2 = FP.putil.fpmul1271(a.im, b.im); // t2 = a1*b1
+            BigInteger t3 = FP.putil.fpadd1271(a.real, a.im);  // t2 = a1*b1
+            BigInteger t4 = FP.putil.fpadd1271(b.real, b.im);  // t4 = b0+b1
 
             t3 = FP.putil.fpmul1271(t3, t4);                        // t3 = (a0+a1)*(b0+b1)
             t3 = FP.putil.fpsub1271(t3, t1);                        // t3 = (a0+a1)*(b0+b1) - a0*b0
@@ -55,16 +55,16 @@ public class Eccp2Core {
         // GF(p^2) addition, c = a+b in GF((2^127-1)^2)
         static F2Element fp2add1271(F2Element a, F2Element b) {
             return new F2Element(
-                    FP.putil.fpadd1271(a.first, b.first),
-                    FP.putil.fpadd1271(a.second, b.second)
+                    FP.putil.fpadd1271(a.real, b.real),
+                    FP.putil.fpadd1271(a.im, b.im)
             );
         }
 
         // GF(p^2) subtraction, c = a-b in GF((2^127-1)^2)
         static F2Element fp2sub1271(F2Element a, F2Element b) {
             return new F2Element(
-                    FP.putil.fpsub1271(a.first, b.first),
-                    FP.putil.fpsub1271(a.second, b.second)
+                    FP.putil.fpsub1271(a.real, b.real),
+                    FP.putil.fpsub1271(a.im, b.im)
             );
         }
 
@@ -77,15 +77,15 @@ public class Eccp2Core {
         // GF(p^2) inversion, a = (a0-i*a1)/(a0^2+a1^2)
         static F2Element fp2inv1271(F2Element a) {
             F2Element t1 = new F2Element(
-                    FP.putil.fpsqr1271(a.first),                // t1.first = a0^2
-                    FP.putil.fpsqr1271(a.second)                // t1.second = a1^2
+                    FP.putil.fpsqr1271(a.real),                // t1.first = a0^2
+                    FP.putil.fpsqr1271(a.im)                // t1.second = a1^2
             );
 
-            t1.first = FP.putil.fpadd1271(t1.first, t1.second); // t1.first = a0^2+a1^2
-            t1.first = FP.putil.fpinv1271(t1.first);            // t10 = (a0^2+a1^2)^-1
-            a.second = FP.putil.fpneg1271(a.second);            // a = a0-i*a1
-            a.first = FP.putil.fpmul1271(a.first, t1.first);
-            a.second = FP.putil.fpmul1271(a.second, t1.first);  // a = (a0-i*a1)*(a0^2+a1^2)^-1
+            t1.real = FP.putil.fpadd1271(t1.real, t1.im); // t1.first = a0^2+a1^2
+            t1.real = FP.putil.fpinv1271(t1.real);            // t10 = (a0^2+a1^2)^-1
+            a.im = FP.putil.fpneg1271(a.im);            // a = a0-i*a1
+            a.real = FP.putil.fpmul1271(a.real, t1.real);
+            a.im = FP.putil.fpmul1271(a.im, t1.real);  // a = (a0-i*a1)*(a0^2+a1^2)^-1
             return a;
         }
     }
@@ -120,11 +120,11 @@ public class Eccp2Core {
     public static void eccnorm(ExtendedPoint p, AffinePoint q) {
 
 
-        p2util.fp2inv1271(p.z);             // Z1 = Z1^-1
-        q.x = p2util.fp2mul1271(p.x, p.z);  // X1 = X1/Z1
-        q.y = p2util.fp2mul1271(p.y, p.z);  // Y1 = Y1/Z1
-
-        q.
+//        p2util.fp2inv1271(p.z);             // Z1 = Z1^-1
+//        q.x = p2util.fp2mul1271(p.x, p.z);  // X1 = X1/Z1
+//        q.y = p2util.fp2mul1271(p.y, p.z);  // Y1 = Y1/Z1
+//
+//        q.
 
 //        FP.putil.mod1271(q.x.first)
 //        mod1271(Q->x[0]); mod1271(Q->x[1]);
