@@ -33,6 +33,8 @@ public class CryptoUtil {
         return y;
     }
 
-    static FieldPoint<F2Element> decode(BigInteger encoded) {}
+    static FieldPoint<F2Element> decode(BigInteger encoded) {
+        return null;
+    }
 
 }
