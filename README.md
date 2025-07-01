@@ -9,7 +9,7 @@ A library that implements the high-security, high-performance elliptic curve fou
 ### Public Key Generation
 ```
 final int HEX_RADIX = 16
-final BigInteger privateKey = new BigInteger("F510847AAB323", hexRadix);
+final BigInteger privateKey = new BigInteger("F510847AAB323", HEX_RADIX);
 final BigInteger publicKey = SchnorrQ.schnorrQKeyGeneration(privateKey);
 ```
 
@@ -20,10 +20,9 @@ final Pair<BigInteger, BigInteger> keyPair = SchnorrQ.schnorrQFullKeyGeneration(
 
 ### SchnorrQ Message Signing
 ```
-final Pair<BigInteger, BigInteger> keyPair = SchnorrQ.schnorrQFullKeyGeneration();
 final String message = "The quick brown fox jumps over the lazy dog";
 try {
-    final BigInteger signature = SchnorrQ.schnorrQSign(keyPair.first, keyPair.second, message);
+    final BigInteger signature = SchnorrQ.schnorrQSign(publicKey, privateKey, message);
 } catch (EncryptionException e) {
     println("Error signing message");
 }
