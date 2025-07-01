@@ -1,14 +1,11 @@
 package constants;
 
-import types.F2Element;
-
 import java.math.BigInteger;
 
 public class Params {
     private static final int HEX_RADIX = 16;
 
     public static final int RADIX = 32; //TODO confirm this and below
-    public static final int RADIX64 = 64; //TODO confirm this
 
     public static final int NWORDS_ORDER = 8;
     public static final int NWORDS_FIELD = 4;

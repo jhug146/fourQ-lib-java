@@ -1,4 +1,5 @@
 import constants.Params;
+import crypto.ECCUtil;
 import operations.FP2;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -14,7 +15,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Comprehensive test suite for ECCUtil class covering all mathematical properties,
+ * Comprehensive test suite for crypto.ECCUtil class covering all mathematical properties,
  * security requirements, edge cases, and performance characteristics.
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -830,7 +831,7 @@ class ECCUtilTests {
 
                 // This would require eccNorm implementation
                 assertDoesNotThrow(() -> {
-                    // FieldPoint<F2Element> field = ECCUtil.eccNorm(extended);
+                    // FieldPoint<F2Element> field = crypto.ECCUtil.eccNorm(extended);
                     // For now, just verify the point is accessible
                     assertNotNull(extended.x);
                     assertNotNull(extended.y);

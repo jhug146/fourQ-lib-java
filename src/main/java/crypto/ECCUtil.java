@@ -1,3 +1,5 @@
+package crypto;
+
 import constants.Params;
 import operations.FP;
 import operations.FP2;
@@ -62,7 +64,7 @@ public class ECCUtil {
         return new F2Element(realPart, imagPart);
     }
 
-    static FieldPoint<F2Element> eccMulFixed(BigInteger val) {
+    public static FieldPoint<F2Element> eccMulFixed(BigInteger val) {
         BigInteger temp = FP.moduloOrder(val);
         temp = FP.conversionToOdd(temp);
         int[] digits = mLSBSetRecode(temp, new int[270]);  // TODO: No idea how this works
@@ -337,8 +339,8 @@ public class ECCUtil {
 
         // Reduce modulo (2^127-1)
         t1 = new F2Element(
-                FP.putil.mod1271(t1.real),
-                FP.putil.mod1271(t1.im)
+                FP.PUtil.mod1271(t1.real),
+                FP.PUtil.mod1271(t1.im)
         );
 
         // Check if the result is zero (both real and imaginary parts must be zero) to be on the curve.
