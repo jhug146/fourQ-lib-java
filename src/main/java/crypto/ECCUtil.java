@@ -22,30 +22,24 @@ public class ECCUtil {
     private static final F2Element F2_ONE = new F2Element(BigInteger.ONE, BigInteger.ONE);
 
     // Supporting data structure for recode result
-    private static class RecodeResult {
-        final int[] digits;
-        final int[] signMasks;
-
-        RecodeResult(int[] digits, int[] signMasks) {
-            this.digits = digits;
-            this.signMasks = signMasks;
-        }
+        private record RecodeResult(int[] digits, int[] signMasks) {
 
         /**
          * Get the effective signed digit at position i
+         *
          * @param i position in the recoded representation
          * @return signed digit value
          */
-        public int getSignedDigit(int i) {
-            if (i < 0 || i >= digits.length) {
-                throw new IndexOutOfBoundsException("Index: " + i);
-            }
+            public int getSignedDigit(int i) {
+                if (i < 0 || i >= digits.length) {
+                    throw new IndexOutOfBoundsException("Index: " + i);
+                }
 
-            // If sign_mask[i] == 0xFFFFFFFF, digit is positive
-            // If sign_mask[i] == 0x00000000, digit is negative
-            return (signMasks[i] == -1) ? digits[i] : -digits[i];
+                // If sign_mask[i] == 0xFFFFFFFF, digit is positive
+                // If sign_mask[i] == 0x00000000, digit is negative
+                return (signMasks[i] == -1) ? digits[i] : -digits[i];
+            }
         }
-    }
 
     // Set generator
     // Output: P = (x,y)
@@ -361,7 +355,7 @@ public class ECCUtil {
             FieldPoint<F2Element> P,
             BigInteger K,
             AffinePoint<F2Element> Q,
-            boolean clearCofactor // Equivilant to the C Flag
+            boolean clearCofactor // Equivalent to the C Flag
     ) {
         // Convert to representation (X, Y, 1, Ta, Tb)
         ExtendedPoint<F2Element> R = pointSetup(P);
