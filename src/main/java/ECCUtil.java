@@ -585,4 +585,26 @@ public class ECCUtil {
 
         return new RecodeResult(digits, signMasks);
     }
+
+    /**
+     * Co-factor clearing operation for elliptic curve points.
+     * @param p the input point P = (X₁,Y₁,Z₁,Ta,Tb) in extended twisted Edwards coordinates,
+     *          where T₁ = Ta×Tb corresponds to (X₁:Y₁:Z₁:T₁)
+     */
+    private static ExtendedPoint<F2Element> cofactorClearing(ExtendedPoint<F2Element> p) {
+        PreComputedExtendedPoint<F2Element> q = r1ToR2(p);  // Converting from (X,Y,Z,Ta,Tb) to (X+Y,Y-X,2Z,2dT)
+
+        p = eccDouble(p);                                   // P = 2*P using representations (X,Y,Z,Ta,Tb) <- 2*(X,Y,Z)
+        p = eccAdd(q, p);                                   // P = P+Q using representations (X,Y,Z,Ta,Tb) <- (X,Y,Z,Ta,Tb) + (X+Y,Y-X,2Z,2dT)
+        p = eccDouble(p);
+        p = eccDouble(p);
+        p = eccDouble(p);
+        p = eccDouble(p);
+        p = eccAdd(q, p);
+        p = eccDouble(p);
+        p = eccDouble(p);
+        p = eccDouble(p);
+
+        return p;
+    }
 }
