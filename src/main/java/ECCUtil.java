@@ -28,6 +28,21 @@ public class ECCUtil {
             this.digits = digits;
             this.signMasks = signMasks;
         }
+
+        /**
+         * Get the effective signed digit at position i
+         * @param i position in the recoded representation
+         * @return signed digit value
+         */
+        public int getSignedDigit(int i) {
+            if (i < 0 || i >= digits.length) {
+                throw new IndexOutOfBoundsException("Index: " + i);
+            }
+
+            // If sign_mask[i] == 0xFFFFFFFF, digit is positive
+            // If sign_mask[i] == 0x00000000, digit is negative
+            return (signMasks[i] == -1) ? digits[i] : -digits[i];
+        }
     }
 
     // Set generator
@@ -349,7 +364,7 @@ public class ECCUtil {
             FieldPoint<F2Element> P,
             BigInteger K,
             AffinePoint<F2Element> Q,
-            boolean clearCofactor
+            boolean clearCofactor // Equivilant to the C Flag
     ) {
         // Convert to representation (X, Y, 1, Ta, Tb)
         ExtendedPoint<F2Element> R = pointSetup(P);
@@ -507,5 +522,67 @@ public class ECCUtil {
     private static BigInteger mulTruncate(BigInteger k, BigInteger ell) {
         BigInteger product = k.multiply(ell);
         return product.shiftRight(256);  // Equivalent to dividing by 2^256
+    }
+
+    /**
+     * Recoding sub-scalars for use in variable-base scalar multiplication
+     * Based on Algorithm 1 in "Efficient and Secure Methods for GLV-Based Scalar Multiplication"
+     *
+     * @param scalars 4 64-bit sub-scalars obtained from decompose()
+     * @return RecodeResult containing digits and sign_masks arrays
+     */
+    private static RecodeResult recode(BigInteger[] scalars) {
+        if (scalars == null || scalars.length != 4) {
+            throw new IllegalArgumentException("Expected exactly 4 scalars");
+        }
+
+        int[] digits = new int[65];
+        int[] signMasks = new int[65];
+
+        // Work with mutable copies, given that BigInteger is immutable
+        BigInteger[] workingScalars = new BigInteger[4];
+        for (int i = 0; i < 4; i++) {
+            workingScalars[i] = scalars[i] != null ? scalars[i] : BigInteger.ZERO;
+        }
+
+        // Initialize final sign mask
+        signMasks[64] = -1;                                                     // 0xFFFFFFFF (all bits set)
+
+        // Process 64 iterations
+        for (int i = 0; i < 64; i++) {
+            // Extract and process scalar[0]
+            workingScalars[0] = workingScalars[0].shiftRight(1);
+            int bit0 = workingScalars[0].testBit(0) ? 1 : 0;
+
+            // Create sign mask: if bit0=1 then 0xFFFFFFFF, else 0x00000000
+            signMasks[i] = -bit0;
+
+            // Process scalar[1] and build digit
+            int bit1 = workingScalars[1].testBit(0) ? 1 : 0;
+            int carry1 = (bit0 | bit1) ^ bit0;
+            workingScalars[1] = workingScalars[1].shiftRight(1).add(BigInteger.valueOf(carry1));
+            digits[i] = bit1;
+
+            // Process scalar[2] and add to digit
+            int bit2 = workingScalars[2].testBit(0) ? 1 : 0;
+            int carry2 = (bit0 | bit2) ^ bit0;
+            workingScalars[2] = workingScalars[2].shiftRight(1).add(BigInteger.valueOf(carry2));
+            digits[i] += (bit2 << 1);                                           // bit2 * 2
+
+            // Process scalar[3] and add to digit
+            int bit3 = workingScalars[3].testBit(0) ? 1 : 0;
+            int carry3 = (bit0 | bit3) ^ bit0;
+            workingScalars[3] = workingScalars[3].shiftRight(1).add(BigInteger.valueOf(carry3));
+            digits[i] += (bit3 << 2);                                           // bit3 * 4
+        }
+
+        // Compute the final digit from remaining scalar bits
+        BigInteger finalDigit = workingScalars[1]
+                .add(workingScalars[2].shiftLeft(1))                         // scalars[2] * 2
+                .add(workingScalars[3].shiftLeft(2));                        // scalars[3] * 4
+
+        digits[64] = finalDigit.intValue();
+
+        return new RecodeResult(digits, signMasks);
     }
 }
