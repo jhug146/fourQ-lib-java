@@ -1,6 +1,5 @@
 package operations;
 
-import types.AddResult;
 import types.Pair;
 import constants.Params;
 
@@ -8,42 +7,13 @@ import java.math.BigInteger;
 
 public class FP {
 
-    private interface Macros {
-        static AddResult ADDC(int carryIn, int a, int b) {
-            // Use long to capture overflow
-            long temp = (a & 0xFFFFFFFFL) + (b & 0xFFFFFFFFL) + (carryIn & 0xFFFFFFFFL);
-            int sum = (int) temp;                               // Low 32 bits
-            int carry = (int) (temp >>> Params.RADIX);          // High 32 bits (carry)
-            return new AddResult(sum, carry);
-        }
-    }
-
     public static BigInteger moduloOrder(BigInteger key) {
-        return montgomeryMultiplyModOrder
-                (montgomeryMultiplyModOrder(key, Params.MONTGOMERY_R_PRIME), BigInteger.ONE);
+        return montgomeryMultiplyModOrder(
+                montgomeryMultiplyModOrder(key, Params.MONTGOMERY_R_PRIME),
+                BigInteger.ONE
+        );
     }
 
-    /*
-    static BigInteger montgomeryMultiplyModOrder(BigInteger a, BigInteger b) {
-        BigInteger product = multiply(a, b), quotient = multiply(product, constants.FourQConstants.MONTGOMERY_R_PRIME);
-        BigInteger returnEnd = multiply(quotient, constants.FourQConstants.CURVE_ORDER);
-
-        Pair<BigInteger, Integer> result = mpAdd(product, returnEnd);
-        returnEnd = result.first;
-        int carryOut = result.second;
-
-        BigInteger returnVal = returnEnd.shiftRight(NWORDS_ORDER);
-
-        Pair<BigInteger, Integer> result2 = mpSubtract(returnVal, constants.FourQConstants.CURVE_ORDER);
-
-        returnVal = returnVal.add(result2.first);
-        Integer bout = result2.second;
-        int mask = carryOut - bout;
-
-        returnEnd = returnEnd.add(constants.FourQConstants.CURVE_ORDER.and(BigInteger.valueOf(mask)));
-        return returnVal.add(returnEnd);
-    }
-    */ // <-Previous implementation.
     public static BigInteger montgomeryMultiplyModOrder(BigInteger a, BigInteger b) {
         BigInteger product = a.multiply(b);
 
@@ -119,7 +89,7 @@ public class FP {
             BigInteger wrappedSum = sum.remainder(maxValue);
             return new Pair<>(wrappedSum, 1);
         } else {
-            // Nooverflow, return sum as-is, carry = 0
+            // No overflow, return sum as-is, carry = 0
             return new Pair<>(sum, 0);
         }
     }
@@ -158,7 +128,7 @@ public class FP {
         // Zeroing a field element, a = 0
         //  NB: There is no mutable BigInteger interface, which renders this functionality
         //          heavily redundant.
-        static BigInteger fpZero1271(BigInteger a) {
+        static BigInteger fpZero1271() {
             return BigInteger.ZERO;
         }
 
@@ -238,7 +208,7 @@ public class FP {
 
         // Field division by two, output = a/2 mod (2^127-1)
         static BigInteger fpDiv1271(BigInteger a) {
-            // If a is odd, add (2^127-1) to make it even before dividing
+            // If input is odd, add (2^127-1) to make it even before dividing
             // Check if least significant bit is 1 (odd)
             BigInteger dividend = a.testBit(0) ? a.add(Params.PRIME_1271) : a;
             return Mersenne.mersenneReduce127Fast(dividend.shiftRight(1));
