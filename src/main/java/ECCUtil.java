@@ -11,6 +11,7 @@ public class ECCUtil {
     private static final int V_FIXEDBASE = 5;
     private static final int D_FIXEDBASE = 54;
     private static final int E_FIXEDBASE = 10;
+    private static final int L_FIXEDBASE = D_FIXEDBASE * W_FIXEDBASE;
 
     private static final F2Element F2_ONE = new F2Element(BigInteger.ONE, BigInteger.ONE);
 
@@ -76,7 +77,7 @@ public class ECCUtil {
     }
 
 
-    static int[] mLSBSetRecode(BigInteger scalar) {
+    public static int[] mLSBSetRecode(BigInteger scalar) {
         return null;
     }
 
@@ -223,5 +224,54 @@ public class ECCUtil {
                 point.x,
                 point.y
         );
+    }
+
+    /**
+     * Computes the modified LSB-set representation of a scalar
+     * @param inputScalar scalar in [0, order-1], where the order of FourQ's subgroup is 246 bits
+     * @param digits output array where:
+     *               - First d values (indices 0 to d-1) store signs: -1 (negative), 0 (positive)
+     *               - Remaining values (indices d to l-1) store recoded values (excluding sign)
+     */
+    public static int[] mLSBSetRecode(BigInteger inputScalar, int[] digits) {
+        final int d = D_FIXEDBASE;                              // ceil(bitlength(order)/(w*v))*v
+
+        BigInteger scalar = inputScalar;
+
+        // Initialize
+        digits[d-1] = 0;
+
+        // Initial shift right by 1
+        scalar = scalar.shiftRight(1);
+
+        // Part 1: Extract signs for indices 0 to d-2
+        for (int i = 0; i < d-1; i++) {
+            // Extract LSB and convert to sign convention
+            int lsb = scalar.testBit(0) ? 1 : 0;
+            digits[i] = lsb - 1;                                // Convert: 0 -> -1 (negative), 1 -> 0 (positive)
+
+            // Shift right by 1
+            scalar = scalar.shiftRight(1);
+        }
+
+        // Part 2: Extract digits for indices d to l-1
+        for (int i = d; i < L_FIXEDBASE; i++) {
+            // Extract LSB as digit value
+            digits[i] = scalar.testBit(0) ? 1 : 0;
+
+            // Shift right by 1
+            scalar = scalar.shiftRight(1);
+
+            // Conditional addition based on sign
+            int signIndex = i % d;                              // Equivalent to i-(i/d)*d
+            int comp = (-digits[signIndex]) & digits[i];
+
+            // Add temp to scalar (equivalent to floor(scalar/2) + comp)
+            if (comp != 0) {
+                scalar = scalar.add(BigInteger.ONE);
+            }
+        }
+
+        return digits;
     }
 }
