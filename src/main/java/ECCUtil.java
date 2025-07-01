@@ -441,6 +441,8 @@ public class ECCUtil {
             q = eccAddCore(p2, t[i-1]);    // Add 2P to previous odd multiple
             t[i] = r1ToR2(q);              // Convert result to R2 format
         }
+
+        return null;
     }
 
     /**
