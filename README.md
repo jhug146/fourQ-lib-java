@@ -22,7 +22,7 @@ final Pair<BigInteger, BigInteger> keyPair = SchnorrQ.schnorrQFullKeyGeneration(
 ```
 final String message = "The quick brown fox jumps over the lazy dog";
 try {
-    final BigInteger signature = SchnorrQ.schnorrQSign(publicKey, privateKey, message);
+    final BigInteger signature = SchnorrQ.schnorrQSign(privateKey, publicKey, message);
 } catch (EncryptionException e) {
     println("Error signing message");
 }
