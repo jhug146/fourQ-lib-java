@@ -445,4 +445,67 @@ public class ECCUtil {
                 fp2copy1271(source.tb)
         );
     }
+
+    /**
+     * Scalar decomposition for variable-base scalar multiplication using 4-dimensional GLV
+     * @param k - scalar in the range [0, 2^256-1]
+     * @return 4 sub-scalars for efficient scalar multiplication
+     */
+    public static BigInteger[] decompose(BigInteger k) {
+        // Phase 1: Compute initial coefficients using truncated multiplication
+        BigInteger a1 = mulTruncate(k, Params.ELL1);
+        BigInteger a2 = mulTruncate(k, Params.ELL2);
+        BigInteger a3 = mulTruncate(k, Params.ELL3);
+        BigInteger a4 = mulTruncate(k, Params.ELL4);
+
+        // Phase 2: Compute first scalar with parity adjustment
+        BigInteger temp = k
+                .subtract(a1.multiply(Params.B11))
+                .subtract(a2.multiply(Params.B21))
+                .subtract(a3.multiply(Params.B31))
+                .subtract(a4.multiply(Params.B41))
+                .add(Params.C1);
+
+        // Phase 3: Parity check and conditional adjustment
+        // If temp is even then mask = 0xFF...FF, else mask = 0
+        boolean isEven = !temp.testBit(0);
+        BigInteger mask = isEven ? Params.MASK_ALL_ONES : BigInteger.ZERO;
+
+        // Phase 4: Compute the 4 decomposed scalars
+        BigInteger[] scalars = new BigInteger[4];
+
+        scalars[0] = temp.add(mask.and(Params.B41));
+
+        scalars[1] = a1.multiply(Params.B12)
+                .add(a2)
+                .subtract(a3.multiply(Params.B32))
+                .subtract(a4.multiply(Params.B42))
+                .add(Params.C2)
+                .add(mask.and(Params.B42));
+
+        scalars[2] = a3.multiply(Params.B33)
+                .subtract(a1.multiply(Params.B13))
+                .subtract(a2)
+                .add(a4.multiply(Params.B43))
+                .add(Params.C3)
+                .subtract(mask.and(Params.B43));
+
+        scalars[3] = a1.multiply(Params.B14)
+                .subtract(a2.multiply(Params.B24))
+                .subtract(a3.multiply(Params.B34))
+                .add(a4.multiply(Params.B44))
+                .add(Params.C4)
+                .subtract(mask.and(Params.B44));
+
+        return scalars;
+    }
+
+    /**
+     * Truncated multiplication: computes floor((k * ell) / 2^256)
+     * This extracts the high bits of the multiplication
+     */
+    private static BigInteger mulTruncate(BigInteger k, BigInteger ell) {
+        BigInteger product = k.multiply(ell);
+        return product.shiftRight(256);  // Equivalent to dividing by 2^256
+    }
 }

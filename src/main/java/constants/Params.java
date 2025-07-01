@@ -78,4 +78,6 @@ public class Params {
     public static final BigInteger ELL3 = new BigInteger("D038BF8D0BFFBAF6C42BD6C965DCA9029B291A33678C203C", HEX_RADIX);
     public static final BigInteger ELL4 = new BigInteger("031B073877A22D841081CBDC3714983D8212E5666B77E7FDC0", HEX_RADIX);
 
+    public static final BigInteger MASK_ALL_ONES =
+            new BigInteger("FFFFFFFFFFFFFFFF", HEX_RADIX); // 64-bit all ones mask
 }
