@@ -106,6 +106,7 @@ public class Table {
                     new F2Element(new BigInteger(tRealArr), new BigInteger(tImArr))
             );
         }
+
         return point.dup();
     }
 }
