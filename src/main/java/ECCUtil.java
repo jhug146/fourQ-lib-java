@@ -54,7 +54,7 @@ public class ECCUtil {
     }
 
     // Helper method to convert BigInteger to F2Element
-    private static F2Element convertToF2Element(BigInteger generator) {
+    public static F2Element convertToF2Element(BigInteger generator) {
         // Split the 256-bit generator into two 127-bit parts for GF(p²)
         BigInteger realPart = generator.and(Params.MASK_127);                           // Lower 127 bits
         BigInteger imagPart = generator.shiftRight(127).and(Params.MASK_127);        // Upper 127 bits
@@ -257,7 +257,7 @@ public class ECCUtil {
         return null;
     }
 
-    private static ExtendedPoint<F2Element> pointSetup(FieldPoint<F2Element> point) {
+    public static ExtendedPoint<F2Element> pointSetup(FieldPoint<F2Element> point) {
         return new ExtendedPoint<>(
                 point.x,
                 point.y,
