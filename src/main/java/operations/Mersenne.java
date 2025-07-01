@@ -14,9 +14,9 @@ import static constants.Params.PRIME_1271;
  */
 
 class Mersenne {
-    // Mersenne prime reduction for p = 2^127 - 1
+    // Mersenne prime reduction for p = 2^127-1
     static BigInteger mersenneReduce127(BigInteger x) {
-        // For 2^127 - 1, we use the property that 2^127 ≡ 1 (mod 2^127 - 1)
+        // For 2^127-1, we use the property that 2^127 ≡ 1 (mod 2^127-1)
         // So any bits beyond position 126 can be added back to the lower bits
 
         if (x.bitLength() <= 127) {

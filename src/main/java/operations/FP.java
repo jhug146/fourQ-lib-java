@@ -93,11 +93,10 @@ public class FP {
     }
 
     /**
-     * The following assumes that BigInteger performance limitations are negligible.
-     *
      * @param a first argument in multiply
      * @param b second argument in multiply
      * @return a * b
+     * @implNote The following assumes that BigInteger performance limitations are negligible.
      */
     public static BigInteger multiply(BigInteger a, BigInteger b) {
         return a.multiply(b);

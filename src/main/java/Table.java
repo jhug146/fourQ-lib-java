@@ -25,9 +25,13 @@ public class Table {
         return null;
     }
 
-    // Constant-time table lookup to extract a point represented as (x+y,y-x,2t) corresponding to extended twisted Edwards coordinates (X:Y:Z:T) with Z=1
-    // Inputs: sign, digit, table containing VPOINTS_FIXEDBASE = 2^(W_FIXEDBASE-1) points
-    // Output: if sign=0 then P = table[digit], else if (sign=-1) then P = -table[digit]
+    /**
+     * Constant-time table lookup to extract a point represented as (x+y,y-x,2t) corresponding to extended twisted Edwards coordinates (X:Y:Z:T) with Z=1
+     * @param table containing VPOINTS_FIXEDBASE = 2^(W_FIXEDBASE-1) points
+     * @param digit
+     * @param sign
+     * @return if sign=0 then P = table[digit], else if (sign=-1) then P = -table[digit]
+     */
     public static PreComputedExtendedPoint<F2Element> tableLookupFixedBase(
             PreComputedExtendedPoint<F2Element>[] table,
             int digit,
@@ -65,7 +69,7 @@ public class Table {
                 xyRealArr[j] = (byte) ((mask.intValueExact() & (tRealArr[j] ^ tempPoint.xy.real.toByteArray()[j])) ^ tRealArr[j]);
                 xyImArr[j] = (byte) ((mask.intValueExact() & (tImArr[j] ^ tempPoint.xy.im.toByteArray()[j])) ^ tImArr[j]);
 
-                point = new PreComputedExtendedPoint<>(
+                point = new PreComputedExtendedPoint<F2Element>(
                         new F2Element(new BigInteger(xyRealArr), new BigInteger(xyImArr)),
                         new F2Element(new BigInteger(yxRealArr), new BigInteger(yxImArr)),
                         point.z,
@@ -99,7 +103,7 @@ public class Table {
             xyRealArr[j] = (byte) ((sign & (tRealArr[j] ^ tempPoint.t.real.toByteArray()[j])) ^ tRealArr[j]);
             xyRealArr[j] = (byte) ((sign & (tImArr[j] ^ tempPoint.t.im.toByteArray()[j])) ^ tImArr[j]);
 
-            point = new PreComputedExtendedPoint<>(
+            point = new PreComputedExtendedPoint<F2Element>(
                     new F2Element(new BigInteger(xyRealArr), new BigInteger(xyImArr)),
                     new F2Element(new BigInteger(yxRealArr), new BigInteger(yxImArr)),
                     point.z,
