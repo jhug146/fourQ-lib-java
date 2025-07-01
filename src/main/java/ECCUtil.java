@@ -97,24 +97,24 @@ public class ECCUtil {
     }
 
     private static ExtendedPoint<F2Element> r5ToR1(AffinePoint<F2Element> p) {
-        F2Element x = FP2.fp2div1271(fp2sub1271(p.x, p.y));
-        F2Element y = FP2.fp2div1271(FP2.fp2add1271(p.x, p.y));
+        F2Element x = fp2div1271(fp2sub1271(p.x, p.y));
+        F2Element y = fp2div1271(fp2add1271(p.x, p.y));
         return new ExtendedPoint<F2Element>(x, y, F2_ONE, x, y);
     }
 
     private static PreComputedExtendedPoint<F2Element> r1ToR2(ExtendedPoint<F2Element> point) {
-        F2Element t = fp2sub1271(FP2.fp2add1271(point.ta, point.ta), point.tb);
+        F2Element t = fp2sub1271(fp2add1271(point.ta, point.ta), point.tb);
         return new PreComputedExtendedPoint<>(
-                FP2.fp2add1271(point.y, point.x),
+                fp2add1271(point.y, point.x),
                 fp2sub1271(point.y, point.x),
-                FP2.fp2add1271(point.z, point.z),
+                fp2add1271(point.z, point.z),
                 fp2mul1271(t, convertToF2Element(Params.PARAMETER_D))
         );
     }
 
     private static PreComputedExtendedPoint<F2Element> r1ToR3(ExtendedPoint<F2Element> point) {
         return new PreComputedExtendedPoint<>(
-                FP2.fp2add1271(point.x, point.y),
+                fp2add1271(point.x, point.y),
                 fp2sub1271(point.y, point.x),
                 fp2mul1271(point.ta, point.tb),
                 point.z
@@ -136,16 +136,16 @@ public class ECCUtil {
             ExtendedPoint<F2Element> p
     ) {
         F2Element ta = fp2mul1271(p.ta, p.tb);          // Ta = T1
-        F2Element t1 = FP2.fp2add1271(p.z, p.z);            // t1 = 2Z1
+        F2Element t1 = fp2add1271(p.z, p.z);            // t1 = 2Z1
         ta = fp2mul1271(ta, q.t);                       // Ta = 2dT1*t2
-        F2Element pz = FP2.fp2add1271(p.x, p.y);            // Z = (X1+Y1)
+        F2Element pz = fp2add1271(p.x, p.y);            // Z = (X1+Y1)
         F2Element tb = fp2sub1271(p.y, p.x);            // Tb = (Y1-X1)
         F2Element t2 = fp2sub1271(t1, ta);              // t2 = theta
-        t1 = FP2.fp2add1271(t1, ta);                        // t1 = alpha
+        t1 = fp2add1271(t1, ta);                        // t1 = alpha
         ta = fp2mul1271(q.x, pz);                       // Ta = (X1+Y1)(x2+y2)
         F2Element x = fp2mul1271(q.y, tb);              // X = (Y1-X1)(y2-x2)
         tb = fp2sub1271(ta, x);                         // Tbfinal = beta
-        ta = FP2.fp2add1271(ta, x);                         // Tafinal = omega
+        ta = fp2add1271(ta, x);                         // Tafinal = omega
         return new ExtendedPoint<>(
                 fp2mul1271(tb, t2),                     //Xfinal = beta*theta
                 fp2mul1271(ta, t1),                     // Yfinal = alpha*omega
@@ -162,13 +162,13 @@ public class ECCUtil {
     private static ExtendedPoint<F2Element> eccDouble(ExtendedPoint<F2Element> p) {
         F2Element t1 = fp2sqr1271(p.x);                 // t1 = X1^2
         F2Element t2 = fp2sqr1271(p.y);                 // t2 = Y1^2
-        F2Element t3 = FP2.fp2add1271(p.x, p.y);            // t3 = X1+Y1
-        F2Element tb = FP2.fp2add1271(t1, t2);              // Tbfinal = X1^2+Y1^2
+        F2Element t3 = fp2add1271(p.x, p.y);            // t3 = X1+Y1
+        F2Element tb = fp2add1271(t1, t2);              // Tbfinal = X1^2+Y1^2
         t1 = fp2sub1271(t2, t1);                        // t1 = Y1^2-X1^2
         F2Element ta = fp2sqr1271(t3);                  // Ta = (X1+Y1)^2
         t2 = fp2sqr1271(p.z);                           // t2 = Z1^2
         ta = fp2sub1271(ta, tb);                        // Tafinal = 2X1*Y1 = (X1+Y1)^2-(X1^2+Y1^2)
-        t2 = FP2.fp2addsub1271(t2, t1);                     // t2 = 2Z1^2-(Y1^2-X1^2)
+        t2 = fp2addsub1271(t2, t1);                     // t2 = 2Z1^2-(Y1^2-X1^2)
         final F2Element y = fp2mul1271(t1, tb);         // Yfinal = (X1^2+Y1^2)(Y1^2-X1^2)
         final F2Element x = fp2mul1271(t2, ta);         // Xfinal = 2X1*Y1*[2Z1^2-(Y1^2-X1^2)]
         final F2Element z = fp2mul1271(t1, t2);         // Zfinal = (Y1^2-X1^2)[2Z1^2-(Y1^2-X1^2)]
@@ -176,7 +176,7 @@ public class ECCUtil {
     }
 
     private static FieldPoint<F2Element> eccNorm(ExtendedPoint<F2Element> p) {
-        final F2Element zInv = FP2.fp2inv1271(p.z);
+        final F2Element zInv = fp2inv1271(p.z);
         final F2Element x = fp2mul1271(p.x, zInv);
         final F2Element y = fp2mul1271(p.y, zInv);
         return new FieldPoint<>(x, y);
@@ -215,9 +215,9 @@ public class ECCUtil {
         F2Element x = fp2mul1271(p.xy, q.xy);
         F2Element y = fp2mul1271(p.yx, q.yx);
         F2Element t2 = fp2sub1271(t1, z);
-        t1 = FP2.fp2add1271(t1, z);
+        t1 = fp2add1271(t1, z);
         F2Element tb = fp2sub1271(x, y);
-        F2Element ta = FP2.fp2add1271(x, y);
+        F2Element ta = fp2add1271(x, y);
         return new ExtendedPoint<>(
                 fp2mul1271(tb, t2),
                 fp2mul1271(ta, t1),
@@ -427,4 +427,21 @@ public class ECCUtil {
         }
     }
 
+    /**
+     * Copy extended projective point source to destination
+     * Equivalent to C macro: ecccopy(source, dest)
+     * @param source the point to copy from Q = (X:Y:Z:Ta:Tb)
+     * @return dest the point to copy to P = (X:Y:Z:Ta:Tb)
+     */
+    private static ExtendedPoint<F2Element> eccCopy(
+            ExtendedPoint<F2Element> source
+    ) {
+        return new ExtendedPoint<F2Element>(
+                fp2copy1271(source.x),
+                fp2copy1271(source.y),
+                fp2copy1271(source.z),
+                fp2copy1271(source.ta),
+                fp2copy1271(source.tb)
+        );
+    }
 }
