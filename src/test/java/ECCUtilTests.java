@@ -6,7 +6,6 @@ import org.junit.jupiter.params.provider.*;
 import types.*;
 
 import java.math.BigInteger;
-import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.IntStream;
@@ -20,15 +19,13 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class ECCUtilComprehensiveTest {
+class ECCUtilTests {
 
-    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final Random DETERMINISTIC_RANDOM = new Random(12345L); // For reproducible tests
 
     // Test constants
     private static final BigInteger CURVE_ORDER = Params.CURVE_ORDER;
     private static final BigInteger FIELD_PRIME = BigInteger.ONE.shiftLeft(127).subtract(BigInteger.ONE);
-    private static final int MAX_SCALAR_BITS = 256;
     private static final int STRESS_TEST_ITERATIONS = 10000;
     private static final int PERFORMANCE_TEST_ITERATIONS = 1000;
 
@@ -115,7 +112,7 @@ class ECCUtilComprehensiveTest {
 
         // Point with maximum field values
         F2Element maxField = new F2Element(FIELD_PRIME.subtract(BigInteger.ONE), FIELD_PRIME.subtract(BigInteger.ONE));
-        AffinePoint<F2Element> maxPoint = new AffinePoint<F2Element>(maxField, maxField, zero);
+        AffinePoint<F2Element> maxPoint = new AffinePoint<>(maxField, maxField, zero);
         testPointsAffine.add(maxPoint);
         testPointsExtended.add(convertToExtended(maxPoint));
         testPointsField.add(convertToField(maxPoint));
@@ -267,7 +264,7 @@ class ECCUtilComprehensiveTest {
         @Order(11)
         @DisplayName("Point validation consistency")
         void testValidationConsistency() {
-            ExtendedPoint<F2Element> testPoint = testPointsExtended.get(0);
+            ExtendedPoint<F2Element> testPoint = testPointsExtended.getFirst();
 
             // Test multiple times to ensure consistency
             boolean firstResult = ECCUtil.eccPointValidate(testPoint);
@@ -302,7 +299,7 @@ class ECCUtilComprehensiveTest {
                     FIELD_PRIME.subtract(BigInteger.ONE));
             F2Element one = new F2Element(BigInteger.ONE, BigInteger.ZERO);
 
-            ExtendedPoint[] boundaryPoints = new ExtendedPoint[]{
+            ExtendedPoint<F2Element>[] boundaryPoints = new ExtendedPoint[] {
                     new ExtendedPoint<>(zero, zero, one, zero, zero),
                     new ExtendedPoint<>(maxField, maxField, one, maxField, maxField),
                     new ExtendedPoint<>(one, zero, one, zero, zero),
@@ -566,7 +563,7 @@ class ECCUtilComprehensiveTest {
         @Order(33)
         @DisplayName("mLSB recoding error conditions")
         void testMLSBRecodingErrors() {
-            BigInteger scalar = testScalars.get(0);
+            BigInteger scalar = testScalars.getFirst();
 
             // Test null array
             assertThrows(NullPointerException.class,
@@ -612,7 +609,7 @@ class ECCUtilComprehensiveTest {
 
         private Stream<BigInteger> providePowerOfTwoScalars() {
             return IntStream.range(0, 20)
-                    .mapToObj(i -> BigInteger.ONE.shiftLeft(i));
+                    .mapToObj(BigInteger.ONE::shiftLeft);
         }
     }
 
@@ -1039,7 +1036,7 @@ class ECCUtilComprehensiveTest {
         @Timeout(value = 30, unit = TimeUnit.SECONDS)
         @DisplayName("Point validation performance")
         void testValidationPerformance() {
-            ExtendedPoint<F2Element> testPoint = testPointsExtended.get(0);
+            ExtendedPoint<F2Element> testPoint = testPointsExtended.getFirst();
 
             long startTime = System.currentTimeMillis();
 
