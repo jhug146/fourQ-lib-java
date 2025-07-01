@@ -5,7 +5,10 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import types.*;
 
+import java.lang.reflect.Field;
 import java.math.BigInteger;
+
+import static operations.FP2.*;
 
 
 public class ECCUtil {
@@ -16,6 +19,17 @@ public class ECCUtil {
     private static final int L_FIXEDBASE = D_FIXEDBASE * W_FIXEDBASE;
 
     private static final F2Element F2_ONE = new F2Element(BigInteger.ONE, BigInteger.ONE);
+
+    // Supporting data structure for recode result
+    private static class RecodeResult {
+        final int[] digits;
+        final int[] signMasks;
+
+        RecodeResult(int[] digits, int[] signMasks) {
+            this.digits = digits;
+            this.signMasks = signMasks;
+        }
+    }
 
     // Set generator
     // Output: P = (x,y)
@@ -84,26 +98,26 @@ public class ECCUtil {
     }
 
     private static ExtendedPoint<F2Element> r5ToR1(AffinePoint<F2Element> p) {
-        F2Element x = FP2.fp2div1271(FP2.fp2sub1271(p.x, p.y));
+        F2Element x = FP2.fp2div1271(fp2sub1271(p.x, p.y));
         F2Element y = FP2.fp2div1271(FP2.fp2add1271(p.x, p.y));
         return new ExtendedPoint<F2Element>(x, y, F2_ONE, x, y);
     }
 
     private static PreComputedExtendedPoint<F2Element> r1ToR2(ExtendedPoint<F2Element> point) {
-        F2Element t = FP2.fp2sub1271(FP2.fp2add1271(point.ta, point.ta), point.tb);
+        F2Element t = fp2sub1271(FP2.fp2add1271(point.ta, point.ta), point.tb);
         return new PreComputedExtendedPoint<>(
                 FP2.fp2add1271(point.y, point.x),
-                FP2.fp2sub1271(point.y, point.x),
+                fp2sub1271(point.y, point.x),
                 FP2.fp2add1271(point.z, point.z),
-                FP2.fp2mul1271(t, convertToF2Element(Params.PARAMETER_D))
+                fp2mul1271(t, convertToF2Element(Params.PARAMETER_D))
         );
     }
 
     private static PreComputedExtendedPoint<F2Element> r1ToR3(ExtendedPoint<F2Element> point) {
         return new PreComputedExtendedPoint<>(
                 FP2.fp2add1271(point.x, point.y),
-                FP2.fp2sub1271(point.y, point.x),
-                FP2.fp2mul1271(point.ta, point.tb),
+                fp2sub1271(point.y, point.x),
+                fp2mul1271(point.ta, point.tb),
                 point.z
         );
     }
@@ -112,21 +126,21 @@ public class ECCUtil {
             AffinePoint<F2Element> q,
             ExtendedPoint<F2Element> p
     ) {
-        F2Element ta = FP2.fp2mul1271(p.ta, p.tb);          // Ta = T1
+        F2Element ta = fp2mul1271(p.ta, p.tb);          // Ta = T1
         F2Element t1 = FP2.fp2add1271(p.z, p.z);            // t1 = 2Z1
-        ta = FP2.fp2mul1271(ta, q.t);                       // Ta = 2dT1*t2
+        ta = fp2mul1271(ta, q.t);                       // Ta = 2dT1*t2
         F2Element pz = FP2.fp2add1271(p.x, p.y);            // Z = (X1+Y1)
-        F2Element tb = FP2.fp2sub1271(p.y, p.x);            // Tb = (Y1-X1)
-        F2Element t2 = FP2.fp2sub1271(t1, ta);              // t2 = theta
+        F2Element tb = fp2sub1271(p.y, p.x);            // Tb = (Y1-X1)
+        F2Element t2 = fp2sub1271(t1, ta);              // t2 = theta
         t1 = FP2.fp2add1271(t1, ta);                        // t1 = alpha
-        ta = FP2.fp2mul1271(q.x, pz);                       // Ta = (X1+Y1)(x2+y2)
-        F2Element x = FP2.fp2mul1271(q.y, tb);              // X = (Y1-X1)(y2-x2)
-        tb = FP2.fp2sub1271(ta, x);                         // Tbfinal = beta
+        ta = fp2mul1271(q.x, pz);                       // Ta = (X1+Y1)(x2+y2)
+        F2Element x = fp2mul1271(q.y, tb);              // X = (Y1-X1)(y2-x2)
+        tb = fp2sub1271(ta, x);                         // Tbfinal = beta
         ta = FP2.fp2add1271(ta, x);                         // Tafinal = omega
         return new ExtendedPoint<>(
-                FP2.fp2mul1271(tb, t2),                     //Xfinal = beta*theta
-                FP2.fp2mul1271(ta, t1),                     // Yfinal = alpha*omega
-                FP2.fp2mul1271(t1, t2),                     // Zfinal = theta*alpha
+                fp2mul1271(tb, t2),                     //Xfinal = beta*theta
+                fp2mul1271(ta, t1),                     // Yfinal = alpha*omega
+                fp2mul1271(t1, t2),                     // Zfinal = theta*alpha
                 ta,
                 tb
         );
@@ -137,25 +151,25 @@ public class ECCUtil {
     // Output: 2P = (Xfinal,Yfinal,Zfinal,Tafinal,Tbfinal), where Tfinal = Tafinal*Tbfinal,
     //         corresponding to (Xfinal:Yfinal:Zfinal:Tfinal) in extended twisted Edwards coordinates
     private static ExtendedPoint<F2Element> eccDouble(ExtendedPoint<F2Element> p) {
-        F2Element t1 = FP2.fp2sqr1271(p.x);                 // t1 = X1^2
-        F2Element t2 = FP2.fp2sqr1271(p.y);                 // t2 = Y1^2
+        F2Element t1 = fp2sqr1271(p.x);                 // t1 = X1^2
+        F2Element t2 = fp2sqr1271(p.y);                 // t2 = Y1^2
         F2Element t3 = FP2.fp2add1271(p.x, p.y);            // t3 = X1+Y1
         F2Element tb = FP2.fp2add1271(t1, t2);              // Tbfinal = X1^2+Y1^2
-        t1 = FP2.fp2sub1271(t2, t1);                        // t1 = Y1^2-X1^2
-        F2Element ta = FP2.fp2sqr1271(t3);                  // Ta = (X1+Y1)^2
-        t2 = FP2.fp2sqr1271(p.z);                           // t2 = Z1^2
-        ta = FP2.fp2sub1271(ta, tb);                        // Tafinal = 2X1*Y1 = (X1+Y1)^2-(X1^2+Y1^2)
+        t1 = fp2sub1271(t2, t1);                        // t1 = Y1^2-X1^2
+        F2Element ta = fp2sqr1271(t3);                  // Ta = (X1+Y1)^2
+        t2 = fp2sqr1271(p.z);                           // t2 = Z1^2
+        ta = fp2sub1271(ta, tb);                        // Tafinal = 2X1*Y1 = (X1+Y1)^2-(X1^2+Y1^2)
         t2 = FP2.fp2addsub1271(t2, t1);                     // t2 = 2Z1^2-(Y1^2-X1^2)
-        final F2Element y = FP2.fp2mul1271(t1, tb);         // Yfinal = (X1^2+Y1^2)(Y1^2-X1^2)
-        final F2Element x = FP2.fp2mul1271(t2, ta);         // Xfinal = 2X1*Y1*[2Z1^2-(Y1^2-X1^2)]
-        final F2Element z = FP2.fp2mul1271(t1, t2);         // Zfinal = (Y1^2-X1^2)[2Z1^2-(Y1^2-X1^2)]
+        final F2Element y = fp2mul1271(t1, tb);         // Yfinal = (X1^2+Y1^2)(Y1^2-X1^2)
+        final F2Element x = fp2mul1271(t2, ta);         // Xfinal = 2X1*Y1*[2Z1^2-(Y1^2-X1^2)]
+        final F2Element z = fp2mul1271(t1, t2);         // Zfinal = (Y1^2-X1^2)[2Z1^2-(Y1^2-X1^2)]
         return new ExtendedPoint<>(x, y, z, ta, tb);
     }
 
     private static FieldPoint<F2Element> eccNorm(ExtendedPoint<F2Element> p) {
         final F2Element zInv = FP2.fp2inv1271(p.z);
-        final F2Element x = FP2.fp2mul1271(p.x, zInv);
-        final F2Element y = FP2.fp2mul1271(p.y, zInv);
+        final F2Element x = fp2mul1271(p.x, zInv);
+        final F2Element y = fp2mul1271(p.y, zInv);
         return new FieldPoint<>(x, y);
     }
 
@@ -187,18 +201,18 @@ public class ECCUtil {
             PreComputedExtendedPoint<F2Element> p,
             PreComputedExtendedPoint<F2Element> q
     ) {
-        F2Element z = FP2.fp2mul1271(p.t, q.t);
-        F2Element t1 = FP2.fp2mul1271(p.z, q.z);
-        F2Element x = FP2.fp2mul1271(p.xy, q.xy);
-        F2Element y = FP2.fp2mul1271(p.yx, q.yx);
-        F2Element t2 = FP2.fp2sub1271(t1, z);
+        F2Element z = fp2mul1271(p.t, q.t);
+        F2Element t1 = fp2mul1271(p.z, q.z);
+        F2Element x = fp2mul1271(p.xy, q.xy);
+        F2Element y = fp2mul1271(p.yx, q.yx);
+        F2Element t2 = fp2sub1271(t1, z);
         t1 = FP2.fp2add1271(t1, z);
-        F2Element tb = FP2.fp2sub1271(x, y);
+        F2Element tb = fp2sub1271(x, y);
         F2Element ta = FP2.fp2add1271(x, y);
         return new ExtendedPoint<>(
-                FP2.fp2mul1271(tb, t2),
-                FP2.fp2mul1271(ta, t1),
-                FP2.fp2mul1271(t1, t2),
+                fp2mul1271(tb, t2),
+                fp2mul1271(ta, t1),
+                fp2mul1271(t1, t2),
                 ta,
                 tb
         );
@@ -281,9 +295,97 @@ public class ECCUtil {
         return digits;
     }
 
-    public static boolean eccMul(AffinePoint<F2Element> P, BigInteger K, AffinePoint<F2Element> Q, boolean clearCofactor) {
+    /**
+     * Point validation: check if point lies on the curve
+     * @param p = (x,y) in affine coordinates, where x, y in [0, 2^127-1]
+     * @return true if point lies on curve E: -x^2+y^2-1-dx^2*y^2 = 0, false otherwise
+     *
+     * @implNote this function does not run in constant time (input point P is assumed to be public)
+     */
+    public static boolean eccPointValidate(@NotNull AffinePoint<F2Element> p) {
+        F2Element t1 = fp2sqr1271(p.y);                                 // y^2
+        F2Element t2 = fp2sqr1271(p.x);                                 // x^2
+        F2Element t3 = fp2sub1271(t1, t2);                              // y^2 - x^2 = -x^2 + y^2
 
-        return false;
+        t1 = fp2mul1271(t1, t2);                                        // x^2*y^2
+        t2 = fp2mul1271(convertToF2Element(Params.PARAMETER_D), t1);    // dx^2*y^2
+
+        // Create F2Element representing 1 + 0i
+        F2Element one = new F2Element(BigInteger.ONE, BigInteger.ZERO);
+        t2 = fp2add1271(t2, one);                                       // 1 + dx^2*y^2
+        t1 = fp2sub1271(t3, t2);                                        // -x^2 + y^2 - 1 - dx^2*y^2
+
+        // Reduce modulo (2^127-1)
+        t1 = new F2Element(
+                FP.putil.mod1271(t1.real),
+                FP.putil.mod1271(t1.im)
+        );
+
+        // Check if the result is zero (both real and imaginary parts must be zero) to be on the curve.
+        return t1.real.equals(BigInteger.ZERO) && t1.im.equals(BigInteger.ZERO);
     }
 
+    /**
+     * Variable-base scalar multiplication Q = k*P using a 4-dimensional decomposition
+     *
+     * @param P point P = (x,y) in affine coordinates
+     * @param K scalar "k" in [0, 2^256-1]
+     * @param Q output point Q = k*P in affine coordinates (modified in place)
+     * @param clearCofactor whether cofactor clearing is required
+     * @return true if successful, false if point validation fails
+     */
+    @Contract(value = "null, _, _, _ -> fail; _, null, _, _ -> fail; _, _, null, _ -> fail", mutates = "param3")
+    public static boolean eccMul(
+            FieldPoint<F2Element> P,
+            BigInteger K,
+            AffinePoint<F2Element> Q,
+            boolean clearCofactor
+    ) {
+        // Convert to representation (X, Y, 1, Ta, Tb)
+        ExtendedPoint<F2Element> R = pointSetup(P);
+
+        // Scalar decomposition into 4 scalars using endomorphisms
+        BigInteger[] scalars = decompose(K);
+
+        // Check if the point lies on the curve
+        if (!eccPointValidate(R)) {
+            return false;
+        }
+
+        // Optional cofactor clearing
+        if (clearCofactor) { R = cofactorClearing(R); }
+
+        // Scalar recoding for efficient computation
+        RecodeResult recodeResult = recode(scalars);
+        int[] digits = recodeResult.digits;
+        int[] signMasks = recodeResult.signMasks;
+
+        // Precomputation - create table of 8 precomputed points
+        PreComputedExtendedPoint<F2Element>[] table = eccPrecomp(R);
+
+        // Extract initial point in (X+Y,Y-X,2Z,2dT) representation
+        PreComputedExtendedPoint<F2Element> S = tableLookup1x8(table, digits[64], signMasks[64]);
+
+        // Convert to representation (2X,2Y,2Z) for doubling operations
+        R = r2ToR4(S);
+
+        // Main computation loop: double-and-add with precomputed table
+        for (int i = 63; i >= 0; i--) {
+            // Extract point S in (X+Y,Y-X,2Z,2dT) representation
+            S = tableLookup1x8(table, digits[i], signMasks[i]);
+
+            // Double: R = 2*R using (X,Y,Z,Ta,Tb) <- 2*(X,Y,Z)
+            R = eccDouble(R);
+
+            // Add: R = R+S using (X,Y,Z,Ta,Tb) <- (X,Y,Z,Ta,Tb) + (X+Y,Y-X,2Z,2dT)
+            R = eccAdd(S, R);
+        }
+
+        // Convert to affine coordinates (x,y) and store in output parameter Q
+        FieldPoint<F2Element> result = eccNorm(R);
+        Q.x = result.x;
+        Q.y = result.y;
+
+        return true;
+    }
 }
