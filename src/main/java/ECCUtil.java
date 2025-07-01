@@ -236,7 +236,10 @@ public class ECCUtil {
      *               - Remaining values (indices d to l-1) store recoded values (excluding sign)
      */
     @Contract(value = "_, _ -> _", mutates = "param2")
-    public static int @NotNull [] mLSBSetRecode(BigInteger inputScalar, int @NotNull [] digits) {
+    public static int @NotNull [] mLSBSetRecode(
+            BigInteger inputScalar,
+            int @NotNull [] digits
+    ) {
         final int d = D_FIXEDBASE;                              // ceil(bitlength(order)/(w*v))*v
 
         BigInteger scalar = inputScalar;
@@ -278,5 +281,9 @@ public class ECCUtil {
         return digits;
     }
 
+    public static boolean eccMul(AffinePoint<F2Element> P, BigInteger K, AffinePoint<F2Element> Q, boolean clearCofactor) {
+
+        return false;
+    }
 
 }
