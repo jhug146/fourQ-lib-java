@@ -1,6 +1,7 @@
 package crypto;
 
 import constants.Params;
+import exceptions.EncryptionException;
 import operations.FP;
 import operations.FP2;
 import org.jetbrains.annotations.Contract;
@@ -58,6 +59,7 @@ public class ECCUtil {
         return new F2Element(realPart, imagPart);
     }
 
+    @NotNull
     public static FieldPoint<F2Element> eccMulFixed(BigInteger val) {
         BigInteger temp = FP.moduloOrder(val);
         temp = FP.conversionToOdd(temp);
@@ -192,22 +194,20 @@ public class ECCUtil {
     public static FieldPoint<F2Element> eccMulDouble(
             BigInteger k,
             FieldPoint<F2Element> q, BigInteger l
-    ) {
+    ) throws EncryptionException {
         // Step 1: Compute l*Q
         FieldPoint<F2Element> lQ = eccMul(q, l);
-        if (lQ == null) { return null; }                    // Point validation failed
 
         // Step 2-3: Convert l*Q to precomputed format
         ExtendedPoint<F2Element> extLQ = pointSetup(lQ);
-        PreComputedExtendedPoint<F2Element> precompLQ = r1ToR2(extLQ);
+        PreComputedExtendedPoint<F2Element> preCompLQ = r1ToR2(extLQ);
 
         // Step 4: Compute k*G (generator multiplication)
         FieldPoint<F2Element> kG = eccMulFixed(k);
-        if (kG == null) { return null; }
 
         // Step 5-6: Add k*G + l*Q
         ExtendedPoint<F2Element> extKG = pointSetup(kG);
-        ExtendedPoint<F2Element> result = eccAdd(precompLQ, extKG);
+        ExtendedPoint<F2Element> result = eccAdd(preCompLQ, extKG);
 
         // Step 7: Normalize to affine coordinates
         return eccNorm(result);
@@ -241,11 +241,12 @@ public class ECCUtil {
         return eccAddCore(q, r1ToR3(p));
     }
 
+    @NotNull
     private static FieldPoint<F2Element> eccMul(
             FieldPoint<F2Element> p,
             BigInteger k
-    ) {
-        return null;
+    ) throws EncryptionException {
+        throw new EncryptionException("");
     }
 
     public static ExtendedPoint<F2Element> pointSetup(FieldPoint<F2Element> point) {
@@ -356,7 +357,7 @@ public class ECCUtil {
             BigInteger K,
             AffinePoint<F2Element> Q,
             boolean clearCofactor // Equivalent to the C Flag
-    ) {
+    ) throws EncryptionException {
         // Convert to representation (X, Y, 1, Ta, Tb)
         ExtendedPoint<F2Element> R = pointSetup(P);
 
@@ -380,21 +381,24 @@ public class ECCUtil {
         PreComputedExtendedPoint<F2Element>[] table = eccPrecomp(R);
 
         // Extract initial point in (X+Y,Y-X,2Z,2dT) representation
-        PreComputedExtendedPoint<F2Element> S = Table.tableLookup1x8(table, digits[64], signMasks[64]);
+        try {
+            PreComputedExtendedPoint<F2Element> S = Table.tableLookup1x8(table, digits[64], signMasks[64]);
+            // Convert to representation (2X,2Y,2Z) for doubling operations
+            R = r2ToR4(S, R);
 
-        // Convert to representation (2X,2Y,2Z) for doubling operations
-        R = r2ToR4(S, R);
+            // Main computation loop: double-and-add with precomputed table
+            for (int i = 63; i >= 0; i--) {
+                // Extract point S in (X+Y,Y-X,2Z,2dT) representation
+                S = Table.tableLookup1x8(table, digits[i], signMasks[i]);
 
-        // Main computation loop: double-and-add with precomputed table
-        for (int i = 63; i >= 0; i--) {
-            // Extract point S in (X+Y,Y-X,2Z,2dT) representation
-            S = Table.tableLookup1x8(table, digits[i], signMasks[i]);
+                // Double: R = 2*R using (X,Y,Z,Ta,Tb) <- 2*(X,Y,Z)
+                R = eccDouble(R);
 
-            // Double: R = 2*R using (X,Y,Z,Ta,Tb) <- 2*(X,Y,Z)
-            R = eccDouble(R);
-
-            // Add: R = R+S using (X,Y,Z,Ta,Tb) <- (X,Y,Z,Ta,Tb) + (X+Y,Y-X,2Z,2dT)
-            R = eccAdd(S, R);
+                // Add: R = R+S using (X,Y,Z,Ta,Tb) <- (X,Y,Z,Ta,Tb) + (X+Y,Y-X,2Z,2dT)
+                R = eccAdd(S, R);
+            }
+        } catch (exceptions.TableLookupException e) {
+            throw new EncryptionException("Table lookup exception thrown.\n");
         }
 
         // Convert to affine coordinates (x,y) and store in output parameter Q
@@ -445,7 +449,7 @@ public class ECCUtil {
     public static ExtendedPoint<F2Element> eccCopy(
             ExtendedPoint<F2Element> source
     ) {
-        return new ExtendedPoint<F2Element>(
+        return new ExtendedPoint<>(
                 fp2Copy1271(source.x),
                 fp2Copy1271(source.y),
                 fp2Copy1271(source.z),

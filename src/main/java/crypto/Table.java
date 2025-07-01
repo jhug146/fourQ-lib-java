@@ -1,6 +1,8 @@
 package crypto;
 
 import constants.Params;
+import exceptions.TableLookupException;
+import org.jetbrains.annotations.NotNull;
 import types.F2Element;
 import types.PreComputedExtendedPoint;
 
@@ -17,17 +19,19 @@ public class Table {
      * @param sign_masks
      * @return = sign*table[digit], where sign=1 if sign_mask=0xFF...FF and sign=-1 if sign_mask=0
      */
+    @NotNull
     public static PreComputedExtendedPoint<F2Element> tableLookup1x8(
             PreComputedExtendedPoint<F2Element>[] table,
             int digits,
             int sign_masks
-    ) {
-        return null;
+    ) throws TableLookupException {
+        throw new TableLookupException("");
     }
 
     // Constant-time table lookup to extract a point represented as (x+y,y-x,2t) corresponding to extended twisted Edwards coordinates (X:Y:Z:T) with Z=1
     // Inputs: sign, digit, table containing VPOINTS_FIXEDBASE = 2^(W_FIXEDBASE-1) points
     // Output: if sign=0 then P = table[digit], else if (sign=-1) then P = -table[digit]
+    @NotNull
     public static PreComputedExtendedPoint<F2Element> tableLookupFixedBase(
             PreComputedExtendedPoint<F2Element>[] table,
             int digit,
