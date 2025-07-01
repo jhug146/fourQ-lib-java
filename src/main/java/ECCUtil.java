@@ -1,6 +1,8 @@
 import constants.Params;
 import operations.FP;
 import operations.FP2;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import types.*;
 
 import java.math.BigInteger;
@@ -233,7 +235,8 @@ public class ECCUtil {
      *               - First d values (indices 0 to d-1) store signs: -1 (negative), 0 (positive)
      *               - Remaining values (indices d to l-1) store recoded values (excluding sign)
      */
-    public static int[] mLSBSetRecode(BigInteger inputScalar, int[] digits) {
+    @Contract(value = "_, _ -> _", mutates = "param2")
+    public static int @NotNull [] mLSBSetRecode(BigInteger inputScalar, int @NotNull [] digits) {
         final int d = D_FIXEDBASE;                              // ceil(bitlength(order)/(w*v))*v
 
         BigInteger scalar = inputScalar;
@@ -274,4 +277,6 @@ public class ECCUtil {
 
         return digits;
     }
+
+
 }
