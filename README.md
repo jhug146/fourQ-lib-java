@@ -8,22 +8,22 @@ A library that implements the high-security, high-performance elliptic curve fou
 ## Examples
 ### Public Key Generation
 ```
-int hexRadix = 16
-BigInteger privateKey = new BigInteger("F510847AAB323", hexRadix);
-BigInteger publicKey = SchnorrQ.schnorrQKeyGeneration(privateKey);
+final int HEX_RADIX = 16
+final BigInteger privateKey = new BigInteger("F510847AAB323", hexRadix);
+final BigInteger publicKey = SchnorrQ.schnorrQKeyGeneration(privateKey);
 ```
 
 ### Public-Private Key Pair Generation
 ```
-Pair<BigInteger, BigInteger> keyPair = SchnorrQ.schnorrQFullKeyGeneration();
+final Pair<BigInteger, BigInteger> keyPair = SchnorrQ.schnorrQFullKeyGeneration();
 ```
 
 ### SchnorrQ Message Signing
 ```
-Pair<BigInteger, BigInteger> keyPair = SchnorrQ.schnorrQFullKeyGeneration();
-String message = "The quick brown fox jumps over the lazy dog";
+final Pair<BigInteger, BigInteger> keyPair = SchnorrQ.schnorrQFullKeyGeneration();
+final String message = "The quick brown fox jumps over the lazy dog";
 try {
-    BigInteger signature = SchnorrQ.schnorrQSign(keyPair.first, keyPair.second, message);
+    final BigInteger signature = SchnorrQ.schnorrQSign(keyPair.first, keyPair.second, message);
 } catch (EncryptionException e) {
     println("Error signing message");
 }
