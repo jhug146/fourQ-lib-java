@@ -78,14 +78,13 @@ class Mersenne {
     // Generic Mersenne reduction for any 2^n - 1
     static BigInteger mersenneReduce(@NotNull BigInteger x, int n) {
         BigInteger prime = BigInteger.ONE.shiftLeft(n).subtract(BigInteger.ONE);
-        BigInteger mask = prime;
 
         if (x.bitLength() <= n) {
             return x.equals(prime) ? BigInteger.ZERO : x;
         }
 
         while (x.bitLength() > n) {
-            BigInteger xLow = x.and(mask);      // Lower n bits
+            BigInteger xLow = x.and(prime);      // Lower n bits
             BigInteger xHigh = x.shiftRight(n); // Upper bits
             x = xHigh.add(xLow);
         }

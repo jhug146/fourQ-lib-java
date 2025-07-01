@@ -1,6 +1,5 @@
 package operations;
 
-import types.AddResult;
 import types.Pair;
 import constants.Params;
 
@@ -8,42 +7,13 @@ import java.math.BigInteger;
 
 public class FP {
 
-    private interface Macros {
-        static AddResult ADDC(int carryIn, int a, int b) {
-            // Use long to capture overflow
-            long temp = (a & 0xFFFFFFFFL) + (b & 0xFFFFFFFFL) + (carryIn & 0xFFFFFFFFL);
-            int sum = (int) temp;                               // Low 32 bits
-            int carry = (int) (temp >>> Params.RADIX);          // High 32 bits (carry)
-            return new AddResult(sum, carry);
-        }
-    }
-
     public static BigInteger moduloOrder(BigInteger key) {
-        return montgomeryMultiplyModOrder
-                (montgomeryMultiplyModOrder(key, Params.MONTGOMERY_R_PRIME), BigInteger.ONE);
+        return montgomeryMultiplyModOrder(
+                montgomeryMultiplyModOrder(key, Params.MONTGOMERY_R_PRIME),
+                BigInteger.ONE
+        );
     }
 
-    /*
-    static BigInteger montgomeryMultiplyModOrder(BigInteger a, BigInteger b) {
-        BigInteger product = multiply(a, b), quotient = multiply(product, constants.FourQConstants.MONTGOMERY_R_PRIME);
-        BigInteger returnEnd = multiply(quotient, constants.FourQConstants.CURVE_ORDER);
-
-        Pair<BigInteger, Integer> result = mpAdd(product, returnEnd);
-        returnEnd = result.first;
-        int carryOut = result.second;
-
-        BigInteger returnVal = returnEnd.shiftRight(NWORDS_ORDER);
-
-        Pair<BigInteger, Integer> result2 = mpSubtract(returnVal, constants.FourQConstants.CURVE_ORDER);
-
-        returnVal = returnVal.add(result2.first);
-        Integer bout = result2.second;
-        int mask = carryOut - bout;
-
-        returnEnd = returnEnd.add(constants.FourQConstants.CURVE_ORDER.and(BigInteger.valueOf(mask)));
-        return returnVal.add(returnEnd);
-    }
-    */ // <-Previous implementation.
     public static BigInteger montgomeryMultiplyModOrder(BigInteger a, BigInteger b) {
         BigInteger product = a.multiply(b);
 
@@ -118,7 +88,7 @@ public class FP {
             BigInteger wrappedSum = sum.remainder(maxValue);
             return new Pair<>(wrappedSum, 1);
         } else {
-            // Nooverflow, return sum as-is, carry = 0
+            // No overflow, return sum as-is, carry = 0
             return new Pair<>(sum, 0);
         }
     }
@@ -138,36 +108,36 @@ public class FP {
     }
 
     // namespace for prime-based utility functions.
-    public interface putil {
+    public interface PUtil {
         // Modular correction, output = a mod (2^127-1)
         static BigInteger mod1271(BigInteger a) {
             return a.mod(Params.PRIME_1271);
         }
 
         // Field multiplication using schoolbook method, c = a*b mod p
-        static BigInteger fpmul1271(BigInteger a, BigInteger b) {
+        static BigInteger fpMul1271(BigInteger a, BigInteger b) {
             return Mersenne.mersenneReduce127Fast(multiply(a, b));
         }
 
         // Field squaring using schoolbook method, output = a^2 mod p
-        static BigInteger fpsqr1271(BigInteger a) {
-            return putil.fpmul1271(a, a);
+        static BigInteger fpSqr1271(BigInteger a) {
+            return PUtil.fpMul1271(a, a);
         }
 
         // Zeroing a field element, a = 0
         //  NB: There is no mutable BigInteger interface, which renders this functionality
         //          heavily redundant.
-        static BigInteger fpzero1271(BigInteger a) {
+        static BigInteger fpZero1271() {
             return BigInteger.ZERO;
         }
 
         // Copy of a field element, out = a
-        static BigInteger fpcopy1271(BigInteger a) {
+        static BigInteger fpCopy1271(BigInteger a) {
             return a.subtract(BigInteger.ZERO);
         }
 
         // Field negation, a = -a mod (2^127-1)
-        static BigInteger fpneg1271(BigInteger a) {
+        static BigInteger fpNeg1271(BigInteger a) {
             // Ensure input is in valid range first
             a = a.mod(Params.PRIME_1271);
 
@@ -178,15 +148,15 @@ public class FP {
         }
 
         // Field inversion, af = a^-1 = a^(p-2) mod p
-        static BigInteger fpinv1271(BigInteger a) {
-            BigInteger outputBuilder = fpexp1251(a);
-            outputBuilder = fpsqr1271(outputBuilder);
-            outputBuilder = fpsqr1271(outputBuilder);
-            outputBuilder = fpmul1271(a, outputBuilder);
+        static BigInteger fpInv1271(BigInteger a) {
+            BigInteger outputBuilder = fpExp1251(a);
+            outputBuilder = fpSqr1271(outputBuilder);
+            outputBuilder = fpSqr1271(outputBuilder);
+            outputBuilder = fpMul1271(a, outputBuilder);
             return outputBuilder;
         }
 
-        static BigInteger fpexp1251(BigInteger a) {
+        static BigInteger fpExp1251(BigInteger a) {
             // TODO ASSM: The "1251" in the name might refer to a specific windowing or addition chain strategy,
             //  not the literal exponent 1251
             BigInteger exponent = BigInteger.ONE.shiftLeft(125).subtract(BigInteger.ONE);
@@ -201,7 +171,7 @@ public class FP {
         }
 
         // Field addition, c = a+b mod (2^127-1)
-        static BigInteger fpadd1271(BigInteger a, BigInteger b) {
+        static BigInteger fpAdd1271(BigInteger a, BigInteger b) {
             BigInteger sum = a.add(b);
 
             // Quick path: if sum < 2^127, no reduction needed
@@ -224,7 +194,7 @@ public class FP {
         }
 
         // Field subtraction, c = a-b mod (2^127-1)
-        static BigInteger fpsub1271(BigInteger a, BigInteger b) {
+        static BigInteger fpSub1271(BigInteger a, BigInteger b) {
             BigInteger diff = a.subtract(b);
 
             // If result is negative, add the prime to make it positive
@@ -236,8 +206,8 @@ public class FP {
         }
 
         // Field division by two, output = a/2 mod (2^127-1)
-        static BigInteger fpdiv1271(BigInteger a) {
-            // If a is odd, add (2^127-1) to make it even before dividing
+        static BigInteger fpDiv1271(BigInteger a) {
+            // If input is odd, add (2^127-1) to make it even before dividing
             // Check if least significant bit is 1 (odd)
             BigInteger dividend = a.testBit(0) ? a.add(Params.PRIME_1271) : a;
             return Mersenne.mersenneReduce127Fast(dividend.shiftRight(1));

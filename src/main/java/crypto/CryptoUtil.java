@@ -1,3 +1,5 @@
+package crypto;
+
 import constants.Params;
 import exceptions.EncryptionException;
 import operations.FP;
@@ -15,21 +17,21 @@ public class CryptoUtil {
     private static final F2Element PARAM_D_F2 = ECCUtil.convertToF2Element(Params.PARAMETER_D);
     private static final F2Element ONE = new F2Element(BigInteger.ONE, BigInteger.ZERO);
 
-    static BigInteger randomBytes(int size) {
+    public static BigInteger randomBytes(int size) {
         byte[] bytes = new byte[size];
         secureRandom.nextBytes(bytes);
         return new BigInteger(bytes);
     }
 
-    static BigInteger toMontgomery(BigInteger key) {
+    public static BigInteger toMontgomery(BigInteger key) {
         return FP.montgomeryMultiplyModOrder(key, Params.MONTGOMERY_R_PRIME);
     }
 
-    static BigInteger fromMontgomery(BigInteger key) {
+    public static BigInteger fromMontgomery(BigInteger key) {
         return FP.montgomeryMultiplyModOrder(key, BigInteger.ONE);
     }
 
-    static BigInteger encode(FieldPoint<F2Element> point) {
+    public static BigInteger encode(FieldPoint<F2Element> point) {
         BigInteger y = point.y.real.add(point.y.im.shiftLeft(128));
         boolean ySignBit = point.y.real.compareTo(BigInteger.ZERO) <= 0;
         if (ySignBit) {
@@ -38,46 +40,46 @@ public class CryptoUtil {
         return y;
     }
 
-    static FieldPoint<F2Element> decode(BigInteger encoded) throws EncryptionException {
+    public static FieldPoint<F2Element> decode(BigInteger encoded) throws EncryptionException {
         final var y = ECCUtil.convertToF2Element(encoded.mod(POW_32));  // TODO: Potential endian problem here
         int signBit = (encoded.compareTo(BigInteger.ZERO) <= 0) ? 1 : 0;
 
-        F2Element u = FP2.fp2sqr1271(y);
-        F2Element v = FP2.fp2mul1271(u, PARAM_D_F2);
-        u = FP2.fp2sub1271(u, ONE);
-        v = FP2.fp2add1271(v, ONE);
+        F2Element u = FP2.fp2Sqr1271(y);
+        F2Element v = FP2.fp2Mul1271(u, PARAM_D_F2);
+        u = FP2.fp2Sub1271(u, ONE);
+        v = FP2.fp2Add1271(v, ONE);
 
-        BigInteger t0 = FP.putil.fpsqr1271(v.real);
-        BigInteger t1 = FP.putil.fpsqr1271(v.im);         // t1 = v1^2
-        t0 = FP.putil.fpadd1271(t0, t1);                  // t0 = t0+t1
-        t1 = FP.putil.fpmul1271(u.real, v.real);          // t1 = u0*v0
-        BigInteger t2 = FP.putil.fpmul1271(u.im, v.im);   // t2 = u1*v1
-        t1 = FP.putil.fpadd1271(t1, t2);                  // t1 = t1+t2
-        t2 = FP.putil.fpmul1271(u.im, v.real);            // t2 = u1*v0
-        BigInteger t3 = FP.putil.fpmul1271(u.real, v.im); // t3 = u0*v1
-        t2 = FP.putil.fpsub1271(t2, t3);                  // t2 = t2-t3
-        t3 = FP.putil.fpsqr1271(t1);                      // t3 = t1^2
-        BigInteger t4 = FP.putil.fpsqr1271(t2);           // t4 = t2^2
-        t3 = FP.putil.fpadd1271(t3, t4);                  // t3 = t3+t4
+        BigInteger t0 = FP.PUtil.fpSqr1271(v.real);
+        BigInteger t1 = FP.PUtil.fpSqr1271(v.im);         // t1 = v1^2
+        t0 = FP.PUtil.fpAdd1271(t0, t1);                  // t0 = t0+t1
+        t1 = FP.PUtil.fpMul1271(u.real, v.real);          // t1 = u0*v0
+        BigInteger t2 = FP.PUtil.fpMul1271(u.im, v.im);   // t2 = u1*v1
+        t1 = FP.PUtil.fpAdd1271(t1, t2);                  // t1 = t1+t2
+        t2 = FP.PUtil.fpMul1271(u.im, v.real);            // t2 = u1*v0
+        BigInteger t3 = FP.PUtil.fpMul1271(u.real, v.im); // t3 = u0*v1
+        t2 = FP.PUtil.fpSub1271(t2, t3);                  // t2 = t2-t3
+        t3 = FP.PUtil.fpSqr1271(t1);                      // t3 = t1^2
+        BigInteger t4 = FP.PUtil.fpSqr1271(t2);           // t4 = t2^2
+        t3 = FP.PUtil.fpAdd1271(t3, t4);                  // t3 = t3+t4
         for (int i = 0; i < 125; i++) {                       // t3 = t3^(2^125)
-            t3 = FP.putil.fpsqr1271(t3);
+            t3 = FP.PUtil.fpSqr1271(t3);
         }
 
-        BigInteger t = FP.putil.fpadd1271(t1, t3);      // t = t1+t3
+        BigInteger t = FP.PUtil.fpAdd1271(t1, t3);      // t = t1+t3
         if (t.equals(BigInteger.ZERO)) {
-            t = FP.putil.fpsub1271(t1, t3);             // t = t1-t3
+            t = FP.PUtil.fpSub1271(t1, t3);             // t = t1-t3
         }
-        t = FP.putil.fpadd1271(t, t);                   // t = 2*t
-        t3 = FP.putil.fpsqr1271(t0);                    // t3 = t0^2
-        t3 = FP.putil.fpmul1271(t3, t0);                // t3 = t3*t0
-        t3 = FP.putil.fpmul1271(t, t3);                 // t3 = t3*t
-        BigInteger r = FP.putil.fpexp1251(t3);          // r = t3^(2^125-1)
-        t3 = FP.putil.fpmul1271(t0, r);                 // t3 = t0*r
-        BigInteger x0 = FP.putil.fpmul1271(t, t3);      // x0 = t*t3
-        t1 = FP.putil.fpsqr1271(x0);
-        t1 = FP.putil.fpmul1271(t0, t1);                // t1 = t0*x0^2
-        x0 = FP.putil.fpdiv1271(x0);                    // x0 = x0/2
-        BigInteger x1 = FP.putil.fpmul1271(t2, t3);     // x1 = t3*t2
+        t = FP.PUtil.fpAdd1271(t, t);                   // t = 2*t
+        t3 = FP.PUtil.fpSqr1271(t0);                    // t3 = t0^2
+        t3 = FP.PUtil.fpMul1271(t3, t0);                // t3 = t3*t0
+        t3 = FP.PUtil.fpMul1271(t, t3);                 // t3 = t3*t
+        BigInteger r = FP.PUtil.fpExp1251(t3);          // r = t3^(2^125-1)
+        t3 = FP.PUtil.fpMul1271(t0, r);                 // t3 = t0*r
+        BigInteger x0 = FP.PUtil.fpMul1271(t, t3);      // x0 = t*t3
+        t1 = FP.PUtil.fpSqr1271(x0);
+        t1 = FP.PUtil.fpMul1271(t0, t1);                // t1 = t0*x0^2
+        x0 = FP.PUtil.fpDiv1271(x0);                    // x0 = x0/2
+        BigInteger x1 = FP.PUtil.fpMul1271(t2, t3);     // x1 = t3*t2
 
         if (!t.equals(t1)) {        // If t != t1 then swap x0 and x1
             t0 = x0;
@@ -94,13 +96,13 @@ public class CryptoUtil {
         int signDec = 0;
 
         if (signBit != signDec) {           // If sign of x-coordinate decoded != input sign bit, then negate x-coordinate
-            x = FP2.fp2neg1271(x);
+            x = FP2.fp2Neg1271(x);
         }
 
         FieldPoint<F2Element> point = new FieldPoint<>(x, y);
         ExtendedPoint<F2Element> testPoint = ECCUtil.pointSetup(point);
         if (!ECCUtil.eccPointValidate(testPoint)) {
-            testPoint.x.im = FP.putil.fpneg1271(testPoint.x.im);
+            testPoint.x.im = FP.PUtil.fpNeg1271(testPoint.x.im);
             point.x.im = testPoint.x.im;
             if (!ECCUtil.eccPointValidate(testPoint)) {       // Final point validation
                 throw new EncryptionException("");
