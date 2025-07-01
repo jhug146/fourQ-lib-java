@@ -72,7 +72,7 @@ public class FP2Tests {
         F2Element expected = FP2.fp2sub1271(doubled, b);
         F2Element result = FP2.fp2addsub1271(a, b);
 
-        assertEquals(expected, result);
+        assertTrue(expected.equals(result));
     }
 
     @Test
