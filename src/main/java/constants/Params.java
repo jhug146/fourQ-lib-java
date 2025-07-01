@@ -17,6 +17,10 @@ public class Params {
             = BigInteger.ONE.shiftLeft(127).subtract(BigInteger.ONE);
     public static final BigInteger MASK_127 = PRIME_1271;  // Same as 2^127 - 1
 
+    public static final BigInteger W_VARBASE = BigInteger.valueOf(5);
+    public static final BigInteger NPOINTS_VARBASE
+            = BigInteger.ONE.shiftLeft(W_VARBASE.subtract(BigInteger.TWO).intValue());
+
     public static final BigInteger MONTGOMERY_R_PRIME = new BigInteger(
             "C81DB8795FF3D621173EA5AAEA6B387D3D01B7C72136F61C0006A5F16AC8F9D3",
             HEX_RADIX

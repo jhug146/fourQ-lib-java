@@ -388,4 +388,34 @@ public class ECCUtil {
 
         return true;
     }
+
+    /**
+     * Generation of the precomputation table used by the variable-base scalar multiplication ecc_mul().
+     * @param p = (X1,Y1,Z1,Ta,Tb), where T1 = Ta*Tb, corresponding to (X1:Y1:Z1:T1) in extended twisted Edwards coordinates.
+     * @return table T containing NPOINTS_VARBASE points: P, 3P, 5P, ... , (2*NPOINTS_VARBASE-1)P. NPOINTS_VARBASE is fixed to 8 (see FourQ.h).
+     *         Precomputed points use the representation (X+Y,Y-X,2Z,2dT) corresponding to (X:Y:Z:T) in extended twisted Edwards coordinates.
+     */
+    private static PreComputedExtendedPoint<F2Element>[] eccPrecomp(@NotNull ExtendedPoint<F2Element> p) {
+        // Initialize the output table
+        @SuppressWarnings("unchecked")
+        PreComputedExtendedPoint<F2Element>[] t
+                = new PreComputedExtendedPoint[Params.NPOINTS_VARBASE.intValueExact()];
+
+        PreComputedExtendedPoint<F2Element> p2;
+        ExtendedPoint<F2Element> q;
+
+        // Generating P2 = 2(X1,Y1,Z1,T1a,T1b) and T[0] = P
+        q = eccCopy(p);                    // Copy P to Q
+        t[0] = r1ToR2(p);                  // T[0] = P in (X+Y,Y-X,2Z,2dT) format
+        q = eccDouble(q);                  // Q = 2P
+        p2 = r1ToR3(q);                    // P2 = 2P in R3 format
+
+        // Generate odd multiples: 3P, 5P, 7P, ..., (2*NPOINTS_VARBASE-1)P
+        for (int i = 1; i < Params.NPOINTS_VARBASE.intValueExact(); i++) {
+            // T[i] = 2P + T[i-1] = (2*i+1)P
+            q = eccAddCore(p2, t[i-1]);    // Add 2P to previous odd multiple
+            t[i] = r1ToR2(q);              // Convert result to R2 format
+        }
+    }
+
 }
