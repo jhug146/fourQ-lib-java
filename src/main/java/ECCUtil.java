@@ -121,7 +121,8 @@ public class ECCUtil {
         );
     }
 
-    private static ExtendedPoint<F2Element> r2ToR4(PreComputedExtendedPoint<F2Element> p, ExtendedPoint<F2Element> q) {
+    @NotNull
+    private static ExtendedPoint<F2Element> r2ToR4(@NotNull PreComputedExtendedPoint<F2Element> p, @NotNull ExtendedPoint<F2Element> q) {
         return new ExtendedPoint<>(
                 FP2.fp2sub1271(p.xy, p.yx),
                 FP2.fp2add1271(p.xy, p.yx),
