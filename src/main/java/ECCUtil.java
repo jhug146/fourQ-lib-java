@@ -311,7 +311,7 @@ public class ECCUtil {
      *
      * @implNote this function does not run in constant time (input point P is assumed to be public)
      */
-    public static boolean eccPointValidate(@NotNull AffinePoint<F2Element> p) {
+    public static boolean eccPointValidate(@NotNull ExtendedPoint<F2Element> p) {
         F2Element t1 = fp2sqr1271(p.y);                                 // y^2
         F2Element t2 = fp2sqr1271(p.x);                                 // x^2
         F2Element t3 = fp2sub1271(t1, t2);                              // y^2 - x^2 = -x^2 + y^2
