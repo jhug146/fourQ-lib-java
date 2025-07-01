@@ -13,7 +13,7 @@ import static constants.Params.PRIME_1271;
  * Much faster than general modular reduction for large numbers
  */
 
-public class Mersenne {
+class Mersenne {
     // Mersenne prime reduction for p = 2^127 - 1
     static BigInteger mersenneReduce127(BigInteger x) {
         // For 2^127 - 1, we use the property that 2^127 ≡ 1 (mod 2^127 - 1)
