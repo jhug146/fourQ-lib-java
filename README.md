@@ -8,7 +8,7 @@ A library that implements the high-security, high-performance elliptic curve fou
 ## Examples
 ### Public Key Generation
 ```
-final int HEX_RADIX = 16
+final int HEX_RADIX = 16;
 final BigInteger privateKey = new BigInteger("F510847AAB323", HEX_RADIX);
 final BigInteger publicKey = SchnorrQ.schnorrQKeyGeneration(privateKey);
 ```
