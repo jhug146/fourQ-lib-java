@@ -871,10 +871,10 @@ class ECCUtilTests {
 
             // Test field operations are well-defined
             assertDoesNotThrow(() -> {
-                F2Element sum = FP2.fp2add1271(a, b);
-                F2Element diff = FP2.fp2sub1271(a, b);
-                F2Element prod = FP2.fp2mul1271(a, b);
-                F2Element square = FP2.fp2sqr1271(a);
+                F2Element sum = FP2.fp2Add1271(a, b);
+                F2Element diff = FP2.fp2Sub1271(a, b);
+                F2Element prod = FP2.fp2Mul1271(a, b);
+                F2Element square = FP2.fp2Sqr1271(a);
 
                 assertNotNull(sum);
                 assertNotNull(diff);

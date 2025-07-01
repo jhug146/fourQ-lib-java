@@ -44,10 +44,10 @@ public class CryptoUtil {
         final var y = ECCUtil.convertToF2Element(encoded.mod(POW_32));  // TODO: Potential endian problem here
         int signBit = (encoded.compareTo(BigInteger.ZERO) <= 0) ? 1 : 0;
 
-        F2Element u = FP2.fp2sqr1271(y);
-        F2Element v = FP2.fp2mul1271(u, PARAM_D_F2);
-        u = FP2.fp2sub1271(u, ONE);
-        v = FP2.fp2add1271(v, ONE);
+        F2Element u = FP2.fp2Sqr1271(y);
+        F2Element v = FP2.fp2Mul1271(u, PARAM_D_F2);
+        u = FP2.fp2Sub1271(u, ONE);
+        v = FP2.fp2Add1271(v, ONE);
 
         BigInteger t0 = FP.PUtil.fpSqr1271(v.real);
         BigInteger t1 = FP.PUtil.fpSqr1271(v.im);         // t1 = v1^2
@@ -96,7 +96,7 @@ public class CryptoUtil {
         int signDec = 0;
 
         if (signBit != signDec) {           // If sign of x-coordinate decoded != input sign bit, then negate x-coordinate
-            x = FP2.fp2neg1271(x);
+            x = FP2.fp2Neg1271(x);
         }
 
         FieldPoint<F2Element> point = new FieldPoint<>(x, y);

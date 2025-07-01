@@ -7,7 +7,7 @@ import types.PreComputedExtendedPoint;
 import java.math.BigInteger;
 
 import static operations.FP.PUtil.fpNeg1271;
-import static operations.FP2.fp2copy1271;
+import static operations.FP2.fp2Copy1271;
 
 public class Table {
     /**
@@ -74,9 +74,9 @@ public class Table {
             }
         }
 
-        tempPoint.t = fp2copy1271(point.t);
-        tempPoint.yx = fp2copy1271(point.xy);                                  // point: x+y,y-x,2dt coordinate, temp_point: y-x,x+y,-2dt coordinate
-        tempPoint.xy = fp2copy1271(point.yx);
+        tempPoint.t = fp2Copy1271(point.t);
+        tempPoint.yx = fp2Copy1271(point.xy);                                  // point: x+y,y-x,2dt coordinate, temp_point: y-x,x+y,-2dt coordinate
+        tempPoint.xy = fp2Copy1271(point.yx);
         fpNeg1271(tempPoint.t.real);                                            // Negate 2dt coordinate
         fpNeg1271(tempPoint.t.im);
 

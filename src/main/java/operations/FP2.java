@@ -6,22 +6,22 @@ import java.math.BigInteger;
 
 public class FP2 {
     // Copy of a GF(p^2) element, output = a
-    public static F2Element fp2copy1271(F2Element a) {
+    public static F2Element fp2Copy1271(F2Element a) {
         return a;  // BigInteger is immutable, so copy is not needed
     }
 
     // Zeroing a GF(p^2) element, a = 0
-    public static F2Element fp2zero1271() {
+    public static F2Element fp2Zero1271() {
         return new F2Element(BigInteger.ZERO, BigInteger.ZERO);
     }
 
     // GF(p^2) negation, a = -a in GF((2^127-1)^2)
-    public static F2Element fp2neg1271(F2Element a) {
+    public static F2Element fp2Neg1271(F2Element a) {
         return new F2Element(FP.PUtil.fpNeg1271(a.real), FP.PUtil.fpNeg1271(a.im));
     }
 
     // GF(p^2) squaring, c = a^2 in GF((2^127-1)^2)
-    public static F2Element fp2sqr1271(F2Element a) {
+    public static F2Element fp2Sqr1271(F2Element a) {
         BigInteger t3 = FP.PUtil.fpMul1271(a.real, a.im);
         return new F2Element(
                 FP.PUtil.fpMul1271(
@@ -33,7 +33,7 @@ public class FP2 {
     }
 
     // GF(p^2) multiplication, c = a*b in GF((2^127-1)^2)
-    public static F2Element fp2mul1271(F2Element a, F2Element b) {
+    public static F2Element fp2Mul1271(F2Element a, F2Element b) {
         BigInteger t1 = FP.PUtil.fpMul1271(a.real, b.real);     // t1 = a0*b0
         BigInteger t2 = FP.PUtil.fpMul1271(a.im, b.im);         // t2 = a1*b1
         BigInteger t3 = FP.PUtil.fpAdd1271(a.real, a.im);       // t2 = a1*b1
@@ -49,7 +49,7 @@ public class FP2 {
     }
 
     // GF(p^2) addition, c = a+b in GF((2^127-1)^2)
-    public static F2Element fp2add1271(F2Element a, F2Element b) {
+    public static F2Element fp2Add1271(F2Element a, F2Element b) {
         return new F2Element(
                 FP.PUtil.fpAdd1271(a.real, b.real),
                 FP.PUtil.fpAdd1271(a.im, b.im)
@@ -57,7 +57,7 @@ public class FP2 {
     }
 
     // GF(p^2) subtraction, c = a-b in GF((2^127-1)^2)
-    public static F2Element fp2sub1271(F2Element a, F2Element b) {
+    public static F2Element fp2Sub1271(F2Element a, F2Element b) {
         return new F2Element(
                 FP.PUtil.fpSub1271(a.real, b.real),
                 FP.PUtil.fpSub1271(a.im, b.im)
@@ -65,13 +65,13 @@ public class FP2 {
     }
 
     // GF(p^2) addition followed by subtraction, c = 2a-b in GF((2^127-1)^2)
-    public static F2Element fp2addsub1271(F2Element a, F2Element b) {
-        a = fp2add1271(a, a);
-        return fp2sub1271(a, b);
+    public static F2Element fp2AddSub1271(F2Element a, F2Element b) {
+        a = fp2Add1271(a, a);
+        return fp2Sub1271(a, b);
     }
 
     // GF(p^2) inversion, a = (a0-i*a1)/(a0^2+a1^2)
-    public static F2Element fp2inv1271(F2Element a) {
+    public static F2Element fp2Inv1271(F2Element a) {
         F2Element t1 = new F2Element(
                 FP.PUtil.fpSqr1271(a.real),                 // t1.first = a0^2
                 FP.PUtil.fpSqr1271(a.im)                    // t1.second = a1^2
@@ -86,7 +86,7 @@ public class FP2 {
     }
 
     // GF(p^2) division by two c = a/2 mod p
-    public static F2Element fp2div1271(F2Element a) {
+    public static F2Element fp2Div1271(F2Element a) {
         return new F2Element(
                 FP.PUtil.fpDiv1271(a.im),
                 FP.PUtil.fpDiv1271(a.real)
