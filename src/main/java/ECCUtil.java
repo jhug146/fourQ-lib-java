@@ -148,7 +148,7 @@ public class ECCUtil {
         tb = fp2sub1271(ta, x);                         // Tbfinal = beta
         ta = fp2add1271(ta, x);                         // Tafinal = omega
         return new ExtendedPoint<>(
-                fp2mul1271(tb, t2),                     //Xfinal = beta*theta
+                fp2mul1271(tb, t2),                     // Xfinal = beta*theta
                 fp2mul1271(ta, t1),                     // Yfinal = alpha*omega
                 fp2mul1271(t1, t2),                     // Zfinal = theta*alpha
                 ta,
