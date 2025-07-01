@@ -11,4 +11,14 @@ public class PreComputedExtendedPoint<Field> {
         z = _z;
         t = _t;
     }
+
+    public PreComputedExtendedPoint<Field> dup() {
+        return new PreComputedExtendedPoint<Field>(
+              this.xy,
+              this.yx,
+              this.z,
+              this.t
+        );
+    }
+
 }

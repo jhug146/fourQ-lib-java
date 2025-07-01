@@ -65,7 +65,7 @@ public class ECCUtil {
     static FieldPoint<F2Element> eccMulFixed(BigInteger val) {
         BigInteger temp = FP.moduloOrder(val);
         temp = FP.conversionToOdd(temp);
-        int[] digits = mLSBSetRecode(temp);  // TODO: No idea how this works
+        int[] digits = mLSBSetRecode(temp, new int[270]);  // TODO: No idea how this works
         int digit = digits[W_FIXEDBASE * D_FIXEDBASE - 1];
         int startI = (W_FIXEDBASE - 1) * D_FIXEDBASE - 1;
         for (int i = startI; i >= 2 * D_FIXEDBASE - 1; i -= D_FIXEDBASE) {
@@ -104,11 +104,6 @@ public class ECCUtil {
             }
         }
         return eccNorm(exPoint);
-    }
-
-
-    public static int[] mLSBSetRecode(BigInteger scalar) {
-        return null;
     }
 
     private static ExtendedPoint<F2Element> r5ToR1(AffinePoint<F2Element> p) {
@@ -451,7 +446,7 @@ public class ECCUtil {
      * @param source the point to copy from Q = (X:Y:Z:Ta:Tb)
      * @return dest the point to copy to P = (X:Y:Z:Ta:Tb)
      */
-    private static ExtendedPoint<F2Element> eccCopy(
+    public static ExtendedPoint<F2Element> eccCopy(
             ExtendedPoint<F2Element> source
     ) {
         return new ExtendedPoint<F2Element>(

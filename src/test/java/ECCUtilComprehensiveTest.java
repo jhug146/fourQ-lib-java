@@ -1,5 +1,4 @@
 import constants.Params;
-import operations.FP;
 import operations.FP2;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;

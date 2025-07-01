@@ -25,4 +25,11 @@ public class F2Element {
     public int hashCode() {
         return Objects.hash(real, im);
     }
+
+    public F2Element dup() {
+        return new F2Element(
+                this.real,
+                this.im
+        );
+    }
 }
