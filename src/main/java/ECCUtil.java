@@ -389,7 +389,7 @@ public class ECCUtil {
         PreComputedExtendedPoint<F2Element>[] table = eccPrecomp(R);
 
         // Extract initial point in (X+Y,Y-X,2Z,2dT) representation
-        PreComputedExtendedPoint<F2Element> S = tableLookup1x8(table, digits[64], signMasks[64]);
+        PreComputedExtendedPoint<F2Element> S = Table.tableLookup1x8(table, digits[64], signMasks[64]);
 
         // Convert to representation (2X,2Y,2Z) for doubling operations
         R = r2ToR4(S, R);
@@ -397,7 +397,7 @@ public class ECCUtil {
         // Main computation loop: double-and-add with precomputed table
         for (int i = 63; i >= 0; i--) {
             // Extract point S in (X+Y,Y-X,2Z,2dT) representation
-            S = tableLookup1x8(table, digits[i], signMasks[i]);
+            S = Table.tableLookup1x8(table, digits[i], signMasks[i]);
 
             // Double: R = 2*R using (X,Y,Z,Ta,Tb) <- 2*(X,Y,Z)
             R = eccDouble(R);
