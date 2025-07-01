@@ -5,7 +5,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import types.*;
 
-import java.lang.reflect.Field;
 import java.math.BigInteger;
 
 import static operations.FP2.*;
@@ -119,6 +118,16 @@ public class ECCUtil {
                 fp2sub1271(point.y, point.x),
                 fp2mul1271(point.ta, point.tb),
                 point.z
+        );
+    }
+
+    private static ExtendedPoint<F2Element> r2ToR4(PreComputedExtendedPoint<F2Element> p, ExtendedPoint<F2Element> q) {
+        return new ExtendedPoint<>(
+                FP2.fp2sub1271(p.xy, p.yx),
+                FP2.fp2add1271(p.xy, p.yx),
+                FP2.fp2copy1271(p.z),
+                q.ta,
+                q.tb
         );
     }
 
@@ -367,7 +376,7 @@ public class ECCUtil {
         PreComputedExtendedPoint<F2Element> S = tableLookup1x8(table, digits[64], signMasks[64]);
 
         // Convert to representation (2X,2Y,2Z) for doubling operations
-        R = r2ToR4(S);
+        R = r2ToR4(S, R);
 
         // Main computation loop: double-and-add with precomputed table
         for (int i = 63; i >= 0; i--) {
