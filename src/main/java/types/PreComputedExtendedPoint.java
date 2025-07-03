@@ -1,10 +1,11 @@
 package types;
 
+import constants.Params;
 import operations.FP2;
 
 import java.math.BigInteger;
 
-public class PreComputedExtendedPoint<Field> {
+public class PreComputedExtendedPoint<Field> implements Point{
     public Field xy;
     public Field yx;
     public Field z;
@@ -14,6 +15,11 @@ public class PreComputedExtendedPoint<Field> {
         yx = _yx;
         z = _z;
         t = _t;
+    }
+
+    @Override
+    public int getTableLength() {
+        return Params.PRE_COMPUTE_TABLE_LENGTH;
     }
 
     public PreComputedExtendedPoint<Field> dup() {

@@ -12,7 +12,6 @@ import types.Pair;
 import types.FieldPoint;
 
 
-
 public class SchnorrQ {
     private static final int KEY_SIZE = 32;
     private static final int TEST_BIT = 128;
