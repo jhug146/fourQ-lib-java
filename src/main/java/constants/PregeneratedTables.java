@@ -1,5 +1,10 @@
 package constants;
 
+import types.F2Element;
+import types.PreComputedExtendedPoint;
+
+import java.math.BigInteger;
+
 public class PregeneratedTables {
     public static long[] FIXED_BASE_TABLE = {
             0xe18a34f3a703e631L, 0x287460bf1d502b5fL, 0xe02e62f7e4f90353L, 0x0c3ba0378b86acdeL, 0x90bf0f98b0937edcL, 0x740b7c7824f0c555L, 0xb321239123a01366L, 0x4ffcf5b93a9557a5L, 0x297afccbabda42bbL, 0x5948d137556c97c6L, 0xa8189a393330684cL, 0x0caf2b720a341f27L
@@ -83,5 +88,58 @@ public class PregeneratedTables {
             , 0x059c84c66f2175d4L, 0x1a3bed438790be78L, 0xdf394f577dabb5b0L, 0x304777e63b3c33e4L, 0x59a29d4fe82c5a6aL, 0x72e421d1e88e77a4L, 0x69e6230313312959L, 0x2da03aad8cf2bbb8L, 0x2858d8608fecb0b6L, 0x343099e7a40243a6L, 0xba29b675d29a8f63L, 0x3d2028a4f6f15886L
             , 0xf068e2d286047d0aL, 0x14999b5d6c770e20L, 0xd1874a592385da79L, 0x78aeb552c15a1cd9L, 0x482dcccc23e9c06eL, 0x7b18a19fb54b5745L, 0x036c896efe9a7a06L, 0x2f2c2ce0d1871c13L, 0x3b2d9b9ed65492c7L, 0x0649c7e50819d077L, 0xcdab66ea7b65e3cbL, 0x49b15b40c4aaf03fL };
 
+    // Convert the long array to PreComputedExtendedPoint array
+    public static final PreComputedExtendedPoint<F2Element>[] FIXED_BASE_TABLE_POINTS =
+            convertToPreComputedPoints(PregeneratedTables.FIXED_BASE_TABLE);
 
+    // First, you need a method to convert the long array to PreComputedExtendedPoint array
+    public static PreComputedExtendedPoint<F2Element>[] convertToPreComputedPoints(long[] rawTable) {
+        // Assuming each point takes 12 longs (3 coordinates * 4 longs each for F2Element)
+        // You'll need to adjust this based on your actual data structure
+        int pointSize = 12; // Adjust based on your actual point representation
+        int numPoints = rawTable.length / pointSize;
+
+        PreComputedExtendedPoint<F2Element>[] points = new PreComputedExtendedPoint[numPoints];
+
+        for (int i = 0; i < numPoints; i++) {
+            int offset = i * pointSize;
+
+            // Extract the raw longs for this point
+            // This is a simplified example - you'll need to adjust based on your actual format
+            F2Element xy = createF2ElementFromLongs(rawTable, offset);
+            F2Element yx = createF2ElementFromLongs(rawTable, offset + 4);
+            F2Element z = new F2Element(
+                    BigInteger.ONE,
+                    BigInteger.ZERO
+            ); // Assuming z=1 as mentioned in comments
+            F2Element t = createF2ElementFromLongs(rawTable, offset + 8);
+
+            points[i] = new PreComputedExtendedPoint<>(xy, yx, z, t);
+        }
+
+        return points;
+    }
+
+
+    // Helper method to create F2Element from longs
+    private static F2Element createF2ElementFromLongs(long[] data, int offset) {
+        // Convert 2 longs to BigInteger for real part and 2 longs for imaginary part
+        // This is a simplified example - adjust based on your actual F2Element structure
+        byte[] realBytes = new byte[32]; // Assuming 256-bit field
+        byte[] imBytes = new byte[32];
+
+        // Convert longs to bytes (little-endian)
+        longToBytes(data[offset], realBytes, 0);
+        longToBytes(data[offset + 1], realBytes, 8);
+        longToBytes(data[offset + 2], imBytes, 0);
+        longToBytes(data[offset + 3], imBytes, 8);
+
+        return new F2Element(new BigInteger(1, realBytes), new BigInteger(1, imBytes));
+    }
+
+    private static void longToBytes(long value, byte[] bytes, int offset) {
+        for (int i = 0; i < 8; i++) {
+            bytes[offset + i] = (byte) (value >>> (i * 8));
+        }
+    }
 }

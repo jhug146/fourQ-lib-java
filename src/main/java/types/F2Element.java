@@ -32,4 +32,12 @@ public class F2Element {
                 this.im
         );
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "real=" + real +
+                ", im=" + im +
+                '}';
+    }
 }

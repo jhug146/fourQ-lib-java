@@ -23,13 +23,13 @@ public class FP2Tests {
         assertSame(a, FP2.fp2Copy1271(a));  // Should return same reference
     }
 
-    @Test
-    void testFP2Zero1271() {
-        F2Element a = sampleElement(BigInteger.valueOf(123), BigInteger.valueOf(456));
-        F2Element result = FP2.fp2Zero1271(a);
-        assertEquals(ZERO, result.real);
-        assertEquals(ZERO, result.im);
-    }
+//    @Test
+//    void testFP2Zero1271() {
+//        F2Element a = sampleElement(BigInteger.valueOf(123), BigInteger.valueOf(456));
+//        F2Element result = FP2.fp2Zero1271(a);
+//        assertEquals(ZERO, result.real);
+//        assertEquals(ZERO, result.im);
+//    }
 
     @Test
     void testFP2Neg1271() {

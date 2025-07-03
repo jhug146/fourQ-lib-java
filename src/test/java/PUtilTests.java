@@ -71,7 +71,7 @@ public class PUtilTests {
 
     @Test
     void testFpZero1271() {
-        assertEquals(ZERO, PUtil.fpZero1271(BigInteger.TEN));
+        assertEquals(ZERO, PUtil.fpZero1271());
     }
 
     @Test

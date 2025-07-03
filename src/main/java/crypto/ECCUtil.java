@@ -1,6 +1,7 @@
 package crypto;
 
 import constants.Params;
+import constants.PregeneratedTables;
 import operations.FP;
 import operations.FP2;
 import org.jetbrains.annotations.Contract;
@@ -41,24 +42,101 @@ public class ECCUtil {
             }
         }
 
-    // Set generator
-    // Output: P = (x,y)
-    // TODO VeRy unsure about this and the helper
-    public static void eccSet(AffinePoint<F2Element> P) {
-        P.x = convertToF2Element(Params.GENERATOR_X);    // X1
-        P.y = convertToF2Element(Params.GENERATOR_Y);    // Y1
-    }
 
-    // Helper method to convert BigInteger to F2Element
-    public static F2Element convertToF2Element(BigInteger generator) {
-        // Split the 256-bit generator into two 127-bit parts for GF(p²)
-        BigInteger realPart = generator.and(Params.MASK_127);                           // Lower 127 bits
-        BigInteger imagPart = generator.shiftRight(127).and(Params.MASK_127);        // Upper 127 bits
+    /**
+     * Convert a precomputed 256-bit BigInteger to F2Element
+     * The BigInteger represents a uint64_t[4] array: [0][1][2][3]
+     * where [0,1] = real part and [2,3] = imaginary part
+     *
+     * @param precomputed 256-bit BigInteger from concatenated uint64_t[4] array
+     * @return F2Element with proper real and imaginary parts
+     */
+    public static F2Element convertToF2Element(BigInteger precomputed) {
+        // Mask for extracting 64-bit values
+        BigInteger mask64 = new BigInteger("FFFFFFFFFFFFFFFF", 16);
+
+        // Extract the 4 original uint64_t values from the 256-bit BigInteger
+        // BigInteger format: [0][1][2][3] (big-endian concatenation)
+        BigInteger val3 = precomputed.and(mask64);                    // [3] - lowest 64 bits
+        BigInteger val2 = precomputed.shiftRight(64).and(mask64);     // [2]
+        BigInteger val1 = precomputed.shiftRight(128).and(mask64);    // [1]
+        BigInteger val0 = precomputed.shiftRight(192).and(mask64);    // [0] - highest 64 bits
+
+        // Combine pairs to form real and imaginary parts
+        // Real part: combine [0] and [1] (little-endian within field element)
+        BigInteger realPart = val0.add(val1.shiftLeft(64));
+
+        // Imaginary part: combine [2] and [3] (little-endian within field element)
+        BigInteger imagPart = val2.add(val3.shiftLeft(64));
 
         return new F2Element(realPart, imagPart);
     }
 
+    // Set generator
+    // Output: P = (x,y)
+    public static void eccSet(AffinePoint<F2Element> P) {
+        // Create generator coordinates with correct F2Element structure
+        P.x = createGeneratorX();
+        P.y = createGeneratorY();
+    }
+
+    /**
+     * CORRECTED: Create generator X coordinate as proper F2Element
+     */
+    private static F2Element createGeneratorX() {
+        // GENERATOR_x[4] = {0x286592AD7B3833AA, 0x1A3472237C2FB305, 0x96869FB360AC77F6, 0x1E1F553F2878AA9C}
+        // [0,1] = real part, [2,3] = imaginary part
+
+        // Real part: combine [0] and [1]
+        BigInteger realPart = combineUint64Pair(
+                new BigInteger("286592AD7B3833AA", 16),
+                new BigInteger("1A3472237C2FB305", 16)
+        );
+
+        // Imaginary part: combine [2] and [3]
+        BigInteger imagPart = combineUint64Pair(
+                new BigInteger("96869FB360AC77F6", 16),
+                new BigInteger("1E1F553F2878AA9C", 16)
+        );
+
+        return new F2Element(realPart, imagPart);
+    }
+
+    /**
+     * CORRECTED: Create generator Y coordinate as proper F2Element
+     */
+    private static F2Element createGeneratorY() {
+        // GENERATOR_y[4] = {0xB924A2462BCBB287, 0x0E3FEE9BA120785A, 0x49A7C344844C8B5C, 0x6E1C4AF8630E0242}
+        // [0,1] = real part, [2,3] = imaginary part
+
+        // Real part: combine [0] and [1]
+        BigInteger realPart = combineUint64Pair(
+                new BigInteger("B924A2462BCBB287", 16),
+                new BigInteger("0E3FEE9BA120785A", 16)
+        );
+
+        // Imaginary part: combine [2] and [3]
+        BigInteger imagPart = combineUint64Pair(
+                new BigInteger("49A7C344844C8B5C", 16),
+                new BigInteger("6E1C4AF8630E0242", 16)
+        );
+
+        return new F2Element(realPart, imagPart);
+    }
+    /**
+     * Combine two uint64_t values into a single field element
+     * For FourQ: each field element is in F_{2^127-1}, stored in 2 uint64_t values
+     */
+    private static BigInteger combineUint64Pair(BigInteger low, BigInteger high) {
+        // Check if this is little-endian or big-endian combination
+        // For FourQ, typically: result = low + (high << 64)
+        return low.add(high.shiftLeft(64));
+    }
+
+    /*
     public static FieldPoint<F2Element> eccMulFixed(BigInteger val) {
+            int w = W_FIXEDBASE, v = V_FIXEDBASE, d = D_FIXEDBASE, e = E_FIXEDBASE;
+
         BigInteger temp = FP.moduloOrder(val);
         temp = FP.conversionToOdd(temp);
         int[] digits = mLSBSetRecode(temp, new int[270]);  // TODO: No idea how this works
@@ -69,7 +147,9 @@ public class ECCUtil {
         }
 
         // TODO: Both instances of TABLE in this function might need updating
-        AffinePoint<F2Element> affPoint = Table.tableLookupFixedBase(digit, digits[D_FIXEDBASE - 1]);
+//        AffinePoint<F2Element> affPoint = Table.tableLookupFixedBase(digit, digits[D_FIXEDBASE - 1]);
+        PreComputedExtendedPoint<F2Element> affPoint = Table.FixedBaseTableLookup.performTableLookup(v, w, digit, digits, d);
+
         ExtendedPoint<F2Element> exPoint = r5ToR1(affPoint);
 
         for (int j = 0; j < V_FIXEDBASE - 1; j++) {
@@ -101,6 +181,60 @@ public class ECCUtil {
         }
         return eccNorm(exPoint);
     }
+     */ // <- Previous eccMulFixed Implementation
+
+    // Alternative version using the specific methods:
+    public static FieldPoint<F2Element> eccMulFixed(BigInteger val) {
+        int w = W_FIXEDBASE, v = V_FIXEDBASE, d = D_FIXEDBASE, e = E_FIXEDBASE;
+
+        BigInteger temp = FP.moduloOrder(val);
+        temp = FP.conversionToOdd(temp);
+        int[] digits = mLSBSetRecode(temp, new int[270]);
+
+        // Extracting initial digit
+        int digit = digits[w * d - 1];
+        int startI = (w - 1) * d - 1;
+        for (int i = startI; i >= 2 * d - 1; i -= d) {
+            digit = 2 * digit + digits[i];
+        }
+
+        // Initialize with initial table lookup
+        PreComputedExtendedPoint<F2Element> S = Table.FixedBaseTableLookup.performTableLookupInitial(
+                v, w, digit, digits, d);
+        ExtendedPoint<F2Element> R = r5ToR1(S.toAffinePoint());
+
+        // First loop
+        for (int j = 0; j < v - 1; j++) {
+            digit = digits[w * d - (j + 1) * e - 1];
+            int iStart = (w - 1) * d - (j + 1) * e - 1;
+            int iMin = 2 * d - (j + 1) * e - 1;
+            for (int i = iStart; i >= iMin; i -= d) {
+                digit = 2 * digit + digits[i];
+            }
+
+            S = Table.FixedBaseTableLookup.performTableLookupFirstLoop(v, w, j, e, d, digit, digits);
+            R = eccMixedAdd(S.toAffinePoint(), R);
+        }
+
+        // Second nested loop
+        for (int ii = e - 2; ii >= 0; ii--) {
+            R = eccDouble(R);
+            for (int j = 0; j < v; j++) {
+                digit = digits[w * d - j * e + ii - e];
+                int kStart = (w - 1) * d - j * e + ii - e;
+                int kMin = 2 * d - j * e + ii - e;
+                for (int k = kStart; k >= kMin; k -= d) {
+                    digit = 2 * digit + digits[k];
+                }
+
+                S = Table.FixedBaseTableLookup.performTableLookupSecondLoop(v, w, j, e, d, ii, digit, digits);
+                R = eccMixedAdd(S.toAffinePoint(), R);
+            }
+        }
+
+        return eccNorm(R);
+    }
+
 
     private static ExtendedPoint<F2Element> r5ToR1(AffinePoint<F2Element> p) {
         F2Element x = fp2Div1271(fp2Sub1271(p.x, p.y));
@@ -189,28 +323,47 @@ public class ECCUtil {
         return new FieldPoint<>(x, y);
     }
 
+    /**
+     * Double scalar multiplication R = k*G + l*Q, where G is the generator.
+     *
+     * @param k scalar "k" in [0, 2^256-1]
+     * @param q point Q in affine coordinates
+     * @param l scalar "l" in [0, 2^256-1]
+     * @return R = k*G + l*Q in affine coordinates (x,y), or null if point validation fails
+     *
+     * @implNote This function is intended for non-constant-time operations such as signature verification.
+     */
     public static FieldPoint<F2Element> eccMulDouble(
             BigInteger k,
-            FieldPoint<F2Element> q, BigInteger l
+            FieldPoint<F2Element> q,
+            BigInteger l
     ) {
         // Step 1: Compute l*Q
-        FieldPoint<F2Element> lQ = eccMul(q, l);
-        if (lQ == null) { return null; }                    // Point validation failed
+        AffinePoint<F2Element> A = new AffinePoint<>();
+        if (!eccMul(q, l, A, false)) {
+            return null; // Point validation failed
+        }
 
-        // Step 2-3: Convert l*Q to precomputed format
-        ExtendedPoint<F2Element> extLQ = pointSetup(lQ);
-        PreComputedExtendedPoint<F2Element> precompLQ = r1ToR2(extLQ);
+        // Step 2: Convert l*Q to extended projective coordinates
+        ExtendedPoint<F2Element> T = pointSetup(new FieldPoint<>(A.x, A.y));
+
+        // Step 3: Convert to precomputed representation (X+Y,Y-X,2Z,2dT)
+        PreComputedExtendedPoint<F2Element> S = r1ToR2(T);
 
         // Step 4: Compute k*G (generator multiplication)
         FieldPoint<F2Element> kG = eccMulFixed(k);
-        if (kG == null) { return null; }
+        if (kG == null) {
+            return null;
+        }
 
-        // Step 5-6: Add k*G + l*Q
-        ExtendedPoint<F2Element> extKG = pointSetup(kG);
-        ExtendedPoint<F2Element> result = eccAdd(precompLQ, extKG);
+        // Step 5: Convert k*G to extended projective coordinates
+        T = pointSetup(kG);
 
-        // Step 7: Normalize to affine coordinates
-        return eccNorm(result);
+        // Step 6: Add l*Q + k*G: T = S + T
+        T = eccAdd(S, T);
+
+        // Step 7: Convert to affine coordinates (x,y) and return
+        return eccNorm(T);
     }
 
     private static ExtendedPoint<F2Element> eccAddCore(
@@ -239,13 +392,6 @@ public class ECCUtil {
             ExtendedPoint<F2Element> p
     ) {
         return eccAddCore(q, r1ToR3(p));
-    }
-
-    private static FieldPoint<F2Element> eccMul(
-            FieldPoint<F2Element> p,
-            BigInteger k
-    ) {
-        return null;
     }
 
     public static ExtendedPoint<F2Element> pointSetup(FieldPoint<F2Element> point) {
@@ -318,91 +464,281 @@ public class ECCUtil {
      *
      * @implNote this function does not run in constant time (input point P is assumed to be public)
      */
-    public static boolean eccPointValidate(@NotNull ExtendedPoint<F2Element> p) {
-        F2Element t1 = fp2Sqr1271(p.y);                                 // y^2
-        F2Element t2 = fp2Sqr1271(p.x);                                 // x^2
-        F2Element t3 = fp2Sub1271(t1, t2);                              // y^2 - x^2 = -x^2 + y^2
+    public static boolean eccPointValidate(ExtendedPoint<F2Element> p) {
+        if (isPointAtInfinity(p)) {
+            return true;
+        }
 
-        t1 = fp2Mul1271(t1, t2);                                        // x^2*y^2
-        t2 = fp2Mul1271(convertToF2Element(Params.PARAMETER_D), t1);    // dx^2*y^2
+        F2Element x2 = fp2Sqr1271(p.x);      // X^2
+        F2Element y2 = fp2Sqr1271(p.y);      // Y^2
+        F2Element z2 = fp2Sqr1271(p.z);      // Z^2
+        F2Element z4 = fp2Sqr1271(z2);       // Z^4
 
-        // Create F2Element representing 1 + 0i
-        F2Element one = new F2Element(BigInteger.ONE, BigInteger.ZERO);
-        t2 = fp2Add1271(t2, one);                                       // 1 + dx^2*y^2
-        t1 = fp2Sub1271(t3, t2);                                        // -x^2 + y^2 - 1 - dx^2*y^2
+        F2Element y2z2 = fp2Mul1271(y2, z2); // Y^2*Z^2
+        F2Element x2z2 = fp2Mul1271(x2, z2); // X^2*Z^2
+        F2Element t3 = fp2Sub1271(y2z2, x2z2); // Y^2*Z^2 - X^2*Z^2 = -X^2*Z^2 + Y^2*Z^2
 
-        // Reduce modulo (2^127-1)
-        t1 = new F2Element(
-                FP.PUtil.mod1271(t1.real),
-                FP.PUtil.mod1271(t1.im)
+        F2Element x2y2 = fp2Mul1271(x2, y2); // X^2*Y^2
+        F2Element dx2y2 = fp2Mul1271(convertToF2Element(Params.PARAMETER_D), x2y2); // d*X^2*Y^2
+
+        F2Element rhs = fp2Add1271(z4, dx2y2); // Z^4 + d*X^2*Y^2
+        F2Element result = fp2Sub1271(t3, rhs); // -X^2*Z^2 + Y^2*Z^2 - Z^4 - d*X^2*Y^2
+
+        // Reduce and check
+        result = new F2Element(
+                result.real = FP.PUtil.mod1271(result.real),
+                result.im = FP.PUtil.mod1271(result.im)
         );
 
-        // Check if the result is zero (both real and imaginary parts must be zero) to be on the curve.
-        return t1.real.equals(BigInteger.ZERO) && t1.im.equals(BigInteger.ZERO);
+        System.out.println(result);
+        return result.real.equals(BigInteger.ZERO) && result.im.equals(BigInteger.ZERO);
     }
 
+    private static boolean isPointAtInfinity(ExtendedPoint<F2Element> p) {
+        F2Element zero = new F2Element(BigInteger.ZERO, BigInteger.ZERO);
+        F2Element one = new F2Element(BigInteger.ONE, BigInteger.ZERO);
+
+        // Method 1: Check if it equals (0:1:1:0:anything) in extended coordinates
+        if (fp2IsEqual(p.x, zero) && fp2IsEqual(p.y, one) && fp2IsEqual(p.z, one)) {
+            return true;
+        }
+
+        // Method 2: More robust - convert to affine and check (0, 1)
+        if (fp2IsEqual(p.z, zero)) {
+            // Special case: Z = 0 (different infinity representation)
+            return true;
+        }
+
+        // Convert to affine coordinates and check if (0, 1)
+        F2Element zInv = fp2Inv1271(p.z);
+        F2Element x_affine = fp2Mul1271(p.x, zInv);
+        F2Element y_affine = fp2Mul1271(p.y, zInv);
+
+        return fp2IsEqual(x_affine, zero) && fp2IsEqual(y_affine, one);
+    }
+
+    private static boolean fp2IsEqual(F2Element a, F2Element b) {
+        return a.real.equals(b.real) && a.im.equals(b.im);
+    }
+
+//    /**
+//     * Variable-base scalar multiplication Q = k*P using a 4-dimensional decomposition
+//     *
+//     * @param P point P = (x,y) in affine coordinates
+//     * @param K scalar "k" in [0, 2^256-1]
+//     * @param res output point Q = k*P in affine coordinates (modified in place)
+//     * @param clearCofactor whether cofactor clearing is required
+//     * @return true if successful, false if point validation fails
+//     */
+//    //@Contract(value = "null, _, _, _ -> fail; _, null, _, _ -> fail; _, _, null, _ -> fail", mutates = "param3")
+//    public static boolean eccMul(
+//            FieldPoint<F2Element> P,
+//            BigInteger K,
+//            AffinePoint<F2Element> res,
+//            boolean clearCofactor // Equivalent to the C Flag
+//    ) {
+//        // Convert to representation (X, Y, 1, Ta, Tb)
+//        ExtendedPoint<F2Element> R = pointSetup(P);
+//
+//        // Scalar decomposition into 4 scalars using endomorphisms
+//        BigInteger[] scalars = decompose(K);
+//
+//        // Check if the point lies on the curve
+//        if (!eccPointValidate(R)) {
+//            return false;
+//        }
+//
+//        // Optional cofactor clearing
+//        if (clearCofactor) { R = cofactorClearing(R); }
+//
+//        // Scalar recoding for efficient computation
+//        RecodeResult recodeResult = recode(scalars);
+//        int[] digits = recodeResult.digits;
+//        int[] signMasks = recodeResult.signMasks;
+//
+//        // Precomputation - create table of 8 precomputed points
+//        PreComputedExtendedPoint<F2Element>[] table = eccPrecomp(R);
+//
+//        // Extract initial point in (X+Y,Y-X,2Z,2dT) representation
+//        assert table != null;
+//        PreComputedExtendedPoint<F2Element> S = Table.tableLookup1x8(table, digits[64], signMasks[64]);
+//
+//        // Convert to representation (2X,2Y,2Z) for doubling operations
+//        R = r2ToR4(S, R);
+//
+//        // Main computation loop: double-and-add with precomputed table
+//        for (int i = 63; i >= 0; i--) {
+//            // Extract point S in (X+Y,Y-X,2Z,2dT) representation
+//            S = Table.tableLookup1x8(table, digits[i], signMasks[i]);
+//
+//            // Double: R = 2*R using (X,Y,Z,Ta,Tb) <- 2*(X,Y,Z)
+//            R = eccDouble(R);
+//
+//            // Add: R = R+S using (X,Y,Z,Ta,Tb) <- (X,Y,Z,Ta,Tb) + (X+Y,Y-X,2Z,2dT)
+//            R = eccAdd(S, R);
+//        }
+//
+//        // Convert to affine coordinates (x,y) and store in output parameter Q
+//        FieldPoint<F2Element> result = eccNorm(R);
+//        res.x = result.x;
+//        res.y = result.y;
+//
+//        return true;
+//    }
+
     /**
-     * Variable-base scalar multiplication Q = k*P using a 4-dimensional decomposition
+     * Simple scalar multiplication Q = k*P
+     * This replaces the complex 4D GLV (above) with the simpler windowed method from C
      *
      * @param P point P = (x,y) in affine coordinates
-     * @param K scalar "k" in [0, 2^256-1]
+     * @param k scalar "k" in [0, 2^256-1]
      * @param Q output point Q = k*P in affine coordinates (modified in place)
      * @param clearCofactor whether cofactor clearing is required
      * @return true if successful, false if point validation fails
      */
-    @Contract(value = "null, _, _, _ -> fail; _, null, _, _ -> fail; _, _, null, _ -> fail", mutates = "param3")
     public static boolean eccMul(
             FieldPoint<F2Element> P,
-            BigInteger K,
+            BigInteger k,
             AffinePoint<F2Element> Q,
-            boolean clearCofactor // Equivalent to the C Flag
+            boolean clearCofactor
     ) {
-        // Convert to representation (X, Y, 1, Ta, Tb)
+        // Convert to representation (X,Y,1,Ta,Tb)
         ExtendedPoint<F2Element> R = pointSetup(P);
 
-        // Scalar decomposition into 4 scalars using endomorphisms
-        BigInteger[] scalars = decompose(K);
-
-        // Check if the point lies on the curve
+        // Check if point lies on the curve
         if (!eccPointValidate(R)) {
             return false;
         }
 
         // Optional cofactor clearing
-        if (clearCofactor) { R = cofactorClearing(R); }
+        if (clearCofactor) {
+            R = cofactorClearing(R);
+        }
 
-        // Scalar recoding for efficient computation
-        RecodeResult recodeResult = recode(scalars);
+        // k_odd = k mod (order)
+        BigInteger k_odd = FP.moduloOrder(k);
+
+        // Converting scalar to odd using the prime subgroup order
+        k_odd = FP.conversionToOdd(k_odd);
+
+        // Precomputation of points T[0],...,T[npoints-1]
+        PreComputedExtendedPoint<F2Element>[] table = eccPrecomp(R);
+
+        // Scalar recoding - use fixed window instead of 4D GLV
+        FixedWindowRecodeResult recodeResult = fixedWindowRecode(k_odd);
         int[] digits = recodeResult.digits;
         int[] signMasks = recodeResult.signMasks;
 
-        // Precomputation - create table of 8 precomputed points
-        PreComputedExtendedPoint<F2Element>[] table = eccPrecomp(R);
+        // Initial table lookup and conversion
+        PreComputedExtendedPoint<F2Element> S = Table.tableLookup1x8(table, digits[Params.t_VARBASE], signMasks[Params.t_VARBASE]);
+        R = r2ToR4(S, R);  // Conversion to representation (2X,2Y,2Z)
 
-        // Extract initial point in (X+Y,Y-X,2Z,2dT) representation
-        PreComputedExtendedPoint<F2Element> S = Table.tableLookup1x8(table, digits[64], signMasks[64]);
-
-        // Convert to representation (2X,2Y,2Z) for doubling operations
-        R = r2ToR4(S, R);
-
-        // Main computation loop: double-and-add with precomputed table
-        for (int i = 63; i >= 0; i--) {
-            // Extract point S in (X+Y,Y-X,2Z,2dT) representation
-            S = Table.tableLookup1x8(table, digits[i], signMasks[i]);
-
-            // Double: R = 2*R using (X,Y,Z,Ta,Tb) <- 2*(X,Y,Z)
+        // Main computation loop
+        for (int i = Params.t_VARBASE - 1; i >= 0; i--) {
+            // Single double
             R = eccDouble(R);
 
-            // Add: R = R+S using (X,Y,Z,Ta,Tb) <- (X,Y,Z,Ta,Tb) + (X+Y,Y-X,2Z,2dT)
+            // Extract point in (X+Y,Y-X,2Z,2dT) representation
+            S = Table.tableLookup1x8(table, digits[i], signMasks[i]);
+
+            // Triple double (total 8x multiplication per iteration)
+            R = eccDouble(R);
+            R = eccDouble(R);
+            R = eccDouble(R);
+
+            // Add: P = P+S
             R = eccAdd(S, R);
         }
 
-        // Convert to affine coordinates (x,y) and store in output parameter Q
+        // Convert to affine coordinates (x,y)
         FieldPoint<F2Element> result = eccNorm(R);
         Q.x = result.x;
         Q.y = result.y;
 
         return true;
+    }
+
+// ========================================
+// SUPPORTING CLASSES AND METHODS
+// ========================================
+
+    /**
+     * Result structure for fixed window recoding
+     */
+    private static class FixedWindowRecodeResult {
+        final int[] digits;
+        final int[] signMasks;
+
+        FixedWindowRecodeResult(int[] digits, int[] signMasks) {
+            this.digits = digits;
+            this.signMasks = signMasks;
+        }
+    }
+
+    /**
+     * Window recoding for scalar multiplication
+     *
+     * @param k_odd the scalar converted to odd form
+     * @return FixedWindowRecodeResult containing digits and sign masks
+     */
+    private static FixedWindowRecodeResult fixedWindowRecode(BigInteger k_odd) {
+        // Initialize arrays - size should match C constant t_VARBASE+1
+        int[] digits = new int[Params.t_VARBASE + 1];
+        int[] signMasks = new int[Params.t_VARBASE + 1];
+
+        // Convert scalar to byte array for bit manipulation
+        byte[] scalarBytes = k_odd.toByteArray();
+
+        // Window size (typically 4 for 1x8 table = 2^3 = 8 precomputed points)
+        int windowSize = 3; // log2(8) = 3
+
+        // Process each window
+        for (int i = 0; i <= Params.t_VARBASE; i++) {
+            int bitPos = i * windowSize;
+            int digit = extractBits(scalarBytes, bitPos, windowSize);
+
+            // Handle signed representation for odd scalars
+            if (digit == 0) {
+                digits[i] = 0;
+                signMasks[i] = 0;
+            } else {
+                // Convert to signed odd form
+                if (digit % 2 == 0) {
+                    digit++; // Make odd
+                }
+
+                if (digit > (1 << (windowSize - 1))) {
+                    digits[i] = (1 << windowSize) - digit;
+                    signMasks[i] = 0; // Negative
+                } else {
+                    digits[i] = digit;
+                    signMasks[i] = -1; // Positive (0xFFFFFFFF)
+                }
+            }
+        }
+
+        return new FixedWindowRecodeResult(digits, signMasks);
+    }
+
+
+    /**
+     * Extract bits from byte array starting at bitPos
+     */
+    private static int extractBits(byte[] data, int bitPos, int numBits) {
+        int result = 0;
+
+        for (int i = 0; i < numBits; i++) {
+            int byteIndex = (bitPos + i) / 8;
+            int bitIndex = (bitPos + i) % 8;
+
+            if (byteIndex < data.length) {
+                // Extract bit (LSB first)
+                int bit = (data[data.length - 1 - byteIndex] >> bitIndex) & 1;
+                result |= (bit << i);
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -433,7 +769,7 @@ public class ECCUtil {
             t[i] = r1ToR2(q);              // Convert result to R2 format
         }
 
-        return null;
+        return t;
     }
 
     /**

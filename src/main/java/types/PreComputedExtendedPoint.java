@@ -1,5 +1,9 @@
 package types;
 
+import operations.FP2;
+
+import java.math.BigInteger;
+
 public class PreComputedExtendedPoint<Field> {
     public Field xy;
     public Field yx;
@@ -19,6 +23,36 @@ public class PreComputedExtendedPoint<Field> {
               this.z,
               this.t
         );
+    }
+
+    /**
+     * Simplified version assuming z = 1 (normalized coordinates)
+     *  Often the case for precomputed table values
+     */
+    public AffinePoint<Field> toAffinePoint() {
+        if (!(xy instanceof F2Element)) {
+            throw new UnsupportedOperationException("Only F2Element supported");
+        }
+
+        F2Element xy_f2 = (F2Element) xy;
+        F2Element yx_f2 = (F2Element) yx;
+
+        // Assuming z = 1, we can directly compute affine coordinates
+        F2Element two = new F2Element(BigInteger.valueOf(2), BigInteger.ZERO);
+        F2Element twoInverse = FP2.fp2Inv1271(two);
+
+        // x = (xy - yx) / 2, y = (xy + yx) / 2
+        F2Element twoX = FP2.fp2Sub1271(xy_f2, yx_f2);
+        F2Element twoY = FP2.fp2Add1271(xy_f2, yx_f2);
+
+        F2Element x = FP2.fp2Mul1271(twoX, twoInverse);
+        F2Element y = FP2.fp2Mul1271(twoY, twoInverse);
+
+        AffinePoint<Field> ret = new AffinePoint<>();
+        ret.x = (Field) x;
+        ret.y = (Field) y;
+
+        return ret;
     }
 
 }

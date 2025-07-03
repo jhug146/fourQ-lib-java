@@ -699,6 +699,10 @@ class ECCUtilTests {
             // It might succeed (returning point at infinity) or fail
             assertDoesNotThrow(() -> ECCUtil.eccMul(genField, BigInteger.ZERO, result, false),
                     "Multiplication by zero should not throw");
+
+            //Check output
+            assertTrue(result.x.im.equals(BigInteger.ZERO) && result.x.real.equals(BigInteger.ZERO));
+            assertTrue(result.y.im.equals(BigInteger.ZERO) && result.y.real.equals(BigInteger.ZERO));
         }
 
         @Test
@@ -753,6 +757,8 @@ class ECCUtilTests {
                 // Results might be different due to cofactor clearing
                 ExtendedPoint<F2Element> ext1 = convertToExtended(result1);
                 ExtendedPoint<F2Element> ext2 = convertToExtended(result2);
+
+                System.out.printf("x=%s, y=%s, z%s=, ta=%s, tb=%s\n", ext1.x, ext1.y, ext1.z, ext1.ta, ext1.tb);
 
                 assertTrue(ECCUtil.eccPointValidate(ext1), "Result without cofactor should be valid");
                 assertTrue(ECCUtil.eccPointValidate(ext2), "Result with cofactor should be valid");

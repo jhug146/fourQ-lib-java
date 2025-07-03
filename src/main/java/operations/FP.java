@@ -212,7 +212,5 @@ public class FP {
             BigInteger dividend = a.testBit(0) ? a.add(Params.PRIME_1271) : a;
             return Mersenne.mersenneReduce127Fast(dividend.shiftRight(1));
         }
-
-
     }
 }
