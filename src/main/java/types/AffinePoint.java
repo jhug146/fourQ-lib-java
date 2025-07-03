@@ -36,4 +36,14 @@ public class AffinePoint<Field> implements Point<Field> {
     public int hashCode() {
         return Objects.hash(x, y, t);
     }
+
+    public void filterMaskForEach(
+            PreComputedExtendedPoint<F2Element> tempPoint,
+            BigInteger mask,
+            boolean modifyZ
+    ) {
+        x = (Field) ((F2Element) x).applyMasks(tempPoint.xy, mask);
+        y = (Field) ((F2Element) y).applyMasks(tempPoint.yx, mask);
+        t = t;
+    }
 }

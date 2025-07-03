@@ -63,38 +63,14 @@ public class PreComputedExtendedPoint<Field> implements Point{
         return ret;
     }
 
-    public Iterator<F2Element> filterMaskForEach(
+    public void filterMaskForEach(
             PreComputedExtendedPoint<F2Element> tempPoint,
             BigInteger mask,
             boolean modifyZ
     ) {
-        return new Iterator<F2Element>() {
-            private int number = 0;
-            @Override
-            public boolean hasNext() {
-                return number != 4;
-            }
-
-            @Override
-            public F2Element next() {
-                return switch (number++) {
-                    case 1 -> ((F2Element) xy).applyMasks(tempPoint.xy, mask);
-                    case 2 -> ((F2Element) yx).applyMasks(tempPoint.yx, mask);
-                    case 3 -> !modifyZ ? (F2Element) z : ((F2Element) z).applyMasks(tempPoint.t, mask);
-                    case 4 -> (F2Element) t;
-                    default ->
-                            throw new UnsupportedOperationException("Out of bounds in iterator");
-                };
-            }
-        };
+        xy = (Field) ((F2Element) xy).applyMasks(tempPoint.xy, mask);
+        yx = (Field) ((F2Element) yx).applyMasks(tempPoint.yx, mask);
+        z = (Field) (!modifyZ ? (F2Element) z : ((F2Element) z).applyMasks(tempPoint.t, mask));
+        t = t;
     }
-
-    public void doMask(
-            PreComputedExtendedPoint<F2Element> tempPoint,
-            BigInteger mask,
-            boolean modifyZ
-    ) {
-
-    }
-
 }

@@ -18,7 +18,7 @@ public interface Point<Field> {
     void setZ(F2Element z);
     void setT(F2Element t);
 
-    Iterator<F2Element> filterMaskForEach(
+    void filterMaskForEach(
             PreComputedExtendedPoint<F2Element> tempPoint,
             BigInteger mask,
             boolean modifyZ
