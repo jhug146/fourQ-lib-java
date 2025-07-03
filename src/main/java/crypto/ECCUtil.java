@@ -96,7 +96,9 @@ public class ECCUtil {
             // Extract point in (x+y,y-x,2dt) representation
             final int signDigit = D_FIXEDBASE - (j + 1) * E_FIXEDBASE - 1;
             final int tableStart = (V_FIXEDBASE - j - 2) * (1 << (W_FIXEDBASE - 1));
-            affPoint = Table.tableLookup(tableStart, digit, digits[signDigit], affPoint).toAffinePoint();
+            affPoint = Table
+                    .tableLookup(tableStart, digit, digits[signDigit], affPoint)
+                    .toAffinePoint();
             exPoint = eccMixedAdd(affPoint, exPoint);
         }
 
@@ -111,7 +113,9 @@ public class ECCUtil {
                 }
                 final int signDigit = D_FIXEDBASE - j * E_FIXEDBASE + i - E_FIXEDBASE;
                 final int tableStart = (V_FIXEDBASE - j - 1) * (1 << (W_FIXEDBASE - 1));
-                affPoint = Table.tableLookup(tableStart, digit, signDigit, affPoint).toAffinePoint();
+                affPoint = Table
+                        .tableLookup(tableStart, digit, signDigit, affPoint)
+                        .toAffinePoint();
                 exPoint = eccMixedAdd(affPoint, exPoint);
             }
         }
