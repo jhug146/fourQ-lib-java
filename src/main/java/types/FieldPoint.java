@@ -2,10 +2,10 @@ package types;
 
 import exceptions.TableLookupException;
 
-public class FieldPoint<Field> implements Point<Field> {
-    public Field x;
-    public Field y;
-    public FieldPoint(Field x, Field y) {
+public class FieldPoint implements Point {
+    public F2Element x;
+    public F2Element y;
+    public FieldPoint(F2Element x, F2Element y) {
         this.x = x;
         this.y = y;
     }

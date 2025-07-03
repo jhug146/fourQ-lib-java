@@ -5,7 +5,7 @@ import exceptions.TableLookupException;
 import java.math.BigInteger;
 import java.util.Iterator;
 
-public interface Point<Field> {
+public interface Point {
     int getTableLength() throws TableLookupException;
 
     F2Element getX();
@@ -19,7 +19,7 @@ public interface Point<Field> {
     void setT(F2Element t);
 
     void filterMaskForEach(
-            PreComputedExtendedPoint<F2Element> tempPoint,
+            PreComputedExtendedPoint tempPoint,
             BigInteger mask,
             boolean modifyZ
     );
