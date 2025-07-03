@@ -41,7 +41,7 @@ public class Table {
         PreComputedExtendedPoint<F2Element> point = table[0].dup();               // point = table[0]
         BigInteger mask;
 
-        int shiftAmount = 8*Integer.SIZE-1;
+        int shiftAmount = Integer.SIZE-1;
 
         for (int i = 1; i < Params.VPOINTS_FIXEDBASE; i++) {
             digit--;
