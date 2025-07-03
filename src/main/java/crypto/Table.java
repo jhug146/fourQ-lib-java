@@ -24,10 +24,10 @@ public class Table {
             BigInteger mask = BigInteger.valueOf((digit >> shiftAmount) - 1);   // TODO: Could be wrong
             tempPoint = table[i];
 
-            point.filterMaskForEach(tempPoint, mask,true);
+            point.filterMaskForEach(tempPoint, mask, true);
         }
 
-        if(tempPoint != null) {
+        if (tempPoint != null) {
             tempPoint.setT(point.getT().dup());
             tempPoint.setY(point.getX().dup());
             tempPoint.setX(point.getY().dup());
