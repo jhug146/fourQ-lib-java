@@ -7,6 +7,7 @@ import constants.PregeneratedTables;
 import exceptions.TableLookupException;
 import exceptions.TablePointCastException;
 import operations.FP2;
+import types.PreComputedExtendedPoint;
 import types.TablePoint;
 
 
@@ -44,7 +45,7 @@ public class Table {
         return point;
     }
 
-    public static TablePoint tableLookup(
+    public static PreComputedExtendedPoint tableLookup(
             int tableLocation,
             int digit,
             int signMask,
@@ -54,7 +55,8 @@ public class Table {
             throw new IndexOutOfBoundsException("Table location out of bounds: " + tableLocation);
         }
 
-        TablePoint[] table = Arrays.copyOfRange(PregeneratedTables.FIXED_BASE_TABLE_POINTS,
+        PreComputedExtendedPoint[] table = Arrays.copyOfRange(
+                PregeneratedTables.FIXED_BASE_TABLE_POINTS,
                 tableLocation,
                 tableLocation + point.getTableLength()
         );
