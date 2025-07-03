@@ -1,6 +1,7 @@
 package types;
 
 import constants.Params;
+import exceptions.TablePointCastException;
 
 import java.math.BigInteger;
 import java.util.Objects;
@@ -19,6 +20,19 @@ public class AffinePoint implements TablePoint {
     public AffinePoint() {
         this.x = Params.F2_ZERO.dup();
         this.y = Params.F2_ZERO.dup();
+    }
+
+    public ExtendedPoint toExtendedPoint() {
+        return new ExtendedPoint(
+                this.x,
+                this.y,
+                new F2Element(
+                        BigInteger.ONE,
+                        BigInteger.ZERO
+                ),
+                this.x,
+                this.y
+        );
     }
 
     @Override
@@ -46,6 +60,16 @@ public class AffinePoint implements TablePoint {
         x = x.applyMasks(tempPoint.getX(), mask);
         y = y.applyMasks(tempPoint.getY(), mask);
         t = t.applyMasks(tempPoint.getT(), mask);
+    }
+
+    @Override
+    public PreComputedExtendedPoint toPreComputedExtendedPoint() {
+        throw new TablePointCastException("Trying to cast Affine to unsupported PreComputedExtendedPoint via TableLookup.");
+    }
+
+    @Override
+    public AffinePoint toAffinePoint() {
+        return this;
     }
 
     @Override

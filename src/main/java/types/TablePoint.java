@@ -15,4 +15,7 @@ public interface TablePoint extends Point {
     int getTableLength() throws TableLookupException;
 
     void filterMaskForEach(TablePoint tempPoint, BigInteger mask, boolean modZ);
+
+    PreComputedExtendedPoint toPreComputedExtendedPoint();
+    AffinePoint toAffinePoint();
 }
