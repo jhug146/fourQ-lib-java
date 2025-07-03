@@ -44,9 +44,9 @@ public class SchnorrQ {
         System.arraycopy(sigStart.toByteArray(), 0, bytes, 0, KEY_SIZE);
         System.arraycopy(publicKey.toByteArray(), 0, bytes, KEY_SIZE, KEY_SIZE);
 
-        final BigInteger hHash = HashFunction.computeHash(bytes);
+        HashFunction.computeHash(bytes);    // Checks whether hashing works on bytes
         rHash = FP.moduloOrder(rHash);
-        BigInteger hHash2 = BigInteger.valueOf(1);
+        BigInteger hHash2 = BigInteger.ONE;
         hHash2 = FP.moduloOrder(hHash2);
 
         BigInteger sigEnd = CryptoUtil.toMontgomery(kHash);
@@ -83,8 +83,11 @@ public class SchnorrQ {
                 CryptoUtil.decode(publicKey),       // Implicitly checks that public key lies on the curve
                 HashFunction.computeHash(bytes)
         );
-        BigInteger encoded = CryptoUtil.encode(affPoint);
+        if (affPoint == null) {
+            return false;
+        }
 
+        BigInteger encoded = CryptoUtil.encode(affPoint);
         return encoded.equals(signature);
     }
 }
