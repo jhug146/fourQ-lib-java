@@ -3,6 +3,8 @@ package types;
 import operations.FP2;
 
 import java.math.BigInteger;
+import java.util.Iterator;
+import java.util.Optional;
 
 public class PreComputedExtendedPoint<Field> {
     public Field xy;
@@ -53,6 +55,32 @@ public class PreComputedExtendedPoint<Field> {
         ret.y = (Field) y;
 
         return ret;
+    }
+
+    public Iterator<F2Element> filterMaskForEach(
+            PreComputedExtendedPoint<F2Element> tempPoint,
+            BigInteger mask,
+            Optional<Boolean> modifyZ
+    ) {
+        return new Iterator<F2Element>() {
+            private int number = 0;
+            @Override
+            public boolean hasNext() {
+                return number != 4;
+            }
+
+            @Override
+            public F2Element next() {
+                return switch (number++) {
+                    case 1 -> ((F2Element) xy).applyMasks(tempPoint.xy, mask);
+                    case 2 -> ((F2Element) yx).applyMasks(tempPoint.yx, mask);
+                    case 3 -> modifyZ.isEmpty() ? (F2Element) z : ((F2Element) z).applyMasks(tempPoint.t, mask);
+                    case 4 -> (F2Element) t;
+                    default ->
+                            throw new UnsupportedOperationException("Out of bounds in iterator");
+                };
+            }
+        };
     }
 
 }

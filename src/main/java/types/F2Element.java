@@ -40,4 +40,11 @@ public class F2Element {
                 ", im=" + im +
                 '}';
     }
+
+    public F2Element applyMasks(F2Element point2, BigInteger mask) {
+        return new F2Element(
+                mask.and(this.real.xor(point2.real)).xor(this.real),
+                mask.and(this.im.xor(point2.im)).xor(this.im)
+        );
+    }
 }
