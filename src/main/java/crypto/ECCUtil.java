@@ -2,6 +2,7 @@ package crypto;
 
 import constants.Params;
 import exceptions.EncryptionException;
+import exceptions.TableLookupException;
 import operations.FP;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -9,6 +10,8 @@ import types.*;
 
 import java.math.BigInteger;
 
+import static constants.Params.*;
+import static constants.Params.t_VARBASE;
 import static operations.FP2.*;
 
 
@@ -111,6 +114,77 @@ public class ECCUtil {
         return eccNorm(exPoint);
     }
 
+    public static boolean eccMul(
+            AffinePoint p,
+            BigInteger k,
+            FieldPoint q,
+            boolean clearCofactor
+    ) throws TableLookupException {
+        PreComputedExtendedPoint s;
+
+        PreComputedExtendedPoint[] table = new PreComputedExtendedPoint[NPOINTS_VARBASE.intValueExact()];
+        int[] digits = new int[t_VARBASE+1], signMasks = new int[t_VARBASE+1];
+
+        ExtendedPoint r = p.toExtendedPoint();
+
+        if(!ECCUtil.eccPointValidate(r)) { return false; }
+        if(clearCofactor) { ECCUtil.cofactorClearing(r); }
+
+        BigInteger kOdd = FP.moduloOrder(k);
+        kOdd = FP.conversionToOdd(kOdd);
+        table = ECCUtil.eccPrecomp(r);
+        fixedWindowRecode(kOdd, digits, signMasks);
+
+        s = Table.tableLookup(table, digits[t_VARBASE], signMasks[t_VARBASE]);
+        r = ECCUtil.r2ToR4(s, r);
+
+        for (int i = (t_VARBASE-1); i >= 0; i--) {
+            r = eccDouble(r);
+            s = Table.tableLookup(table, digits[i], signMasks[i]).toPreComputedExtendedPoint();
+            r = eccDouble(r);
+            r = eccDouble(r);
+            r = eccDouble(r);
+            r = eccAdd(s, r);
+        }
+
+        eccNorm(r, q);
+        return true;
+    }
+
+
+    public static void fixedWindowRecode(BigInteger scalar, int[] digits, int[] signMasks) {
+        BigInteger val1 = BigInteger.ONE.shiftLeft(W_VARBASE.intValue()).subtract(BigInteger.ONE);
+        BigInteger val2 = BigInteger.ONE.shiftLeft(W_VARBASE.intValue() - 1);
+
+        BigInteger currentScalar = scalar;
+        int windowSize = W_VARBASE.intValue() - 1;
+
+        for (int i = 0; i < t_VARBASE; i++) {
+            BigInteger temp = currentScalar.and(val1).subtract(val2);
+
+            // C: sign_masks[i] = ~((unsigned int)(temp >> (RADIX64-1)));
+            boolean isNegative = temp.signum() < 0;
+            signMasks[i] = isNegative ? 0x00000000 : 0xFFFFFFFF;
+
+            // C: digits[i] = ((sign_masks[i] & (unsigned int)(temp ^ -temp)) ^ (unsigned int)-temp) >> 1;
+            BigInteger tempXorNeg = temp.xor(temp.negate());
+            BigInteger signMaskBig = BigInteger.valueOf(signMasks[i] & 0xFFFFFFFFL);
+            BigInteger digitCalc = signMaskBig.and(tempXorNeg).xor(temp.negate()).shiftRight(1);
+            digits[i] = digitCalc.intValue();
+
+            currentScalar = currentScalar.subtract(temp).shiftRight(windowSize);
+        }
+
+        // Final digit computation
+        boolean finalNegative = currentScalar.signum() < 0;
+        signMasks[t_VARBASE] = finalNegative ? 0x00000000 : 0xFFFFFFFF;
+
+        BigInteger finalXorNeg = currentScalar.xor(currentScalar.negate());
+        BigInteger finalSignMask = BigInteger.valueOf(signMasks[t_VARBASE] & 0xFFFFFFFFL);
+        BigInteger finalDigit = finalSignMask.and(finalXorNeg).xor(currentScalar.negate()).shiftRight(1);
+        digits[t_VARBASE] = finalDigit.intValue();
+    }
+
     private static ExtendedPoint r5ToR1(AffinePoint p) {
         F2Element x = fp2Div1271(fp2Sub1271(p.getX(), p.getY()));
         F2Element y = fp2Div1271(fp2Add1271(p.getX(), p.getY()));
@@ -137,7 +211,7 @@ public class ECCUtil {
     }
 
     @NotNull
-    private static ExtendedPoint r2ToR4(@NotNull PreComputedExtendedPoint p, @NotNull ExtendedPoint q) {
+    public static ExtendedPoint r2ToR4(@NotNull PreComputedExtendedPoint p, @NotNull ExtendedPoint q) {
         return new ExtendedPoint(
                 fp2Sub1271(p.xy, p.yx),
                 fp2Add1271(p.xy, p.yx),
@@ -175,7 +249,7 @@ public class ECCUtil {
     // Input: P = (X1:Y1:Z1) in twisted Edwards coordinates
     // Output: 2P = (Xfinal,Yfinal,Zfinal,Tafinal,Tbfinal), where Tfinal = Tafinal*Tbfinal,
     //         corresponding to (Xfinal:Yfinal:Zfinal:Tfinal) in extended twisted Edwards coordinates
-    private static ExtendedPoint eccDouble(ExtendedPoint p) {
+    static ExtendedPoint eccDouble(ExtendedPoint p) {
         F2Element t1 = fp2Sqr1271(p.getX());                 // t1 = X1^2
         F2Element t2 = fp2Sqr1271(p.getY());                 // t2 = Y1^2
         F2Element t3 = fp2Add1271(p.getX(), p.getY());            // t3 = X1+Y1
@@ -191,11 +265,19 @@ public class ECCUtil {
         return new ExtendedPoint(x, y, z, ta, tb);
     }
 
-    private static FieldPoint eccNorm(ExtendedPoint p) {
+    static FieldPoint eccNorm(ExtendedPoint p) {
         final F2Element zInv = fp2Inv1271(p.getZ());
         final F2Element x = fp2Mul1271(p.getX(), zInv);
         final F2Element y = fp2Mul1271(p.getY(), zInv);
         return new FieldPoint(x, y);
+    }
+
+    static FieldPoint eccNorm(ExtendedPoint p, FieldPoint q) {
+        final F2Element zInv = fp2Inv1271(p.getZ());
+
+        q.setX(fp2Mul1271(p.getX(), zInv));
+        q.setY(fp2Mul1271(p.getY(), zInv));
+        return q;
     }
 
     @NotNull
@@ -242,7 +324,7 @@ public class ECCUtil {
         );
     }
 
-    private static ExtendedPoint eccAdd(
+    static ExtendedPoint eccAdd(
             PreComputedExtendedPoint q,
             ExtendedPoint p
     ) {
@@ -350,77 +432,15 @@ public class ECCUtil {
         return t1.real.equals(BigInteger.ZERO) && t1.im.equals(BigInteger.ZERO);
     }
 
-    /**
-     * Variable-base scalar multiplication Q = k*P using a 4-dimensional decomposition
-     *
-     * @param P point P = (x,y) in affine coordinates
-     * @param K scalar "k" in [0, 2^256-1]
-     * @param Q output point Q = k*P in affine coordinates (modified in place)
-     * @param clearCofactor whether cofactor clearing is required
-     * @return true if successful, false if point validation fails
-     */
-    @Contract(value = "null, _, _, _ -> fail; _, null, _, _ -> fail; _, _, null, _ -> fail", mutates = "param3")
-    public static boolean eccMul(
-            FieldPoint P,
-            BigInteger K,
-            AffinePoint Q,
-            boolean clearCofactor // Equivalent to the C Flag
-    ) throws EncryptionException {
-        // Convert to representation (X, Y, 1, Ta, Tb)
-        ExtendedPoint R = pointSetup(P);
-
-        // Scalar decomposition into 4 scalars using endomorphisms
-        BigInteger[] scalars = decompose(K);
-
-        // Check if the point lies on the curve
-        if (!eccPointValidate(R)) {
-            return false;
-        }
-
-        // Optional cofactor clearing
-        if (clearCofactor) { R = cofactorClearing(R); }
-
-        // Scalar recoding for efficient computation
-        RecodeResult recodeResult = recode(scalars);
-        int[] digits = recodeResult.digits;
-        int[] signMasks = recodeResult.signMasks;
-
-        // Precomputation - create table of 8 precomputed points
-        PreComputedExtendedPoint[] table = eccPrecomp(R);
-
-        // Extract initial point in (X+Y,Y-X,2Z,2dT) representation
-        PreComputedExtendedPoint S = (PreComputedExtendedPoint) Table.tableLookup(table, digits[64], signMasks[64]);
-        // Convert to representation (2X,2Y,2Z) for doubling operations
-        R = r2ToR4(S, R);
-
-        // Main computation loop: double-and-add with precomputed table
-        for (int i = 63; i >= 0; i--) {
-            // Extract point S in (X+Y,Y-X,2Z,2dT) representation
-            S = (PreComputedExtendedPoint) Table.tableLookup(table, digits[i], signMasks[i]);
-
-            // Double: R = 2*R using (X,Y,Z,Ta,Tb) <- 2*(X,Y,Z)
-            R = eccDouble(R);
-
-            // Add: R = R+S using (X,Y,Z,Ta,Tb) <- (X,Y,Z,Ta,Tb) + (X+Y,Y-X,2Z,2dT)
-            R = eccAdd(S, R);
-        }
-
-        // Convert to affine coordinates (x,y) and store in output parameter Q
-        FieldPoint result = eccNorm(R);
-        Q.setX(result.getX());
-        Q.setY(result.getY());
-
-        return true;
-    }
 
     /**
-     * Generation of the precomputation table used by the variable-base scalar multiplication ecc_mul().
+     * Generation of the precomputation table used by the variable-base scalar multiplication eccMul().
      * @param p = (X1,Y1,Z1,Ta,Tb), where T1 = Ta*Tb, corresponding to (X1:Y1:Z1:T1) in extended twisted Edwards coordinates.
      * @return table T containing NPOINTS_VARBASE points: P, 3P, 5P, ... , (2*NPOINTS_VARBASE-1)P. NPOINTS_VARBASE is fixed to 8 (see FourQ.h).
      *         Precomputed points use the representation (X+Y,Y-X,2Z,2dT) corresponding to (X:Y:Z:T) in extended twisted Edwards coordinates.
      */
     @NotNull
-    private static PreComputedExtendedPoint[] eccPrecomp(@NotNull ExtendedPoint p) {
+    public static PreComputedExtendedPoint[] eccPrecomp(@NotNull ExtendedPoint p) {
         // Initialize the output table
         PreComputedExtendedPoint[] t
                 = new PreComputedExtendedPoint[Params.NPOINTS_VARBASE.intValueExact()];
@@ -525,74 +545,13 @@ public class ECCUtil {
         return product.shiftRight(256);  // Equivalent to dividing by 2^256
     }
 
-    /**
-     * Recoding sub-scalars for use in variable-base scalar multiplication
-     * Based on Algorithm 1 in "Efficient and Secure Methods for GLV-Based Scalar Multiplication"
-     *
-     * @param scalars 4 64-bit sub-scalars obtained from decompose()
-     * @return RecodeResult containing digits and sign_masks arrays
-     */
-    private static RecodeResult recode(BigInteger[] scalars) {
-        if (scalars == null || scalars.length != 4) {
-            throw new IllegalArgumentException("Expected exactly 4 scalars");
-        }
-
-        int[] digits = new int[65];
-        int[] signMasks = new int[65];
-
-        // Work with mutable copies, given that BigInteger is immutable
-        BigInteger[] workingScalars = new BigInteger[4];
-        for (int i = 0; i < 4; i++) {
-            workingScalars[i] = scalars[i] != null ? scalars[i] : BigInteger.ZERO;
-        }
-
-        // Initialize final sign mask
-        signMasks[64] = -1;                                                     // 0xFFFFFFFF (all bits set)
-
-        // Process 64 iterations
-        for (int i = 0; i < 64; i++) {
-            // Extract and process scalar[0]
-            workingScalars[0] = workingScalars[0].shiftRight(1);
-            int bit0 = workingScalars[0].testBit(0) ? 1 : 0;
-
-            // Create sign mask: if bit0=1 then 0xFFFFFFFF, else 0x00000000
-            signMasks[i] = -bit0;
-
-            // Process scalar[1] and build digit
-            int bit1 = workingScalars[1].testBit(0) ? 1 : 0;
-            int carry1 = (bit0 | bit1) ^ bit0;
-            workingScalars[1] = workingScalars[1].shiftRight(1).add(BigInteger.valueOf(carry1));
-            digits[i] = bit1;
-
-            // Process scalar[2] and add to digit
-            int bit2 = workingScalars[2].testBit(0) ? 1 : 0;
-            int carry2 = (bit0 | bit2) ^ bit0;
-            workingScalars[2] = workingScalars[2].shiftRight(1).add(BigInteger.valueOf(carry2));
-            digits[i] += (bit2 << 1);                                           // bit2 * 2
-
-            // Process scalar[3] and add to digit
-            int bit3 = workingScalars[3].testBit(0) ? 1 : 0;
-            int carry3 = (bit0 | bit3) ^ bit0;
-            workingScalars[3] = workingScalars[3].shiftRight(1).add(BigInteger.valueOf(carry3));
-            digits[i] += (bit3 << 2);                                           // bit3 * 4
-        }
-
-        // Compute the final digit from remaining scalar bits
-        BigInteger finalDigit = workingScalars[1]
-                .add(workingScalars[2].shiftLeft(1))                         // scalars[2] * 2
-                .add(workingScalars[3].shiftLeft(2));                        // scalars[3] * 4
-
-        digits[64] = finalDigit.intValue();
-
-        return new RecodeResult(digits, signMasks);
-    }
 
     /**
      * Co-factor clearing operation for elliptic curve points.
      * @param p the input point P = (X₁,Y₁,Z₁,Ta,Tb) in extended twisted Edwards coordinates,
      *          where T₁ = Ta×Tb corresponds to (X₁:Y₁:Z₁:T₁)
      */
-    private static ExtendedPoint cofactorClearing(ExtendedPoint p) {
+    public static ExtendedPoint cofactorClearing(ExtendedPoint p) {
         PreComputedExtendedPoint q = r1ToR2(p);  // Converting from (X,Y,Z,Ta,Tb) to (X+Y,Y-X,2Z,2dT)
 
         p = eccDouble(p);                                   // P = 2*P using representations (X,Y,Z,Ta,Tb) <- 2*(X,Y,Z)
