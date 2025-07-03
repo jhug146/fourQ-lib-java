@@ -44,7 +44,7 @@ public class PreComputedExtendedPoint implements TablePoint{
         F2Element xy_f2 = xy;
         F2Element yx_f2 = yx;
 
-        // Assuming z = 1, we can directly compute affine coordinates
+        // TODO: Assuming z = 1, we can directly compute affine coordinates
         F2Element two = new F2Element(BigInteger.valueOf(2), BigInteger.ZERO);
         F2Element twoInverse = FP2.fp2Inv1271(two);
 
