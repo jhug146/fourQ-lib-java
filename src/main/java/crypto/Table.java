@@ -10,30 +10,16 @@ import types.TablePoint;
 
 
 public class Table {
-    public static void tableLookup(
-            int tableLocation,
+    public static TablePoint tableLookup(
+            TablePoint[] table,
             int digit,
-            int signMask,
-            TablePoint point
+            int signMask
     ) throws TableLookupException {
-        // Bounds checks
-        final int tableLength = point.getTableLength();
-        if (tableLocation + tableLength >= PregeneratedTables.FIXED_BASE_TABLE_POINTS.length) {
-            throw new IndexOutOfBoundsException("Table location out of bounds: " + tableLocation);
-        }
-
-        // Create subset of table starting from offset
-        TablePoint[] table =
-                Arrays.copyOfRange(PregeneratedTables.FIXED_BASE_TABLE_POINTS,
-                        tableLocation,
-                        tableLocation + tableLength
-                );
-
         TablePoint tempPoint = null;
-        point = table[0];
+        TablePoint point = table[0];
         final int shiftAmount = Integer.SIZE - 1;
 
-        for (int i = 1; i < tableLength; i++) {
+        for (int i = 1; i < point.getTableLength(); i++) {
             digit--;
             BigInteger mask = BigInteger.valueOf((digit >> shiftAmount) - 1);   // TODO: Could be wrong
             tempPoint = table[i];
@@ -49,5 +35,30 @@ public class Table {
 
         BigInteger bigMask = BigInteger.valueOf(signMask);     // TODO: Potential conversion problem here
         point.filterMaskForEach(tempPoint, bigMask, false);
+        return point;
+    }
+
+    public static TablePoint tableLookup(
+            int tableLocation,
+            int digit,
+            int signMask,
+            TablePoint point
+    ) throws TableLookupException {
+        if (tableLocation + point.getTableLength() >= PregeneratedTables.FIXED_BASE_TABLE_POINTS.length) {
+            throw new IndexOutOfBoundsException("Table location out of bounds: " + tableLocation);
+        }
+
+        // Create subset of table starting from offset
+        TablePoint[] table =
+                Arrays.copyOfRange(PregeneratedTables.FIXED_BASE_TABLE_POINTS,
+                        tableLocation,
+                        tableLocation + point.getTableLength()
+                );
+
+        return tableLookup(
+              table,
+                digit,
+                signMask
+        );
     }
 }

@@ -17,6 +17,13 @@ public class PreComputedExtendedPoint implements TablePoint{
         t = _t;
     }
 
+    public PreComputedExtendedPoint() {
+        this.xy = Params.F2_ZERO.dup();
+        this.yx = Params.F2_ZERO.dup();
+        this.z = Params.F2_ZERO.dup();
+        this.t = Params.F2_ZERO.dup();
+    }
+
     @Override
     public int getTableLength() {
         return Params.PRE_COMPUTE_TABLE_LENGTH;

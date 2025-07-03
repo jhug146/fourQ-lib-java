@@ -17,8 +17,8 @@ public class AffinePoint implements TablePoint {
     }
 
     public AffinePoint() {
-        this.x = new F2Element(BigInteger.ZERO, BigInteger.ZERO);
-        this.y = new F2Element(BigInteger.ZERO, BigInteger.ZERO);
+        this.x = Params.F2_ZERO.dup();
+        this.y = Params.F2_ZERO.dup();
     }
 
     @Override
@@ -49,38 +49,24 @@ public class AffinePoint implements TablePoint {
     }
 
     @Override
-    public F2Element getX() {
-        return x;
-    }
+    public F2Element getX() { return x; }
 
     @Override
-    public F2Element getY() {
-        return y;
-    }
+    public F2Element getY() { return y; }
 
     @Override
-    public F2Element getT() {
-        return t;
-    }
+    public F2Element getT() { return t; }
 
     @Override
-    public F2Element getZ() {
-        return null;
-    }
+    public F2Element getZ() { return null; }
 
     @Override
-    public void setX(F2Element x) {
-        this.x = x;
-    }
+    public void setX(F2Element x) { this.x = x; }
 
-    public void setY(F2Element y) {
-        this.y = y;
-    }
+    public void setY(F2Element y) { this.y = y; }
 
     @Override
-    public void setT(F2Element t) {
-        this.t = t;
-    }
+    public void setT(F2Element t) { this.t = t; }
 
     @Override
     public void setZ(F2Element z) {}

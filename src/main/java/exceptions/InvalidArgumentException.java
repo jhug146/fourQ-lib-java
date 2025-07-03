@@ -1,6 +1,6 @@
 package exceptions;
 
-public class InvalidArgumentException extends Exception {
+public class InvalidArgumentException extends EncryptionException {
     public InvalidArgumentException(String message) {
         super(message);
     }

@@ -1,5 +1,7 @@
 package constants;
 
+import types.F2Element;
+
 import java.math.BigInteger;
 
 public class Params {
@@ -9,6 +11,8 @@ public class Params {
     public static final int NWORDS_FIELD = 4;
 
     public static final int PRE_COMPUTE_TABLE_LENGTH = 8;
+
+    public static final F2Element F2_ZERO = new F2Element(BigInteger.ZERO, BigInteger.ZERO);
 
     public static final BigInteger PRIME_1271
             = BigInteger.ONE.shiftLeft(127).subtract(BigInteger.ONE);

@@ -2,11 +2,11 @@ package types;
 
 
 public class ExtendedPoint implements Point {
-    public F2Element x;
-    public F2Element y;
-    public F2Element z;
-    public F2Element ta;
-    public F2Element tb;
+    private F2Element x;
+    private F2Element y;
+    private F2Element z;
+    private F2Element ta;
+    private F2Element tb;
     public ExtendedPoint(F2Element _x, F2Element _y, F2Element _z, F2Element _ta, F2Element _tb) {
         x = _x;
         y = _y;
@@ -16,30 +16,26 @@ public class ExtendedPoint implements Point {
     }
 
     @Override
-    public F2Element getX() {
-        return x;
-    }
+    public F2Element getX() { return x; }
 
     @Override
-    public F2Element getY() {
-        return y;
-    }
+    public F2Element getY() { return y; }
 
-    public F2Element getZ() {
-        return z;
-    }
+    public F2Element getZ() { return z; }
 
-    @Override
-    public void setX(F2Element x) {
-        this.x = x;
-    }
+    public F2Element getTa() { return ta; }
+
+    public F2Element getTb() { return tb; }
 
     @Override
-    public void setY(F2Element y) {
-        this.y = y;
-    }
+    public void setX(F2Element x) { this.x = x; }
 
-    public void setZ(F2Element z) {
-        this.z = z;
-    }
+    @Override
+    public void setY(F2Element y) { this.y = y; }
+
+    public void setZ(F2Element z) { this.z = z; }
+
+    public void setTa(F2Element ta) { this.ta = ta; }
+
+    public void setTb(F2Element tb) { this.tb = tb; }
 }

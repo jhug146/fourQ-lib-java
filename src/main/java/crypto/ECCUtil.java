@@ -2,9 +2,7 @@ package crypto;
 
 import constants.Params;
 import exceptions.EncryptionException;
-import exceptions.TableLookupException;
 import operations.FP;
-import operations.FP2;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import types.*;
@@ -47,8 +45,8 @@ public class ECCUtil {
     // Output: P = (x,y)
     // TODO VeRy unsure about this and the helper
     public static void eccSet(AffinePoint P) {
-        P.x = convertToF2Element(Params.GENERATOR_X);    // X1
-        P.y = convertToF2Element(Params.GENERATOR_Y);    // Y1
+        P.setX(convertToF2Element(Params.GENERATOR_X));    // X1
+        P.setY(convertToF2Element(Params.GENERATOR_Y));    // Y1
     }
 
     // Helper method to convert BigInteger to F2Element
@@ -61,7 +59,7 @@ public class ECCUtil {
     }
 
     @NotNull
-    public static FieldPoint eccMulFixed(BigInteger val) {
+    public static FieldPoint eccMulFixed(BigInteger val) throws EncryptionException {
         BigInteger temp = FP.moduloOrder(val);
         temp = FP.conversionToOdd(temp);
         int[] digits = mLSBSetRecode(temp, new int[270]);  // TODO: No idea how this works
@@ -73,28 +71,25 @@ public class ECCUtil {
 
         // TODO: Both instances of TABLE in this function might need updating
         AffinePoint affPoint = new AffinePoint();
-        try {
-            Table.tableLookup(
-                    (V_FIXEDBASE - 1) * (1 << (W_FIXEDBASE - 1)),
-                    digit,
-                    digits[D_FIXEDBASE - 1],
-                    affPoint
-            );
-        } catch (TableLookupException e) {
-            throw EncryptionException("Error with table lookup");
-        }
+        Table.tableLookup(
+                (V_FIXEDBASE - 1) * (1 << (W_FIXEDBASE - 1)),
+                digit,
+                digits[D_FIXEDBASE - 1],
+                affPoint
+        );
         ExtendedPoint exPoint = r5ToR1(affPoint);
 
         for (int j = 0; j < V_FIXEDBASE - 1; j++) {
             digit = digits[W_FIXEDBASE * D_FIXEDBASE - (j + 1) * E_FIXEDBASE - 1];
-            int iStart = (W_FIXEDBASE - 1) * D_FIXEDBASE - (j + 1) * E_FIXEDBASE - 1;
-            int iMin = 2 * D_FIXEDBASE - (j + 1) * E_FIXEDBASE - 1;
+            final int iStart = (W_FIXEDBASE - 1) * D_FIXEDBASE - (j + 1) * E_FIXEDBASE - 1;
+            final int iMin = 2 * D_FIXEDBASE - (j + 1) * E_FIXEDBASE - 1;
             for (int i = iStart; i >= iMin; i -= D_FIXEDBASE) {
                 digit = 2 * digit + digits[i];
             }
             // Extract point in (x+y,y-x,2dt) representation
-            int signDigit = D_FIXEDBASE - (j + 1) * E_FIXEDBASE - 1;
-            affPoint = Table.tableLookup(, V_FIXEDBASE, digit, digits[signDigit]);
+            final int signDigit = D_FIXEDBASE - (j + 1) * E_FIXEDBASE - 1;
+            final int tableStart = (V_FIXEDBASE - j - 2) * (1 << (W_FIXEDBASE - 1));
+            affPoint = (AffinePoint) Table.tableLookup(tableStart, digit, digits[signDigit], affPoint);
             exPoint = eccMixedAdd(affPoint, exPoint);
         }
 
@@ -102,13 +97,14 @@ public class ECCUtil {
             exPoint = eccDouble(exPoint);
             for (int j = 0; j < V_FIXEDBASE; j++) {
                 digit = digits[W_FIXEDBASE * D_FIXEDBASE - j * E_FIXEDBASE + i - E_FIXEDBASE];
-                int kStart = (W_FIXEDBASE - 1) * D_FIXEDBASE - j * E_FIXEDBASE + i - E_FIXEDBASE;
-                int kMin = 2 * D_FIXEDBASE - j * E_FIXEDBASE + i - E_FIXEDBASE;
+                final int kStart = (W_FIXEDBASE - 1) * D_FIXEDBASE - j * E_FIXEDBASE + i - E_FIXEDBASE;
+                final int kMin = 2 * D_FIXEDBASE - j * E_FIXEDBASE + i - E_FIXEDBASE;
                 for (int k = kStart; k >= kMin; k -= D_FIXEDBASE) {
                     digit = 2 * digit + digits[k];
                 }
-                int signDigit = D_FIXEDBASE - j * E_FIXEDBASE + i - E_FIXEDBASE;
-                affPoint = Table.tableLookup(, V_FIXEDBASE, digit, signDigit);
+                final int signDigit = D_FIXEDBASE - j * E_FIXEDBASE + i - E_FIXEDBASE;
+                final int tableStart = (V_FIXEDBASE - j - 1) * (1 << (W_FIXEDBASE - 1));
+                affPoint = (AffinePoint) Table.tableLookup(tableStart, digit, signDigit, affPoint);
                 exPoint = eccMixedAdd(affPoint, exPoint);
             }
         }
@@ -116,38 +112,38 @@ public class ECCUtil {
     }
 
     private static ExtendedPoint r5ToR1(AffinePoint p) {
-        F2Element x = fp2Div1271(fp2Sub1271(p.x, p.y));
-        F2Element y = fp2Div1271(fp2Add1271(p.x, p.y));
+        F2Element x = fp2Div1271(fp2Sub1271(p.getX(), p.getY()));
+        F2Element y = fp2Div1271(fp2Add1271(p.getX(), p.getY()));
         return new ExtendedPoint(x, y, F2_ONE, x, y);
     }
 
     private static PreComputedExtendedPoint r1ToR2(ExtendedPoint point) {
-        F2Element t = fp2Sub1271(fp2Add1271(point.ta, point.ta), point.tb);
+        F2Element t = fp2Sub1271(fp2Add1271(point.getTa(), point.getTb()), point.getTb());
         return new PreComputedExtendedPoint(
-                fp2Add1271(point.y, point.x),
-                fp2Sub1271(point.y, point.x),
-                fp2Add1271(point.z, point.z),
+                fp2Add1271(point.getY(), point.getX()),
+                fp2Sub1271(point.getY(), point.getX()),
+                fp2Add1271(point.getZ(), point.getZ()),
                 fp2Mul1271(t, convertToF2Element(Params.PARAMETER_D))
         );
     }
 
     private static PreComputedExtendedPoint r1ToR3(ExtendedPoint point) {
         return new PreComputedExtendedPoint(
-                fp2Add1271(point.x, point.y),
-                fp2Sub1271(point.y, point.x),
-                fp2Mul1271(point.ta, point.tb),
-                point.z
+                fp2Add1271(point.getX(), point.getY()),
+                fp2Sub1271(point.getY(), point.getX()),
+                fp2Mul1271(point.getTa(), point.getTb()),
+                point.getZ()
         );
     }
 
     @NotNull
     private static ExtendedPoint r2ToR4(@NotNull PreComputedExtendedPoint p, @NotNull ExtendedPoint q) {
         return new ExtendedPoint(
-                FP2.fp2Sub1271(p.xy, p.yx),
-                FP2.fp2Add1271(p.xy, p.yx),
-                FP2.fp2Copy1271(p.z),
-                q.ta,
-                q.tb
+                fp2Sub1271(p.xy, p.yx),
+                fp2Add1271(p.xy, p.yx),
+                fp2Copy1271(p.z),
+                q.getTa(),
+                q.getTb()
         );
     }
 
@@ -155,18 +151,18 @@ public class ECCUtil {
             AffinePoint q,
             ExtendedPoint p
     ) {
-        F2Element ta = fp2Mul1271(p.ta, p.tb);          // Ta = T1
-        F2Element t1 = fp2Add1271(p.z, p.z);            // t1 = 2Z1
-        ta = fp2Mul1271(ta, q.t);                       // Ta = 2dT1*t2
-        F2Element pz = fp2Add1271(p.x, p.y);            // Z = (X1+Y1)
-        F2Element tb = fp2Sub1271(p.y, p.x);            // Tb = (Y1-X1)
+        F2Element ta = fp2Mul1271(p.getTa(), p.getTb());          // Ta = T1
+        F2Element t1 = fp2Add1271(p.getZ(), p.getZ());            // t1 = 2Z1
+        ta = fp2Mul1271(ta, q.getT());                       // Ta = 2dT1*t2
+        F2Element pz = fp2Add1271(p.getX(), p.getY());            // Z = (X1+Y1)
+        F2Element tb = fp2Sub1271(p.getY(), p.getX());            // Tb = (Y1-X1)
         F2Element t2 = fp2Sub1271(t1, ta);              // t2 = theta
         t1 = fp2Add1271(t1, ta);                        // t1 = alpha
-        ta = fp2Mul1271(q.x, pz);                       // Ta = (X1+Y1)(x2+y2)
-        F2Element x = fp2Mul1271(q.y, tb);              // X = (Y1-X1)(y2-x2)
+        ta = fp2Mul1271(q.getX(), pz);                       // Ta = (X1+Y1)(x2+y2)
+        F2Element x = fp2Mul1271(q.getY(), tb);              // X = (Y1-X1)(y2-x2)
         tb = fp2Sub1271(ta, x);                         // Tbfinal = beta
         ta = fp2Add1271(ta, x);                         // Tafinal = omega
-        return new ExtendedPoint<>(
+        return new ExtendedPoint(
                 fp2Mul1271(tb, t2),                     // Xfinal = beta*theta
                 fp2Mul1271(ta, t1),                     // Yfinal = alpha*omega
                 fp2Mul1271(t1, t2),                     // Zfinal = theta*alpha
@@ -180,13 +176,13 @@ public class ECCUtil {
     // Output: 2P = (Xfinal,Yfinal,Zfinal,Tafinal,Tbfinal), where Tfinal = Tafinal*Tbfinal,
     //         corresponding to (Xfinal:Yfinal:Zfinal:Tfinal) in extended twisted Edwards coordinates
     private static ExtendedPoint eccDouble(ExtendedPoint p) {
-        F2Element t1 = fp2Sqr1271(p.x);                 // t1 = X1^2
-        F2Element t2 = fp2Sqr1271(p.y);                 // t2 = Y1^2
-        F2Element t3 = fp2Add1271(p.x, p.y);            // t3 = X1+Y1
+        F2Element t1 = fp2Sqr1271(p.getX());                 // t1 = X1^2
+        F2Element t2 = fp2Sqr1271(p.getY());                 // t2 = Y1^2
+        F2Element t3 = fp2Add1271(p.getX(), p.getY());            // t3 = X1+Y1
         F2Element tb = fp2Add1271(t1, t2);              // Tbfinal = X1^2+Y1^2
         t1 = fp2Sub1271(t2, t1);                        // t1 = Y1^2-X1^2
         F2Element ta = fp2Sqr1271(t3);                  // Ta = (X1+Y1)^2
-        t2 = fp2Sqr1271(p.z);                           // t2 = Z1^2
+        t2 = fp2Sqr1271(p.getZ());                           // t2 = Z1^2
         ta = fp2Sub1271(ta, tb);                        // Tafinal = 2X1*Y1 = (X1+Y1)^2-(X1^2+Y1^2)
         t2 = fp2AddSub1271(t2, t1);                     // t2 = 2Z1^2-(Y1^2-X1^2)
         final F2Element y = fp2Mul1271(t1, tb);         // Yfinal = (X1^2+Y1^2)(Y1^2-X1^2)
@@ -196,9 +192,9 @@ public class ECCUtil {
     }
 
     private static FieldPoint eccNorm(ExtendedPoint p) {
-        final F2Element zInv = fp2Inv1271(p.z);
-        final F2Element x = fp2Mul1271(p.x, zInv);
-        final F2Element y = fp2Mul1271(p.y, zInv);
+        final F2Element zInv = fp2Inv1271(p.getZ());
+        final F2Element x = fp2Mul1271(p.getX(), zInv);
+        final F2Element y = fp2Mul1271(p.getY(), zInv);
         return new FieldPoint(x, y);
     }
 
@@ -262,11 +258,11 @@ public class ECCUtil {
 
     public static ExtendedPoint pointSetup(FieldPoint point) {
         return new ExtendedPoint(
-                point.x,
-                point.y,
+                point.getX(),
+                point.getY(),
                 new F2Element(BigInteger.ONE, BigInteger.ZERO),
-                point.x,
-                point.y
+                point.getX(),
+                point.getY()
         );
     }
 
@@ -331,8 +327,8 @@ public class ECCUtil {
      * @implNote this function does not run in constant time (input point P is assumed to be public)
      */
     public static boolean eccPointValidate(@NotNull ExtendedPoint p) {
-        F2Element t1 = fp2Sqr1271(p.y);                                 // y^2
-        F2Element t2 = fp2Sqr1271(p.x);                                 // x^2
+        F2Element t1 = fp2Sqr1271(p.getY());                                 // y^2
+        F2Element t2 = fp2Sqr1271(p.getX());                                 // x^2
         F2Element t3 = fp2Sub1271(t1, t2);                              // y^2 - x^2 = -x^2 + y^2
 
         t1 = fp2Mul1271(t1, t2);                                        // x^2*y^2
@@ -392,30 +388,26 @@ public class ECCUtil {
         PreComputedExtendedPoint[] table = eccPrecomp(R);
 
         // Extract initial point in (X+Y,Y-X,2Z,2dT) representation
-        try {
-            PreComputedExtendedPoint S = Table3.tableLookup1x8(table, digits[64], signMasks[64]);
-            // Convert to representation (2X,2Y,2Z) for doubling operations
-            R = r2ToR4(S, R);
+        PreComputedExtendedPoint S = (PreComputedExtendedPoint) Table.tableLookup(table, digits[64], signMasks[64]);
+        // Convert to representation (2X,2Y,2Z) for doubling operations
+        R = r2ToR4(S, R);
 
-            // Main computation loop: double-and-add with precomputed table
-            for (int i = 63; i >= 0; i--) {
-                // Extract point S in (X+Y,Y-X,2Z,2dT) representation
-                S = Table3.tableLookup1x8(table, digits[i], signMasks[i]);
+        // Main computation loop: double-and-add with precomputed table
+        for (int i = 63; i >= 0; i--) {
+            // Extract point S in (X+Y,Y-X,2Z,2dT) representation
+            S = (PreComputedExtendedPoint) Table.tableLookup(table, digits[i], signMasks[i]);
 
-                // Double: R = 2*R using (X,Y,Z,Ta,Tb) <- 2*(X,Y,Z)
-                R = eccDouble(R);
+            // Double: R = 2*R using (X,Y,Z,Ta,Tb) <- 2*(X,Y,Z)
+            R = eccDouble(R);
 
-                // Add: R = R+S using (X,Y,Z,Ta,Tb) <- (X,Y,Z,Ta,Tb) + (X+Y,Y-X,2Z,2dT)
-                R = eccAdd(S, R);
-            }
-        } catch (exceptions.TableLookupException e) {
-            throw new EncryptionException("Table lookup exception thrown.\n");
+            // Add: R = R+S using (X,Y,Z,Ta,Tb) <- (X,Y,Z,Ta,Tb) + (X+Y,Y-X,2Z,2dT)
+            R = eccAdd(S, R);
         }
 
         // Convert to affine coordinates (x,y) and store in output parameter Q
         FieldPoint result = eccNorm(R);
-        Q.x = result.x;
-        Q.y = result.y;
+        Q.setX(result.getX());
+        Q.setY(result.getY());
 
         return true;
     }
@@ -426,9 +418,9 @@ public class ECCUtil {
      * @return table T containing NPOINTS_VARBASE points: P, 3P, 5P, ... , (2*NPOINTS_VARBASE-1)P. NPOINTS_VARBASE is fixed to 8 (see FourQ.h).
      *         Precomputed points use the representation (X+Y,Y-X,2Z,2dT) corresponding to (X:Y:Z:T) in extended twisted Edwards coordinates.
      */
+    @NotNull
     private static PreComputedExtendedPoint[] eccPrecomp(@NotNull ExtendedPoint p) {
         // Initialize the output table
-        @SuppressWarnings("unchecked")
         PreComputedExtendedPoint[] t
                 = new PreComputedExtendedPoint[Params.NPOINTS_VARBASE.intValueExact()];
 
@@ -460,12 +452,12 @@ public class ECCUtil {
     public static ExtendedPoint eccCopy(
             ExtendedPoint source
     ) {
-        return new ExtendedPoint<>(
-                fp2Copy1271(source.x),
-                fp2Copy1271(source.y),
-                fp2Copy1271(source.z),
-                fp2Copy1271(source.ta),
-                fp2Copy1271(source.tb)
+        return new ExtendedPoint(
+                fp2Copy1271(source.getX()),
+                fp2Copy1271(source.getY()),
+                fp2Copy1271(source.getZ()),
+                fp2Copy1271(source.getTa()),
+                fp2Copy1271(source.getTb())
         );
     }
 

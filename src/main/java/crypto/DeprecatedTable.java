@@ -11,7 +11,7 @@ import java.util.Arrays;
 
 import static operations.FP2.fp2Copy1271;
 
-public class Table3 {
+public class DeprecatedTable {
     public static PreComputedExtendedPoint<F2Element> tableLookupFixedBase(
             PreComputedExtendedPoint<F2Element>[] table,
             int digit,
