@@ -1,5 +1,6 @@
 package crypto;
 
+import constants.Params;
 import constants.PregeneratedTables;
 import operations.FP2;
 import types.F2Element;
@@ -16,9 +17,22 @@ public class Table2 {
             int digit,
             int signMask
     ) {
+
+        // Bounds checks
+        if (tableLocation >= PregeneratedTables.FIXED_BASE_TABLE_POINTS.length) {
+            throw new IndexOutOfBoundsException("Table offset out of bounds: " + tableLocation);
+        }
+
+        // Create subset of table starting from offset
+        PreComputedExtendedPoint<F2Element>[] table =
+                Arrays.copyOfRange(PregeneratedTables.FIXED_BASE_TABLE_POINTS,
+                        tableLocation,
+                        Math.min(tableLocation + Params.VPOINTS_FIXEDBASE, PregeneratedTables.FIXED_BASE_TABLE_POINTS.length));
+
         PreComputedExtendedPoint<F2Element> tempPoint = null;
         PreComputedExtendedPoint<F2Element> point = table[0];
         final int shiftAmount = Integer.SIZE - 1;
+
         for (int i = 1; i < TABLE_LOOKUP_SIZE; i++) {
             digit--;
             BigInteger mask = BigInteger.valueOf((digit >> shiftAmount) - 1);   // TODO: Could be wrong
