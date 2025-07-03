@@ -46,4 +46,41 @@ public class AffinePoint<Field> implements Point<Field> {
         y = (Field) ((F2Element) y).applyMasks(tempPoint.yx, mask);
         t = t;
     }
+
+    @Override
+    public F2Element getX() {
+        return (F2Element) x;
+    }
+
+    public void setX(F2Element x) {
+        this.x = (Field) x;
+    }
+
+    @Override
+    public F2Element getY() {
+        return (F2Element) y;
+    }
+
+    @Override
+    public F2Element getZ() {
+        return null;
+    }
+
+    public void setY(F2Element y) {
+        this.y = (Field) y;
+    }
+
+    @Override
+    public void setZ(F2Element z) {
+
+    }
+
+    @Override
+    public F2Element getT() {
+        return (F2Element) t;
+    }
+
+    public void setT(F2Element t) {
+        this.t = (Field) t;
+    }
 }

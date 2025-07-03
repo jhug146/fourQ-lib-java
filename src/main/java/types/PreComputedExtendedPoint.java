@@ -7,7 +7,7 @@ import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.Optional;
 
-public class PreComputedExtendedPoint<Field> implements Point{
+public class PreComputedExtendedPoint<Field> implements Point<Field>{
     public Field xy;
     public Field yx;
     public Field z;
@@ -72,5 +72,42 @@ public class PreComputedExtendedPoint<Field> implements Point{
         yx = (Field) ((F2Element) yx).applyMasks(tempPoint.yx, mask);
         z = (Field) (!modifyZ ? (F2Element) z : ((F2Element) z).applyMasks(tempPoint.t, mask));
         t = t;
+    }
+
+    @Override
+    public F2Element getX() {
+        return (F2Element) xy;
+    }
+
+    public void setX(F2Element x) {
+        this.xy = (Field) x;
+    }
+
+    @Override
+    public F2Element getY() {
+        return (F2Element) yx;
+    }
+
+    @Override
+    public F2Element getZ() {
+        return null;
+    }
+
+    public void setY(F2Element y) {
+        this.yx = (Field) y;
+    }
+
+    @Override
+    public void setZ(F2Element z) {
+
+    }
+
+    @Override
+    public F2Element getT() {
+        return (F2Element) t;
+    }
+
+    public void setT(F2Element t) {
+        this.t = (Field) t;
     }
 }
