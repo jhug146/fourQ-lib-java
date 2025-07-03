@@ -5,10 +5,10 @@ import constants.Params;
 import java.math.BigInteger;
 import java.util.Objects;
 
-public class AffinePoint implements Point {
-    public F2Element x;
-    public F2Element y;
-    public F2Element t;
+public class AffinePoint implements TablePoint {
+    private F2Element x;
+    private F2Element y;
+    private F2Element t;
 
     public AffinePoint(F2Element x, F2Element y, F2Element t) {
         this.x = x;
@@ -37,22 +37,20 @@ public class AffinePoint implements Point {
         return Objects.hash(x, y, t);
     }
 
+    @Override
     public void filterMaskForEach(
-            PreComputedExtendedPoint tempPoint,
+            TablePoint tempPoint,
             BigInteger mask,
-            boolean modifyZ
+            boolean modZ
     ) {
-        x = x.applyMasks(tempPoint.xy, mask);
-        y = y.applyMasks(tempPoint.yx, mask);
+        x = x.applyMasks(tempPoint.getX(), mask);
+        y = y.applyMasks(tempPoint.getY(), mask);
+        t = t.applyMasks(tempPoint.getT(), mask);
     }
 
     @Override
     public F2Element getX() {
         return x;
-    }
-
-    public void setX(F2Element x) {
-        this.x = x;
     }
 
     @Override
@@ -61,8 +59,18 @@ public class AffinePoint implements Point {
     }
 
     @Override
+    public F2Element getT() {
+        return t;
+    }
+
+    @Override
     public F2Element getZ() {
         return null;
+    }
+
+    @Override
+    public void setX(F2Element x) {
+        this.x = x;
     }
 
     public void setY(F2Element y) {
@@ -70,16 +78,10 @@ public class AffinePoint implements Point {
     }
 
     @Override
-    public void setZ(F2Element z) {
-
-    }
-
-    @Override
-    public F2Element getT() {
-        return t;
-    }
-
     public void setT(F2Element t) {
         this.t = t;
     }
+
+    @Override
+    public void setZ(F2Element z) {}
 }

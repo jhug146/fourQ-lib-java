@@ -1,6 +1,5 @@
 package types;
 
-import exceptions.TableLookupException;
 
 public class FieldPoint implements Point {
     public F2Element x;
@@ -11,7 +10,22 @@ public class FieldPoint implements Point {
     }
 
     @Override
-    public int getTableLength() throws TableLookupException {
-        throw new TableLookupException("Invalid point lookup type");
+    public F2Element getX() {
+        return x;
+    }
+
+    @Override
+    public F2Element getY() {
+        return y;
+    }
+
+    @Override
+    public void setX(F2Element x) {
+        this.x = x;
+    }
+
+    @Override
+    public void setY(F2Element y) {
+        this.y = y;
     }
 }

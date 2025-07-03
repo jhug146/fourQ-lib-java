@@ -2,6 +2,7 @@ package crypto;
 
 import constants.Params;
 import exceptions.EncryptionException;
+import exceptions.TableLookupException;
 import operations.FP;
 import operations.FP2;
 import org.jetbrains.annotations.Contract;
@@ -71,12 +72,17 @@ public class ECCUtil {
         }
 
         // TODO: Both instances of TABLE in this function might need updating
-        AffinePoint affPoint = Table.tableLookup(
-                (V_FIXEDBASE - 1) * (1 << (W_FIXEDBASE - 1)),
-                V_FIXEDBASE,
-                digit,
-                digits[D_FIXEDBASE - 1]
-        );
+        AffinePoint affPoint = new AffinePoint();
+        try {
+            Table.tableLookup(
+                    (V_FIXEDBASE - 1) * (1 << (W_FIXEDBASE - 1)),
+                    digit,
+                    digits[D_FIXEDBASE - 1],
+                    affPoint
+            );
+        } catch (TableLookupException e) {
+            throw EncryptionException("Error with table lookup");
+        }
         ExtendedPoint exPoint = r5ToR1(affPoint);
 
         for (int j = 0; j < V_FIXEDBASE - 1; j++) {
