@@ -5,17 +5,19 @@ import java.util.Arrays;
 
 import constants.PregeneratedTables;
 import exceptions.TableLookupException;
+import exceptions.TablePointCastException;
 import operations.FP2;
 import types.TablePoint;
 
 
 public class Table {
-    public static TablePoint tableLookup(
-            TablePoint[] table,
+    public static <T extends TablePoint> T tableLookup(
+            T[] table,
             int digit,
             int signMask
     ) throws TableLookupException, NullPointerException {
-        TablePoint tempPoint = null, point = table[0];
+        TablePoint tempPoint = null;
+        T point = table[0];
         final int shiftAmount = Integer.SIZE - 1;
 
         for (int i = 1; i < point.getTableLength(); i++, digit--) {
@@ -25,18 +27,16 @@ public class Table {
             point.filterMaskForEach(tempPoint, mask,true);
         }
 
-        try {
-           tempPoint.setT(point.getT().dup());
-           tempPoint.setY(point.getX().dup());
-           tempPoint.setX(point.getY().dup());
-           tempPoint.setT(FP2.fp2Neg1271(tempPoint.getT()));
-        } catch (NullPointerException e) {
-            System.out.printf("""
+        if(tempPoint != null) {
+            tempPoint.setT(point.getT().dup());
+            tempPoint.setY(point.getX().dup());
+            tempPoint.setX(point.getY().dup());
+            tempPoint.setT(FP2.fp2Neg1271(tempPoint.getT()));
+        } else {
+            throw new TableLookupException("""
                     TableLookup expected table to provide non-null value.
                     Likely cause: generated table is faulty.
-                    %s
-                    """, e.getMessage());
-            throw new NullPointerException();
+                    """);
         }
 
         BigInteger bigMask = BigInteger.valueOf(signMask);     // TODO: Potential conversion problem here
