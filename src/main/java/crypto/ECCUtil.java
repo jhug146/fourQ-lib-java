@@ -140,7 +140,9 @@ public class ECCUtil {
 
         for (int i = (t_VARBASE-1); i >= 0; i--) {
             r = eccDouble(r);
-            s = Table.tableLookup(table, digits[i], signMasks[i]).toPreComputedExtendedPoint();
+            s = Table
+                    .tableLookup(table, digits[i], signMasks[i])
+                    .toPreComputedExtendedPoint();
             r = eccDouble(r);
             r = eccDouble(r);
             r = eccDouble(r);
@@ -169,7 +171,10 @@ public class ECCUtil {
             // C: digits[i] = ((sign_masks[i] & (unsigned int)(temp ^ -temp)) ^ (unsigned int)-temp) >> 1;
             BigInteger tempXorNeg = temp.xor(temp.negate());
             BigInteger signMaskBig = BigInteger.valueOf(signMasks[i] & 0xFFFFFFFFL);
-            BigInteger digitCalc = signMaskBig.and(tempXorNeg).xor(temp.negate()).shiftRight(1);
+            BigInteger digitCalc = signMaskBig
+                    .and(tempXorNeg)
+                    .xor(temp.negate())
+                    .shiftRight(1);
             digits[i] = digitCalc.intValue();
 
             currentScalar = currentScalar.subtract(temp).shiftRight(windowSize);
@@ -181,7 +186,10 @@ public class ECCUtil {
 
         BigInteger finalXorNeg = currentScalar.xor(currentScalar.negate());
         BigInteger finalSignMask = BigInteger.valueOf(signMasks[t_VARBASE] & 0xFFFFFFFFL);
-        BigInteger finalDigit = finalSignMask.and(finalXorNeg).xor(currentScalar.negate()).shiftRight(1);
+        BigInteger finalDigit = finalSignMask
+                .and(finalXorNeg)
+                .xor(currentScalar.negate())
+                .shiftRight(1);
         digits[t_VARBASE] = finalDigit.intValue();
     }
 
