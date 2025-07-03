@@ -89,17 +89,17 @@ public class PregeneratedTables {
             , 0xf068e2d286047d0aL, 0x14999b5d6c770e20L, 0xd1874a592385da79L, 0x78aeb552c15a1cd9L, 0x482dcccc23e9c06eL, 0x7b18a19fb54b5745L, 0x036c896efe9a7a06L, 0x2f2c2ce0d1871c13L, 0x3b2d9b9ed65492c7L, 0x0649c7e50819d077L, 0xcdab66ea7b65e3cbL, 0x49b15b40c4aaf03fL };
 
     // Convert the long array to PreComputedExtendedPoint array
-    public static final PreComputedExtendedPoint<F2Element>[] FIXED_BASE_TABLE_POINTS =
+    public static final PreComputedExtendedPoint[] FIXED_BASE_TABLE_POINTS =
             convertToPreComputedPoints(PregeneratedTables.FIXED_BASE_TABLE);
 
     // First, you need a method to convert the long array to PreComputedExtendedPoint array
-    public static PreComputedExtendedPoint<F2Element>[] convertToPreComputedPoints(long[] rawTable) {
+    public static PreComputedExtendedPoint[] convertToPreComputedPoints(long[] rawTable) {
         // Assuming each point takes 12 longs (3 coordinates * 4 longs each for F2Element)
         // You'll need to adjust this based on your actual data structure
         int pointSize = 12; // Adjust based on your actual point representation
         int numPoints = rawTable.length / pointSize;
 
-        PreComputedExtendedPoint<F2Element>[] points = new PreComputedExtendedPoint[numPoints];
+        PreComputedExtendedPoint[] points = new PreComputedExtendedPoint[numPoints];
 
         for (int i = 0; i < numPoints; i++) {
             int offset = i * pointSize;
@@ -114,7 +114,7 @@ public class PregeneratedTables {
             ); // Assuming z=1 as mentioned in comments
             F2Element t = createF2ElementFromLongs(rawTable, offset + 8);
 
-            points[i] = new PreComputedExtendedPoint<>(xy, yx, z, t);
+            points[i] = new PreComputedExtendedPoint(xy, yx, z, t);
         }
 
         return points;

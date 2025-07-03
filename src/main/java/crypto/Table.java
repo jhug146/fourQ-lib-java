@@ -19,8 +19,7 @@ public class Table {
         TablePoint point = table[0];
         final int shiftAmount = Integer.SIZE - 1;
 
-        for (int i = 1; i < point.getTableLength(); i++) {
-            digit--;
+        for (int i = 1; i < point.getTableLength(); i++, digit--) {
             BigInteger mask = BigInteger.valueOf((digit >> shiftAmount) - 1);   // TODO: Could be wrong
             tempPoint = table[i];
 
@@ -52,6 +51,7 @@ public class Table {
                 tableLocation,
                 tableLocation + point.getTableLength()
         );
+
         return tableLookup(table, digit, signMask);
     }
 }

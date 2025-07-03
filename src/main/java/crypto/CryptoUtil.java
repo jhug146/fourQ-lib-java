@@ -32,8 +32,8 @@ public class CryptoUtil {
     }
 
     public static BigInteger encode(FieldPoint point) {
-        BigInteger y = point.y.real.add(point.y.im.shiftLeft(128));
-        boolean ySignBit = point.y.real.compareTo(BigInteger.ZERO) <= 0;
+        BigInteger y = point.getY().real.add(point.getY().im.shiftLeft(128));
+        boolean ySignBit = point.getY().real.compareTo(BigInteger.ZERO) <= 0;
         if (ySignBit) {
             y = y.setBit(255);
         }
@@ -102,8 +102,8 @@ public class CryptoUtil {
         FieldPoint point = new FieldPoint(x, y);
         ExtendedPoint testPoint = ECCUtil.pointSetup(point);
         if (!ECCUtil.eccPointValidate(testPoint)) {
-            testPoint.x.im = FP.PUtil.fpNeg1271(testPoint.x.im);
-            point.x.im = testPoint.x.im;
+            testPoint.getX().im = FP.PUtil.fpNeg1271(testPoint.getX().im);
+            point.getX().im = testPoint.getX().im;
             if (!ECCUtil.eccPointValidate(testPoint)) {       // Final point validation
                 throw new EncryptionException("");
             }
