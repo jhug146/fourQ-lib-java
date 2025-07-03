@@ -71,7 +71,7 @@ public class ECCUtil {
         }
 
         // TODO: Both instances of TABLE in this function might need updating
-        AffinePoint<F2Element> affPoint = Table2.tableLookup(
+        AffinePoint<F2Element> affPoint = Table.tableLookup(
                 (V_FIXEDBASE - 1) * (1 << (W_FIXEDBASE - 1)),
                 V_FIXEDBASE,
                 digit,
@@ -88,7 +88,7 @@ public class ECCUtil {
             }
             // Extract point in (x+y,y-x,2dt) representation
             int signDigit = D_FIXEDBASE - (j + 1) * E_FIXEDBASE - 1;
-            affPoint = Table2.tableLookup(, V_FIXEDBASE, digit, digits[signDigit]);
+            affPoint = Table.tableLookup(, V_FIXEDBASE, digit, digits[signDigit]);
             exPoint = eccMixedAdd(affPoint, exPoint);
         }
 
@@ -102,7 +102,7 @@ public class ECCUtil {
                     digit = 2 * digit + digits[k];
                 }
                 int signDigit = D_FIXEDBASE - j * E_FIXEDBASE + i - E_FIXEDBASE;
-                affPoint = Table2.tableLookup(, V_FIXEDBASE, digit, signDigit);
+                affPoint = Table.tableLookup(, V_FIXEDBASE, digit, signDigit);
                 exPoint = eccMixedAdd(affPoint, exPoint);
             }
         }
@@ -387,14 +387,14 @@ public class ECCUtil {
 
         // Extract initial point in (X+Y,Y-X,2Z,2dT) representation
         try {
-            PreComputedExtendedPoint<F2Element> S = Table.tableLookup1x8(table, digits[64], signMasks[64]);
+            PreComputedExtendedPoint<F2Element> S = Table3.tableLookup1x8(table, digits[64], signMasks[64]);
             // Convert to representation (2X,2Y,2Z) for doubling operations
             R = r2ToR4(S, R);
 
             // Main computation loop: double-and-add with precomputed table
             for (int i = 63; i >= 0; i--) {
                 // Extract point S in (X+Y,Y-X,2Z,2dT) representation
-                S = Table.tableLookup1x8(table, digits[i], signMasks[i]);
+                S = Table3.tableLookup1x8(table, digits[i], signMasks[i]);
 
                 // Double: R = 2*R using (X,Y,Z,Ta,Tb) <- 2*(X,Y,Z)
                 R = eccDouble(R);

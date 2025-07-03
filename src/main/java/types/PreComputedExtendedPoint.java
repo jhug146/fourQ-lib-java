@@ -68,7 +68,7 @@ public class PreComputedExtendedPoint<Field> implements Point{
             BigInteger mask,
             Optional<Boolean> modifyZ
     ) {
-        return new Iterator<F2Element>() {
+        return new Iterator<>() {
             private int number = 0;
             @Override
             public boolean hasNext() {
