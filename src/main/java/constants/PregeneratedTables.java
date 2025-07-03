@@ -90,6 +90,11 @@ public class PregeneratedTables {
 
     public static final PreComputedExtendedPoint[] FIXED_BASE_TABLE_POINTS = convertLongArrayToPoints();
 
+    /**
+     * The conversion assumes each PreComputedExtendedPoint uses 8 longs (4 F2Elements × 2 longs each for the real and imaginary parts in GF(p²)).
+     * This follows the standard FourQ precomputed table format where each point stores (X+Y, Y-X, 2Z, 2dT) coordinates.
+     * @return
+     */
     private static PreComputedExtendedPoint[] convertLongArrayToPoints() {
         // Each PreComputedExtendedPoint requires 8 longs (4 F2Elements × 2 longs each)
         final int LONGS_PER_POINT = 8;
