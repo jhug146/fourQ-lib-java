@@ -14,9 +14,8 @@ public class Table {
             TablePoint[] table,
             int digit,
             int signMask
-    ) throws TableLookupException {
-        TablePoint tempPoint = null;
-        TablePoint point = table[0];
+    ) throws TableLookupException, NullPointerException {
+        TablePoint tempPoint = null, point = table[0];
         final int shiftAmount = Integer.SIZE - 1;
 
         for (int i = 1; i < point.getTableLength(); i++, digit--) {
@@ -26,11 +25,19 @@ public class Table {
             point.filterMaskForEach(tempPoint, mask,true);
         }
 
-        assert tempPoint != null;
-        tempPoint.setT(point.getT().dup());
-        tempPoint.setY(point.getX().dup());
-        tempPoint.setX(point.getY().dup());
-        tempPoint.setT(FP2.fp2Neg1271(tempPoint.getT()));
+        try {
+           tempPoint.setT(point.getT().dup());
+           tempPoint.setY(point.getX().dup());
+           tempPoint.setX(point.getY().dup());
+           tempPoint.setT(FP2.fp2Neg1271(tempPoint.getT()));
+        } catch (NullPointerException e) {
+            System.out.printf("""
+                    TableLookup expected table to provide non-null value.
+                    Likely cause: generated table is faulty.
+                    %s
+                    """, e.getMessage());
+            throw new NullPointerException();
+        }
 
         BigInteger bigMask = BigInteger.valueOf(signMask);     // TODO: Potential conversion problem here
         point.filterMaskForEach(tempPoint, bigMask, false);
