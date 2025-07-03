@@ -66,7 +66,7 @@ public class PreComputedExtendedPoint<Field> implements Point{
     public Iterator<F2Element> filterMaskForEach(
             PreComputedExtendedPoint<F2Element> tempPoint,
             BigInteger mask,
-            Optional<Boolean> modifyZ
+            boolean modifyZ
     ) {
         return new Iterator<F2Element>() {
             private int number = 0;
@@ -80,13 +80,21 @@ public class PreComputedExtendedPoint<Field> implements Point{
                 return switch (number++) {
                     case 1 -> ((F2Element) xy).applyMasks(tempPoint.xy, mask);
                     case 2 -> ((F2Element) yx).applyMasks(tempPoint.yx, mask);
-                    case 3 -> modifyZ.isEmpty() ? (F2Element) z : ((F2Element) z).applyMasks(tempPoint.t, mask);
+                    case 3 -> !modifyZ ? (F2Element) z : ((F2Element) z).applyMasks(tempPoint.t, mask);
                     case 4 -> (F2Element) t;
                     default ->
                             throw new UnsupportedOperationException("Out of bounds in iterator");
                 };
             }
         };
+    }
+
+    public void doMask(
+            PreComputedExtendedPoint<F2Element> tempPoint,
+            BigInteger mask,
+            boolean modifyZ
+    ) {
+
     }
 
 }

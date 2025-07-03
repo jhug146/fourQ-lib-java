@@ -5,7 +5,7 @@ import constants.Params;
 import java.math.BigInteger;
 import java.util.Objects;
 
-public class AffinePoint<Field> implements Point {
+public class AffinePoint<Field> implements Point<Field> {
     public Field x;
     public Field y;
     public Field t;

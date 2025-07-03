@@ -2,7 +2,7 @@ package types;
 
 import exceptions.TableLookupException;
 
-public class FieldPoint<Field> implements Point {
+public class FieldPoint<Field> implements Point<Field> {
     public Field x;
     public Field y;
     public FieldPoint(Field x, Field y) {
