@@ -44,7 +44,6 @@ public class AffinePoint<Field> implements Point<Field> {
     ) {
         x = (Field) ((F2Element) x).applyMasks(tempPoint.xy, mask);
         y = (Field) ((F2Element) y).applyMasks(tempPoint.yx, mask);
-        t = t;
     }
 
     @Override

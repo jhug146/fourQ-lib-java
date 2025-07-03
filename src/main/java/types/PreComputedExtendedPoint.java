@@ -71,7 +71,6 @@ public class PreComputedExtendedPoint<Field> implements Point<Field>{
         xy = (Field) ((F2Element) xy).applyMasks(tempPoint.xy, mask);
         yx = (Field) ((F2Element) yx).applyMasks(tempPoint.yx, mask);
         z = (Field) (!modifyZ ? (F2Element) z : ((F2Element) z).applyMasks(tempPoint.t, mask));
-        t = t;
     }
 
     @Override

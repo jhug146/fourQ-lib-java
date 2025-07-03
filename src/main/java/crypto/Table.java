@@ -9,7 +9,6 @@ import types.PreComputedExtendedPoint;
 
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.Optional;
 
 public class Table {
     private static LookupMode lookupMode;
@@ -39,7 +38,6 @@ public class Table {
                 );
 
         PreComputedExtendedPoint<F2Element> tempPoint = null;
-        //PreComputedExtendedPoint<F2Element> point = table[0];
         final int shiftAmount = Integer.SIZE - 1;
 
         for (int i = 1; i < point.getTableLength(); i++) {
