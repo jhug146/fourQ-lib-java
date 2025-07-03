@@ -5,7 +5,7 @@ import operations.FP2;
 
 import java.math.BigInteger;
 
-public class PreComputedExtendedPoint implements Point{
+public class PreComputedExtendedPoint implements TablePoint{
     public F2Element xy;
     public F2Element yx;
     public F2Element z;
@@ -15,6 +15,13 @@ public class PreComputedExtendedPoint implements Point{
         yx = _yx;
         z = _z;
         t = _t;
+    }
+
+    public PreComputedExtendedPoint() {
+        this.xy = Params.F2_ZERO.dup();
+        this.yx = Params.F2_ZERO.dup();
+        this.z = Params.F2_ZERO.dup();
+        this.t = Params.F2_ZERO.dup();
     }
 
     @Override
@@ -51,48 +58,34 @@ public class PreComputedExtendedPoint implements Point{
         F2Element y = FP2.fp2Mul1271(twoY, twoInverse);
 
         AffinePoint ret = new AffinePoint();
-        ret.x = x;
-        ret.y = y;
+        ret.setX(x);
+        ret.setY(y);
 
         return ret;
     }
 
+    @Override
     public void filterMaskForEach(
-            PreComputedExtendedPoint tempPoint,
+            TablePoint tempPoint,
             BigInteger mask,
-            boolean modifyZ
+            boolean modZ
     ) {
-        xy = xy.applyMasks(tempPoint.xy, mask);
-        yx = yx.applyMasks(tempPoint.yx, mask);
-        z = !modifyZ ? z : z.applyMasks(tempPoint.t, mask);
+        xy = xy.applyMasks(tempPoint.getX(), mask);
+        yx = yx.applyMasks(tempPoint.getY(), mask);
+        t = t.applyMasks(tempPoint.getT(), mask);
+        if (modZ) {
+            z = z.applyMasks(tempPoint.getZ(), mask);
+        }
     }
 
     @Override
     public F2Element getX() {
-        return (F2Element) xy;
-    }
-
-    public void setX(F2Element x) {
-        this.xy = (F2Element) x;
+        return xy;
     }
 
     @Override
     public F2Element getY() {
-        return (F2Element) yx;
-    }
-
-    @Override
-    public F2Element getZ() {
-        return null;
-    }
-
-    public void setY(F2Element y) {
-        this.yx = (F2Element) y;
-    }
-
-    @Override
-    public void setZ(F2Element z) {
-
+        return yx;
     }
 
     @Override
@@ -100,7 +93,26 @@ public class PreComputedExtendedPoint implements Point{
         return t;
     }
 
+    @Override
+    public F2Element getZ() {
+        return null;
+    }
+
+    @Override
+    public void setX(F2Element x) {
+        this.xy = x;
+    }
+
+    @Override
+    public void setY(F2Element y) {
+        this.yx = y;
+    }
+
+    @Override
     public void setT(F2Element t) {
         this.t = t;
     }
+
+    @Override
+    public void setZ(F2Element z) {}
 }

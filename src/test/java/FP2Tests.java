@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.*;
 public class FP2Tests {
 
     private static final BigInteger PRIME = Params.PRIME_1271;
-    private static final BigInteger ZERO = BigInteger.ZERO;
 
     private F2Element sampleElement(BigInteger a, BigInteger b) {
         return new F2Element(a.mod(PRIME), b.mod(PRIME));
@@ -72,7 +71,7 @@ public class FP2Tests {
         F2Element expected = FP2.fp2Sub1271(doubled, b);
         F2Element result = FP2.fp2AddSub1271(a, b);
 
-        assertTrue(expected.equals(result));
+        assertEquals(expected, result);
     }
 
     @Test

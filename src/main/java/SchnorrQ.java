@@ -7,7 +7,6 @@ import crypto.HashFunction;
 import exceptions.EncryptionException;
 import exceptions.InvalidArgumentException;
 import operations.FP;
-import types.F2Element;
 import types.Pair;
 import types.FieldPoint;
 
@@ -57,7 +56,7 @@ public class SchnorrQ {
         return sigStart.add(sigEnd.shiftLeft(KEY_SIZE));
     }
 
-    public static boolean schnorrQVerify(BigInteger publicKey, BigInteger signature, byte[] message) throws EncryptionException, InvalidArgumentException {
+    public static boolean schnorrQVerify(BigInteger publicKey, BigInteger signature, byte[] message) throws EncryptionException {
         if (!publicKey.testBit(TEST_BIT) || !signature.testBit(TEST_BIT)) {
             throw new InvalidArgumentException(String.format(
                     "Invalid argument: Bit %d is not set to zero in both the public key and signature.",
@@ -82,9 +81,6 @@ public class SchnorrQ {
                 CryptoUtil.decode(publicKey),       // Implicitly checks that public key lies on the curve
                 HashFunction.computeHash(bytes)
         );
-        if (affPoint == null) {
-            return false;
-        }
 
         BigInteger encoded = CryptoUtil.encode(affPoint);
         return encoded.equals(signature);

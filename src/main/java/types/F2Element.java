@@ -35,10 +35,7 @@ public class F2Element {
 
     @Override
     public String toString() {
-        return "{" +
-                "real=" + real +
-                ", im=" + im +
-                '}';
+        return real + " " + im + "i";
     }
 
     public F2Element applyMasks(F2Element point2, BigInteger mask) {

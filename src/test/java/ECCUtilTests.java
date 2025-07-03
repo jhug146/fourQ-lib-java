@@ -1,5 +1,6 @@
 import constants.Params;
 import crypto.ECCUtil;
+import exceptions.EncryptionException;
 import operations.FP2;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -31,9 +32,9 @@ class ECCUtilTests {
     private static final int PERFORMANCE_TEST_ITERATIONS = 1000;
 
     // Test fixtures
-    private final List<AffinePoint<F2Element>> testPointsAffine = new ArrayList<>();
-    private final List<ExtendedPoint<F2Element>> testPointsExtended = new ArrayList<>();
-    private final List<FieldPoint<F2Element>> testPointsField = new ArrayList<>();
+    private final List<AffinePoint> testPointsAffine = new ArrayList<>();
+    private final List<ExtendedPoint> testPointsExtended = new ArrayList<>();
+    private final List<FieldPoint> testPointsField = new ArrayList<>();
     private final List<BigInteger> testScalars = new ArrayList<>();
     private final Map<String, Long> performanceMetrics = new ConcurrentHashMap<>();
 
@@ -72,7 +73,7 @@ class ECCUtilTests {
 
     private void createTestPoints() {
         // Generator point
-        AffinePoint<F2Element> generator = new AffinePoint<>();
+        AffinePoint generator = new AffinePoint();
         ECCUtil.eccSet(generator);
         testPointsAffine.add(generator);
         testPointsExtended.add(convertToExtended(generator));
@@ -88,7 +89,7 @@ class ECCUtilTests {
 
         for (BigInteger multiplier : testMultipliers) {
             try {
-                AffinePoint<F2Element> result = new AffinePoint<>();
+                AffinePoint result = new AffinePoint();
                 if (ECCUtil.eccMul(convertToField(generator), multiplier, result, false)) {
                     testPointsAffine.add(result);
                     testPointsExtended.add(convertToExtended(result));
@@ -106,14 +107,14 @@ class ECCUtilTests {
     private void addEdgeCasePoints() {
         // Point with zero coordinates (should be invalid)
         F2Element zero = new F2Element(BigInteger.ZERO, BigInteger.ZERO);
-        AffinePoint<F2Element> zeroPoint = new AffinePoint<>(zero, zero, zero);
+        AffinePoint zeroPoint = new AffinePoint(zero, zero, zero);
         testPointsAffine.add(zeroPoint);
         testPointsExtended.add(convertToExtended(zeroPoint));
         testPointsField.add(convertToField(zeroPoint));
 
         // Point with maximum field values
         F2Element maxField = new F2Element(FIELD_PRIME.subtract(BigInteger.ONE), FIELD_PRIME.subtract(BigInteger.ONE));
-        AffinePoint<F2Element> maxPoint = new AffinePoint<>(maxField, maxField, zero);
+        AffinePoint maxPoint = new AffinePoint(maxField, maxField, zero);
         testPointsAffine.add(maxPoint);
         testPointsExtended.add(convertToExtended(maxPoint));
         testPointsField.add(convertToField(maxPoint));
@@ -174,8 +175,8 @@ class ECCUtilTests {
         @Order(1)
         @DisplayName("Generator point deterministic creation")
         void testGeneratorDeterministic() {
-            AffinePoint<F2Element> gen1 = new AffinePoint<>();
-            AffinePoint<F2Element> gen2 = new AffinePoint<>();
+            AffinePoint gen1 = new AffinePoint();
+            AffinePoint gen2 = new AffinePoint();
 
             ECCUtil.eccSet(gen1);
             ECCUtil.eccSet(gen2);
@@ -187,15 +188,15 @@ class ECCUtilTests {
         @Order(2)
         @DisplayName("Generator point mathematical properties")
         void testGeneratorProperties() {
-            AffinePoint<F2Element> generator = new AffinePoint<>();
+            AffinePoint generator = new AffinePoint();
             ECCUtil.eccSet(generator);
 
             // Check coordinates are in valid field range
-            assertFieldElementValid(generator.x, "Generator X coordinate");
-            assertFieldElementValid(generator.y, "Generator Y coordinate");
+            assertFieldElementValid(generator.getX(), "Generator X coordinate");
+            assertFieldElementValid(generator.getY(), "Generator Y coordinate");
 
             // Check generator is on curve
-            ExtendedPoint<F2Element> extGen = convertToExtended(generator);
+            ExtendedPoint extGen = convertToExtended(generator);
             assertTrue(ECCUtil.eccPointValidate(extGen), "Generator must be on curve");
         }
 
@@ -203,34 +204,34 @@ class ECCUtilTests {
         @Order(3)
         @DisplayName("Generator point conversion consistency")
         void testGeneratorConversions() {
-            AffinePoint<F2Element> affine = new AffinePoint<>();
+            AffinePoint affine = new AffinePoint();
             ECCUtil.eccSet(affine);
 
-            ExtendedPoint<F2Element> extended = convertToExtended(affine);
-            FieldPoint<F2Element> field = convertToField(affine);
+            ExtendedPoint extended = convertToExtended(affine);
+            FieldPoint field = convertToField(affine);
 
             // Verify conversions preserve the point
             assertNotNull(extended, "Extended conversion should succeed");
             assertNotNull(field, "Field conversion should succeed");
 
-            assertFieldElementsEqual(affine.x, field.x, "X coordinate should be preserved");
-            assertFieldElementsEqual(affine.y, field.y, "Y coordinate should be preserved");
+            assertFieldElementsEqual(affine.getX(), field.getX(), "X coordinate should be preserved");
+            assertFieldElementsEqual(affine.getY(), field.getY(), "Y coordinate should be preserved");
         }
 
         @ParameterizedTest
         @ValueSource(ints = {1, 2, 3, 5, 7, 11, 13, 17, 19, 23})
         @DisplayName("Generator multiplication by small primes")
-        void testGeneratorMultiplicationSmallPrimes(int multiplier) {
-            AffinePoint<F2Element> generator = new AffinePoint<>();
+        void testGeneratorMultiplicationSmallPrimes(int multiplier) throws EncryptionException {
+            AffinePoint generator = new AffinePoint();
             ECCUtil.eccSet(generator);
 
-            AffinePoint<F2Element> result = new AffinePoint<>();
+            AffinePoint result = new AffinePoint();
             boolean success = ECCUtil.eccMul(convertToField(generator),
                     BigInteger.valueOf(multiplier), result, false);
 
             assertTrue(success, "Multiplication by " + multiplier + " should succeed");
 
-            ExtendedPoint<F2Element> resultExtended = convertToExtended(result);
+            ExtendedPoint resultExtended = convertToExtended(result);
             assertTrue(ECCUtil.eccPointValidate(resultExtended),
                     "Result of " + multiplier + "*G should be on curve");
         }
@@ -248,12 +249,12 @@ class ECCUtilTests {
         @DisplayName("Valid points pass validation")
         void testValidPointsPass() {
             for (int i = 0; i < Math.min(testPointsExtended.size(), 10); i++) {
-                ExtendedPoint<F2Element> point = testPointsExtended.get(i);
+                ExtendedPoint point = testPointsExtended.get(i);
                 try {
                     boolean isValid = ECCUtil.eccPointValidate(point);
                     if (!isValid) {
                         System.out.printf("Point %d failed validation: (%s, %s)%n",
-                                i, point.x, point.y);
+                                i, point.getX(), point.getY());
                     }
                 } catch (Exception e) {
                     System.err.printf("Exception validating point %d: %s%n", i, e.getMessage());
@@ -265,7 +266,7 @@ class ECCUtilTests {
         @Order(11)
         @DisplayName("Point validation consistency")
         void testValidationConsistency() {
-            ExtendedPoint<F2Element> testPoint = testPointsExtended.getFirst();
+            ExtendedPoint testPoint = testPointsExtended.getFirst();
 
             // Test multiple times to ensure consistency
             boolean firstResult = ECCUtil.eccPointValidate(testPoint);
@@ -281,10 +282,10 @@ class ECCUtilTests {
         @DisplayName("Invalid points fail validation")
         void testInvalidPointsFail() {
             // Create obviously invalid points
-            List<ExtendedPoint<F2Element>> invalidPoints = createInvalidPoints();
+            List<ExtendedPoint> invalidPoints = createInvalidPoints();
 
             for (int i = 0; i < invalidPoints.size(); i++) {
-                ExtendedPoint<F2Element> point = invalidPoints.get(i);
+                ExtendedPoint point = invalidPoints.get(i);
                 boolean isValid = ECCUtil.eccPointValidate(point);
                 assertFalse(isValid, "Invalid point " + i + " should fail validation");
             }
@@ -300,14 +301,14 @@ class ECCUtilTests {
                     FIELD_PRIME.subtract(BigInteger.ONE));
             F2Element one = new F2Element(BigInteger.ONE, BigInteger.ZERO);
 
-            ExtendedPoint<F2Element>[] boundaryPoints = new ExtendedPoint[] {
-                    new ExtendedPoint<>(zero, zero, one, zero, zero),
-                    new ExtendedPoint<>(maxField, maxField, one, maxField, maxField),
-                    new ExtendedPoint<>(one, zero, one, zero, zero),
-                    new ExtendedPoint<>(zero, one, one, zero, zero)
+            ExtendedPoint[] boundaryPoints = new ExtendedPoint[] {
+                    new ExtendedPoint(zero, zero, one, zero, zero),
+                    new ExtendedPoint(maxField, maxField, one, maxField, maxField),
+                    new ExtendedPoint(one, zero, one, zero, zero),
+                    new ExtendedPoint(zero, one, one, zero, zero)
             };
 
-            for (ExtendedPoint<F2Element> point : boundaryPoints) {
+            for (ExtendedPoint point : boundaryPoints) {
                 assertDoesNotThrow(() -> ECCUtil.eccPointValidate(point),
                         "Validation should not throw on boundary cases");
             }
@@ -316,34 +317,34 @@ class ECCUtilTests {
         @ParameterizedTest
         @MethodSource("provideRandomPoints")
         @DisplayName("Random point validation stress test")
-        void testRandomPointValidation(ExtendedPoint<F2Element> point) {
+        void testRandomPointValidation(ExtendedPoint point) {
             assertDoesNotThrow(() -> ECCUtil.eccPointValidate(point),
                     "Validation should not throw on random points");
         }
 
-        private List<ExtendedPoint<F2Element>> createInvalidPoints() {
-            List<ExtendedPoint<F2Element>> invalid = new ArrayList<>();
+        private List<ExtendedPoint> createInvalidPoints() {
+            List<ExtendedPoint> invalid = new ArrayList<>();
             F2Element one = new F2Element(BigInteger.ONE, BigInteger.ZERO);
 
             // Points with obviously wrong coordinates
             for (int i = 1; i <= 10; i++) {
                 F2Element x = new F2Element(BigInteger.valueOf(i * 12345), BigInteger.valueOf(i * 67890));
                 F2Element y = new F2Element(BigInteger.valueOf(i * 11111), BigInteger.valueOf(i * 22222));
-                invalid.add(new ExtendedPoint<>(x, y, one, x, y));
+                invalid.add(new ExtendedPoint(x, y, one, x, y));
             }
 
             return invalid;
         }
 
-        private Stream<ExtendedPoint<F2Element>> provideRandomPoints() {
+        private Stream<ExtendedPoint> provideRandomPoints() {
             return Stream.generate(this::createRandomPoint).limit(50);
         }
 
-        private ExtendedPoint<F2Element> createRandomPoint() {
+        private ExtendedPoint createRandomPoint() {
             F2Element x = createRandomF2Element();
             F2Element y = createRandomF2Element();
             F2Element one = new F2Element(BigInteger.ONE, BigInteger.ZERO);
-            return new ExtendedPoint<>(x, y, one, x, y);
+            return new ExtendedPoint(x, y, one, x, y);
         }
     }
 
@@ -630,7 +631,7 @@ class ECCUtilTests {
                 BigInteger scalar = testScalars.get(i);
 
                 assertDoesNotThrow(() -> {
-                    FieldPoint<F2Element> result = ECCUtil.eccMulFixed(scalar);
+                    ECCUtil.eccMulFixed(scalar);
                     // Note: Result might be null due to incomplete implementation
                 }, "Fixed-base multiplication should not throw for scalar " + i);
             }
@@ -642,10 +643,10 @@ class ECCUtilTests {
         @Test
         @Order(41)
         @DisplayName("Variable-base scalar multiplication basic")
-        void testVariableBaseMulBasic() {
-            AffinePoint<F2Element> generator = new AffinePoint<>();
+        void testVariableBaseMulBasic() throws EncryptionException {
+            AffinePoint generator = new AffinePoint();
             ECCUtil.eccSet(generator);
-            FieldPoint<F2Element> genField = convertToField(generator);
+            FieldPoint genField = convertToField(generator);
 
             long startTime = System.currentTimeMillis();
 
@@ -653,11 +654,11 @@ class ECCUtilTests {
                 BigInteger scalar = testScalars.get(i);
                 if (scalar.bitLength() > 64) continue; // Skip very large scalars for basic test
 
-                AffinePoint<F2Element> result = new AffinePoint<>();
+                AffinePoint result = new AffinePoint();
                 boolean success = ECCUtil.eccMul(genField, scalar, result, false);
 
                 if (success) {
-                    ExtendedPoint<F2Element> resultExt = convertToExtended(result);
+                    ExtendedPoint resultExt = convertToExtended(result);
                     assertTrue(ECCUtil.eccPointValidate(resultExt),
                             "Result of scalar multiplication should be valid point");
                 }
@@ -670,30 +671,30 @@ class ECCUtilTests {
         @Test
         @Order(42)
         @DisplayName("Scalar multiplication by one")
-        void testScalarMulByOne() {
-            AffinePoint<F2Element> generator = new AffinePoint<>();
+        void testScalarMulByOne() throws EncryptionException {
+            AffinePoint generator = new AffinePoint();
             ECCUtil.eccSet(generator);
-            FieldPoint<F2Element> genField = convertToField(generator);
+            FieldPoint genField = convertToField(generator);
 
-            AffinePoint<F2Element> result = new AffinePoint<>();
+            AffinePoint result = new AffinePoint();
             boolean success = ECCUtil.eccMul(genField, BigInteger.ONE, result, false);
 
             assertTrue(success, "Multiplication by 1 should succeed");
 
             // Result should be equivalent to original point (up to representation)
-            assertFieldElementsEqual(generator.x, result.x, "X coordinates should match");
-            assertFieldElementsEqual(generator.y, result.y, "Y coordinates should match");
+            assertFieldElementsEqual(generator.getX(), result.getX(), "X coordinates should match");
+            assertFieldElementsEqual(generator.getY(), result.getY(), "Y coordinates should match");
         }
 
         @Test
         @Order(43)
         @DisplayName("Scalar multiplication by zero")
         void testScalarMulByZero() {
-            AffinePoint<F2Element> generator = new AffinePoint<>();
+            AffinePoint generator = new AffinePoint();
             ECCUtil.eccSet(generator);
-            FieldPoint<F2Element> genField = convertToField(generator);
+            FieldPoint genField = convertToField(generator);
 
-            AffinePoint<F2Element> result = new AffinePoint<>();
+            AffinePoint result = new AffinePoint();
 
             // Multiplication by zero behavior depends on implementation
             // It might succeed (returning point at infinity) or fail
@@ -701,34 +702,34 @@ class ECCUtilTests {
                     "Multiplication by zero should not throw");
 
             //Check output
-            assertTrue(result.x.im.equals(BigInteger.ZERO) && result.x.real.equals(BigInteger.ZERO));
-            assertTrue(result.y.im.equals(BigInteger.ZERO) && result.y.real.equals(BigInteger.ZERO));
+            assertTrue(result.getX().im.equals(BigInteger.ZERO) && result.getX().real.equals(BigInteger.ZERO));
+            assertTrue(result.getY().im.equals(BigInteger.ZERO) && result.getY().real.equals(BigInteger.ZERO));
         }
 
         @Test
         @Order(44)
         @DisplayName("Scalar multiplication mathematical properties")
-        void testScalarMulProperties() {
-            AffinePoint<F2Element> generator = new AffinePoint<>();
+        void testScalarMulProperties() throws EncryptionException {
+            AffinePoint generator = new AffinePoint();
             ECCUtil.eccSet(generator);
-            FieldPoint<F2Element> genField = convertToField(generator);
+            FieldPoint genField = convertToField(generator);
 
             // Test 2*P = P + P (conceptually)
-            AffinePoint<F2Element> result2 = new AffinePoint<>();
+            AffinePoint result2 = new AffinePoint();
             boolean success = ECCUtil.eccMul(genField, BigInteger.valueOf(2), result2, false);
 
             if (success) {
-                ExtendedPoint<F2Element> result2Ext = convertToExtended(result2);
+                ExtendedPoint result2Ext = convertToExtended(result2);
                 assertTrue(ECCUtil.eccPointValidate(result2Ext),
                         "2*P should be valid point");
             }
 
             // Test 3*P
-            AffinePoint<F2Element> result3 = new AffinePoint<>();
+            AffinePoint result3 = new AffinePoint();
             success = ECCUtil.eccMul(genField, BigInteger.valueOf(3), result3, false);
 
             if (success) {
-                ExtendedPoint<F2Element> result3Ext = convertToExtended(result3);
+                ExtendedPoint result3Ext = convertToExtended(result3);
                 assertTrue(ECCUtil.eccPointValidate(result3Ext),
                         "3*P should be valid point");
             }
@@ -737,13 +738,13 @@ class ECCUtilTests {
         @Test
         @Order(45)
         @DisplayName("Scalar multiplication with cofactor clearing")
-        void testScalarMulWithCofactor() {
-            AffinePoint<F2Element> generator = new AffinePoint<>();
+        void testScalarMulWithCofactor() throws EncryptionException {
+            AffinePoint generator = new AffinePoint();
             ECCUtil.eccSet(generator);
-            FieldPoint<F2Element> genField = convertToField(generator);
+            FieldPoint genField = convertToField(generator);
 
-            AffinePoint<F2Element> result1 = new AffinePoint<>();
-            AffinePoint<F2Element> result2 = new AffinePoint<>();
+            AffinePoint result1 = new AffinePoint();
+            AffinePoint result2 = new AffinePoint();
 
             BigInteger scalar = BigInteger.valueOf(7);
 
@@ -755,10 +756,10 @@ class ECCUtilTests {
 
             if (success1 && success2) {
                 // Results might be different due to cofactor clearing
-                ExtendedPoint<F2Element> ext1 = convertToExtended(result1);
-                ExtendedPoint<F2Element> ext2 = convertToExtended(result2);
+                ExtendedPoint ext1 = convertToExtended(result1);
+                ExtendedPoint ext2 = convertToExtended(result2);
 
-                System.out.printf("x=%s, y=%s, z%s=, ta=%s, tb=%s\n", ext1.x, ext1.y, ext1.z, ext1.ta, ext1.tb);
+                System.out.printf("x=%s, y=%s, z%s=, ta=%s, tb=%s\n", ext1.getX(), ext1.getY(), ext1.getZ(), ext1.getTa(), ext1.getTb());
 
                 assertTrue(ECCUtil.eccPointValidate(ext1), "Result without cofactor should be valid");
                 assertTrue(ECCUtil.eccPointValidate(ext2), "Result with cofactor should be valid");
@@ -769,15 +770,15 @@ class ECCUtilTests {
         @Order(46)
         @DisplayName("Double scalar multiplication")
         void testDoubleScalarMul() {
-            AffinePoint<F2Element> generator = new AffinePoint<>();
+            AffinePoint generator = new AffinePoint();
             ECCUtil.eccSet(generator);
-            FieldPoint<F2Element> genField = convertToField(generator);
+            FieldPoint genField = convertToField(generator);
 
             BigInteger k = BigInteger.valueOf(3);
             BigInteger l = BigInteger.valueOf(5);
 
             assertDoesNotThrow(() -> {
-                FieldPoint<F2Element> result = ECCUtil.eccMulDouble(k, genField, l);
+                ECCUtil.eccMulDouble(k, genField, l);
                 // Result might be null due to implementation dependencies
             }, "Double scalar multiplication should not throw");
         }
@@ -785,16 +786,16 @@ class ECCUtilTests {
         @ParameterizedTest
         @ValueSource(ints = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29})
         @DisplayName("Scalar multiplication by small primes")
-        void testScalarMulSmallPrimes(int prime) {
-            AffinePoint<F2Element> generator = new AffinePoint<>();
+        void testScalarMulSmallPrimes(int prime) throws EncryptionException {
+            AffinePoint generator = new AffinePoint();
             ECCUtil.eccSet(generator);
-            FieldPoint<F2Element> genField = convertToField(generator);
+            FieldPoint genField = convertToField(generator);
 
-            AffinePoint<F2Element> result = new AffinePoint<>();
+            AffinePoint result = new AffinePoint();
             boolean success = ECCUtil.eccMul(genField, BigInteger.valueOf(prime), result, false);
 
             if (success) {
-                ExtendedPoint<F2Element> resultExt = convertToExtended(result);
+                ExtendedPoint resultExt = convertToExtended(result);
                 assertTrue(ECCUtil.eccPointValidate(resultExt),
                         prime + "*G should be valid point");
 
@@ -815,16 +816,16 @@ class ECCUtilTests {
         @DisplayName("Affine to Extended conversion")
         void testAffineToExtended() {
             for (int i = 0; i < Math.min(5, testPointsAffine.size()); i++) {
-                AffinePoint<F2Element> affine = testPointsAffine.get(i);
+                AffinePoint affine = testPointsAffine.get(i);
 
-                ExtendedPoint<F2Element> extended = convertToExtended(affine);
+                ExtendedPoint extended = convertToExtended(affine);
 
                 assertNotNull(extended, "Extended conversion should not be null");
-                assertNotNull(extended.x, "Extended X should not be null");
-                assertNotNull(extended.y, "Extended Y should not be null");
-                assertNotNull(extended.z, "Extended Z should not be null");
-                assertNotNull(extended.ta, "Extended Ta should not be null");
-                assertNotNull(extended.tb, "Extended Tb should not be null");
+                assertNotNull(extended.getX(), "Extended X should not be null");
+                assertNotNull(extended.getY(), "Extended Y should not be null");
+                assertNotNull(extended.getZ(), "Extended Z should not be null");
+                assertNotNull(extended.getTa(), "Extended Ta should not be null");
+                assertNotNull(extended.getTb(), "Extended Tb should not be null");
             }
         }
 
@@ -833,14 +834,14 @@ class ECCUtilTests {
         @DisplayName("Extended to Field conversion")
         void testExtendedToField() {
             for (int i = 0; i < Math.min(5, testPointsExtended.size()); i++) {
-                ExtendedPoint<F2Element> extended = testPointsExtended.get(i);
+                ExtendedPoint extended = testPointsExtended.get(i);
 
                 // This would require eccNorm implementation
                 assertDoesNotThrow(() -> {
-                    // FieldPoint<F2Element> field = crypto.ECCUtil.eccNorm(extended);
+                    // FieldPoint field = crypto.ECCUtil.eccNorm(extended);
                     // For now, just verify the point is accessible
-                    assertNotNull(extended.x);
-                    assertNotNull(extended.y);
+                    assertNotNull(extended.getX());
+                    assertNotNull(extended.getY());
                 });
             }
         }
@@ -849,15 +850,15 @@ class ECCUtilTests {
         @Order(52)
         @DisplayName("Round-trip conversion consistency")
         void testConversionRoundTrip() {
-            AffinePoint<F2Element> original = testPointsAffine.get(0);
+            AffinePoint original = testPointsAffine.getFirst();
 
             // Affine -> Extended -> Field -> Affine (conceptually)
-            ExtendedPoint<F2Element> extended = convertToExtended(original);
-            FieldPoint<F2Element> field = convertToField(original);
+            ExtendedPoint extended = convertToExtended(original);   // TODO: Fix
+            FieldPoint field = convertToField(original);
 
             // Verify coordinates are preserved
-            assertFieldElementsEqual(original.x, field.x, "X coordinate should be preserved");
-            assertFieldElementsEqual(original.y, field.y, "Y coordinate should be preserved");
+            assertFieldElementsEqual(original.getX(), field.getX(), "X coordinate should be preserved");
+            assertFieldElementsEqual(original.getY(), field.getY(), "Y coordinate should be preserved");
         }
     }
 
@@ -873,7 +874,6 @@ class ECCUtilTests {
         void testFieldArithmetic() {
             F2Element a = createRandomF2Element();
             F2Element b = createRandomF2Element();
-            F2Element c = createRandomF2Element();
 
             // Test field operations are well-defined
             assertDoesNotThrow(() -> {
@@ -912,17 +912,17 @@ class ECCUtilTests {
         @DisplayName("Group law properties")
         void testGroupLawProperties() {
             // Test that point operations follow group law (when implemented)
-            AffinePoint<F2Element> generator = new AffinePoint<>();
+            AffinePoint generator = new AffinePoint();
             ECCUtil.eccSet(generator);
 
-            ExtendedPoint<F2Element> genExt = convertToExtended(generator);
+            ExtendedPoint genExt = convertToExtended(generator);
             assertTrue(ECCUtil.eccPointValidate(genExt), "Generator should be valid");
 
             // Test point doubling
             assertDoesNotThrow(() -> {
                 // This tests that doubling operation is well-defined
-                ExtendedPoint<F2Element> doubled = new ExtendedPoint<>(
-                        genExt.x, genExt.y, genExt.z, genExt.ta, genExt.tb
+                ExtendedPoint doubled = new ExtendedPoint(
+                        genExt.getX(), genExt.getY(), genExt.getZ(), genExt.getTa(), genExt.getTb()
                 );
                 assertNotNull(doubled);
             });
@@ -1006,7 +1006,7 @@ class ECCUtilTests {
             for (BigInteger input : testInputs) {
                 // All inputs should either succeed or fail consistently
                 assertDoesNotThrow(() -> {
-                    BigInteger[] result = ECCUtil.decompose(input);
+                    ECCUtil.decompose(input);
                     // The operation should complete without revealing input-dependent paths
                 }, "Operation should not leak information for input: " + input);
             }
@@ -1043,7 +1043,7 @@ class ECCUtilTests {
         @Timeout(value = 30, unit = TimeUnit.SECONDS)
         @DisplayName("Point validation performance")
         void testValidationPerformance() {
-            ExtendedPoint<F2Element> testPoint = testPointsExtended.getFirst();
+            ExtendedPoint testPoint = testPointsExtended.getFirst();
 
             long startTime = System.currentTimeMillis();
 
@@ -1148,7 +1148,7 @@ class ECCUtilTests {
             final int THREAD_COUNT = 20;
             final int OPS_PER_THREAD = 100;
             ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
-            List<Future<Integer>> futures = new ArrayList<>();
+            List<Future<Integer>> futures = new ArrayList();
 
             for (int i = 0; i < THREAD_COUNT; i++) {
                 final int threadId = i;
@@ -1160,7 +1160,7 @@ class ECCUtilTests {
                         try {
                             BigInteger scalar = new BigInteger(128, random);
                             BigInteger[] result = ECCUtil.decompose(scalar);
-                            if (result != null && result.length == 4) {
+                            if (result.length == 4) {
                                 successCount++;
                             }
                         } catch (Exception e) {
@@ -1257,7 +1257,7 @@ class ECCUtilTests {
         @Order(100)
         @DisplayName("Complete scalar multiplication pipeline")
         void testCompleteScalarMulPipeline() {
-            AffinePoint<F2Element> generator = new AffinePoint<>();
+            AffinePoint generator = new AffinePoint();
             ECCUtil.eccSet(generator);
 
             BigInteger scalar = BigInteger.valueOf(123);
@@ -1269,17 +1269,17 @@ class ECCUtilTests {
                 assertNotNull(decomposed);
 
                 // 2. Validate point
-                ExtendedPoint<F2Element> genExt = convertToExtended(generator);
+                ExtendedPoint genExt = convertToExtended(generator);
                 assertTrue(ECCUtil.eccPointValidate(genExt));
 
                 // 3. Perform scalar multiplication
-                AffinePoint<F2Element> result = new AffinePoint<>();
-                FieldPoint<F2Element> genField = convertToField(generator);
+                AffinePoint result = new AffinePoint();
+                FieldPoint genField = convertToField(generator);
                 boolean success = ECCUtil.eccMul(genField, scalar, result, false);
 
                 if (success) {
                     // 4. Validate result
-                    ExtendedPoint<F2Element> resultExt = convertToExtended(result);
+                    ExtendedPoint resultExt = convertToExtended(result);
                     assertTrue(ECCUtil.eccPointValidate(resultExt));
                 }
             }, "Complete scalar multiplication pipeline should work");
@@ -1288,41 +1288,41 @@ class ECCUtilTests {
         @Test
         @Order(101)
         @DisplayName("Cross-validation between methods")
-        void testCrossValidation() {
+        void testCrossValidation() throws EncryptionException {
             // Test that different methods produce consistent results
             BigInteger scalar = BigInteger.valueOf(17);
 
             // Method 1: Variable-base multiplication
-            AffinePoint<F2Element> generator = new AffinePoint<>();
+            AffinePoint generator = new AffinePoint();
             ECCUtil.eccSet(generator);
-            FieldPoint<F2Element> genField = convertToField(generator);
+            FieldPoint genField = convertToField(generator);
 
-            AffinePoint<F2Element> result1 = new AffinePoint<>();
+            AffinePoint result1 = new AffinePoint();
             boolean success1 = ECCUtil.eccMul(genField, scalar, result1, false);
 
             // Method 2: Fixed-base multiplication (if generator is used)
-            FieldPoint<F2Element> result2 = ECCUtil.eccMulFixed(scalar);
+            FieldPoint result2 = ECCUtil.eccMulFixed(scalar);
 
             // Both methods should succeed or fail consistently
-            if (success1 && result2 != null) {
+            if (success1) {
                 // Results should be equivalent (this test depends on implementation)
-                assertNotNull(result1.x);
-                assertNotNull(result1.y);
-                assertNotNull(result2.x);
-                assertNotNull(result2.y);
+                assertNotNull(result1.getX());
+                assertNotNull(result1.getY());
+                assertNotNull(result2.getX());
+                assertNotNull(result2.getY());
             }
         }
     }
 
     // ==================== HELPER METHODS ====================
 
-    private ExtendedPoint<F2Element> convertToExtended(AffinePoint<F2Element> affine) {
+    private ExtendedPoint convertToExtended(AffinePoint affine) {
         F2Element one = new F2Element(BigInteger.ONE, BigInteger.ZERO);
-        return new ExtendedPoint<>(affine.x, affine.y, one, affine.x, affine.y);
+        return new ExtendedPoint(affine.getX(), affine.getY(), one, affine.getX(), affine.getY());
     }
 
-    private FieldPoint<F2Element> convertToField(AffinePoint<F2Element> affine) {
-        return new FieldPoint<>(affine.x, affine.y);
+    private FieldPoint convertToField(AffinePoint affine) {
+        return new FieldPoint(affine.getX(), affine.getY());
     }
 
     private F2Element createRandomF2Element() {
@@ -1351,18 +1351,18 @@ class ECCUtilTests {
         assertEquals(a.im, b.im, message + " - imaginary parts should be equal");
     }
 
-    private void assertPointsEqual(AffinePoint<F2Element> a, AffinePoint<F2Element> b, String message) {
-        assertFieldElementsEqual(a.x, b.x, message + " - X coordinates");
-        assertFieldElementsEqual(a.y, b.y, message + " - Y coordinates");
+    private void assertPointsEqual(AffinePoint a, AffinePoint b, String message) {
+        assertFieldElementsEqual(a.getX(), b.getX(), message + " - X coordinates");
+        assertFieldElementsEqual(a.getY(), b.getY(), message + " - Y coordinates");
     }
 
-    private boolean isIdentityPoint(AffinePoint<F2Element> point) {
+    private boolean isIdentityPoint(AffinePoint point) {
         // Check if point represents identity (this depends on representation)
         F2Element zero = new F2Element(BigInteger.ZERO, BigInteger.ZERO);
         F2Element one = new F2Element(BigInteger.ONE, BigInteger.ZERO);
 
-        return (point.x.real.equals(zero.real) && point.x.im.equals(zero.im) &&
-                point.y.real.equals(one.real) && point.y.im.equals(one.im));
+        return (point.getX().real.equals(zero.real) && point.getX().im.equals(zero.im) &&
+                point.getY().real.equals(one.real) && point.getY().im.equals(one.im));
     }
 
     private void clearSensitiveData() {

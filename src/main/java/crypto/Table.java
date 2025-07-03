@@ -1,44 +1,22 @@
 package crypto;
 
-import constants.PregeneratedTables;
-import exceptions.TableLookupException;
-import operations.FP2;
-import types.Point;
-import types.PreComputedExtendedPoint;
-
 import java.math.BigInteger;
 import java.util.Arrays;
 
+import constants.PregeneratedTables;
+import exceptions.TableLookupException;
+import operations.FP2;
+import types.TablePoint;
+
 
 public class Table {
-    private static LookupMode lookupMode;
-    public static <T extends Point> T tableLookup(
-            int tableLocation,
+    public static TablePoint tableLookup(
+            TablePoint[] table,
             int digit,
-            int signMask,
-            T point
+            int signMask
     ) throws TableLookupException {
-        // Bounds checks
-        if (tableLocation + point.getTableLength() >= PregeneratedTables.FIXED_BASE_TABLE_POINTS.length) {
-            throw new IndexOutOfBoundsException("Table offset out of bounds: " + tableLocation);
-        }
-
-        if (point.getTableLength() <= 0) {
-            throw new IndexOutOfBoundsException("Table length is too short: " + point.getTableLength());
-        }
-
-        // Changes function behavior in terms of lookUp mode
-        lookupMode = point.getTableLength() == 8 ? LookupMode.ONE_X_EIGHT : LookupMode.FIXED;
-
-        // Create subset of table starting from offset
-        PreComputedExtendedPoint[] table =
-                Arrays.copyOfRange(PregeneratedTables.FIXED_BASE_TABLE_POINTS,
-                        tableLocation,
-                        tableLocation + point.getTableLength()
-                );
-
-        PreComputedExtendedPoint tempPoint = null;
-        //PreComputedExtendedPoint<F2Element> point = table[0];
+        TablePoint tempPoint = null;
+        TablePoint point = table[0];
         final int shiftAmount = Integer.SIZE - 1;
 
         for (int i = 1; i < point.getTableLength(); i++) {
@@ -49,19 +27,31 @@ public class Table {
             point.filterMaskForEach(tempPoint, mask,true);
         }
 
-        tempPoint.t = point.getT().dup();
-        tempPoint.yx = point.getX();
-        tempPoint.xy = point.getY();
-        tempPoint.t = FP2.fp2Neg1271(tempPoint.t);
+        assert tempPoint != null;
+        tempPoint.setT(point.getT().dup());
+        tempPoint.setY(point.getX().dup());
+        tempPoint.setX(point.getY().dup());
+        tempPoint.setT(FP2.fp2Neg1271(tempPoint.getT()));
 
         BigInteger bigMask = BigInteger.valueOf(signMask);     // TODO: Potential conversion problem here
         point.filterMaskForEach(tempPoint, bigMask, false);
-
         return point;
     }
 
-    private enum LookupMode {
-        ONE_X_EIGHT,
-        FIXED
+    public static TablePoint tableLookup(
+            int tableLocation,
+            int digit,
+            int signMask,
+            TablePoint point
+    ) throws TableLookupException {
+        if (tableLocation + point.getTableLength() >= PregeneratedTables.FIXED_BASE_TABLE_POINTS.length) {
+            throw new IndexOutOfBoundsException("Table location out of bounds: " + tableLocation);
+        }
+
+        TablePoint[] table = Arrays.copyOfRange(PregeneratedTables.FIXED_BASE_TABLE_POINTS,
+                tableLocation,
+                tableLocation + point.getTableLength()
+        );
+        return tableLookup(table, digit, signMask);
     }
 }
