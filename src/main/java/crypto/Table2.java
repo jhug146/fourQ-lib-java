@@ -3,6 +3,7 @@ package crypto;
 import constants.PregeneratedTables;
 import operations.FP2;
 import types.F2Element;
+import types.Point;
 import types.PreComputedExtendedPoint;
 
 import java.math.BigInteger;
@@ -10,7 +11,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public class Table2 {
-    public static <T implements Point> T tableLookup(
+    public static <T extends Point> T tableLookup(
             int tableLocation,
             int tableLength,
             int digit,
