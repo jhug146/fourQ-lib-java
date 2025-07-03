@@ -2,13 +2,13 @@ package types;
 
 import exceptions.TableLookupException;
 
-public class ExtendedPoint<Field> implements Point<Field> {
-    public Field x;
-    public Field y;
-    public Field z;
-    public Field ta;
-    public Field tb;
-    public ExtendedPoint(Field _x, Field _y, Field _z, Field _ta, Field _tb) {
+public class ExtendedPoint implements Point {
+    public F2Element x;
+    public F2Element y;
+    public F2Element z;
+    public F2Element ta;
+    public F2Element tb;
+    public ExtendedPoint(F2Element _x, F2Element _y, F2Element _z, F2Element _ta, F2Element _tb) {
         x = _x;
         y = _y;
         z = _z;

@@ -4,15 +4,13 @@ import constants.Params;
 import operations.FP2;
 
 import java.math.BigInteger;
-import java.util.Iterator;
-import java.util.Optional;
 
-public class PreComputedExtendedPoint<Field> implements Point<Field>{
-    public Field xy;
-    public Field yx;
-    public Field z;
-    public Field t;
-    public PreComputedExtendedPoint(Field _xy, Field _yx, Field _z, Field _t) {
+public class PreComputedExtendedPoint implements Point{
+    public F2Element xy;
+    public F2Element yx;
+    public F2Element z;
+    public F2Element t;
+    public PreComputedExtendedPoint(F2Element _xy, F2Element _yx, F2Element _z, F2Element _t) {
         xy = _xy;
         yx = _yx;
         z = _z;
@@ -24,12 +22,12 @@ public class PreComputedExtendedPoint<Field> implements Point<Field>{
         return Params.PRE_COMPUTE_TABLE_LENGTH;
     }
 
-    public PreComputedExtendedPoint<Field> dup() {
-        return new PreComputedExtendedPoint<Field>(
-              this.xy,
-              this.yx,
-              this.z,
-              this.t
+    public PreComputedExtendedPoint dup() {
+        return new PreComputedExtendedPoint(
+                this.xy,
+                this.yx,
+                this.z,
+                this.t
         );
     }
 
@@ -37,13 +35,9 @@ public class PreComputedExtendedPoint<Field> implements Point<Field>{
      * Simplified version assuming z = 1 (normalized coordinates)
      *  Often the case for precomputed table values
      */
-    public AffinePoint<Field> toAffinePoint() {
-        if (!(xy instanceof F2Element)) {
-            throw new UnsupportedOperationException("Only F2Element supported");
-        }
-
-        F2Element xy_f2 = (F2Element) xy;
-        F2Element yx_f2 = (F2Element) yx;
+    public AffinePoint toAffinePoint() {
+        F2Element xy_f2 = xy;
+        F2Element yx_f2 = yx;
 
         // Assuming z = 1, we can directly compute affine coordinates
         F2Element two = new F2Element(BigInteger.valueOf(2), BigInteger.ZERO);
@@ -56,21 +50,21 @@ public class PreComputedExtendedPoint<Field> implements Point<Field>{
         F2Element x = FP2.fp2Mul1271(twoX, twoInverse);
         F2Element y = FP2.fp2Mul1271(twoY, twoInverse);
 
-        AffinePoint<Field> ret = new AffinePoint<>();
-        ret.x = (Field) x;
-        ret.y = (Field) y;
+        AffinePoint ret = new AffinePoint();
+        ret.x = x;
+        ret.y = y;
 
         return ret;
     }
 
     public void filterMaskForEach(
-            PreComputedExtendedPoint<F2Element> tempPoint,
+            PreComputedExtendedPoint tempPoint,
             BigInteger mask,
             boolean modifyZ
     ) {
-        xy = (Field) ((F2Element) xy).applyMasks(tempPoint.xy, mask);
-        yx = (Field) ((F2Element) yx).applyMasks(tempPoint.yx, mask);
-        z = (Field) (!modifyZ ? (F2Element) z : ((F2Element) z).applyMasks(tempPoint.t, mask));
+        xy = xy.applyMasks(tempPoint.xy, mask);
+        yx = yx.applyMasks(tempPoint.yx, mask);
+        z = !modifyZ ? z : z.applyMasks(tempPoint.t, mask);
     }
 
     @Override
@@ -79,7 +73,7 @@ public class PreComputedExtendedPoint<Field> implements Point<Field>{
     }
 
     public void setX(F2Element x) {
-        this.xy = (Field) x;
+        this.xy = (F2Element) x;
     }
 
     @Override
@@ -93,7 +87,7 @@ public class PreComputedExtendedPoint<Field> implements Point<Field>{
     }
 
     public void setY(F2Element y) {
-        this.yx = (Field) y;
+        this.yx = (F2Element) y;
     }
 
     @Override
@@ -103,10 +97,10 @@ public class PreComputedExtendedPoint<Field> implements Point<Field>{
 
     @Override
     public F2Element getT() {
-        return (F2Element) t;
+        return t;
     }
 
     public void setT(F2Element t) {
-        this.t = (Field) t;
+        this.t = t;
     }
 }

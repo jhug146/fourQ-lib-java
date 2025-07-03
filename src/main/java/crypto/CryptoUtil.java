@@ -31,7 +31,7 @@ public class CryptoUtil {
         return FP.montgomeryMultiplyModOrder(key, BigInteger.ONE);
     }
 
-    public static BigInteger encode(FieldPoint<F2Element> point) {
+    public static BigInteger encode(FieldPoint point) {
         BigInteger y = point.y.real.add(point.y.im.shiftLeft(128));
         boolean ySignBit = point.y.real.compareTo(BigInteger.ZERO) <= 0;
         if (ySignBit) {
@@ -40,7 +40,7 @@ public class CryptoUtil {
         return y;
     }
 
-    public static FieldPoint<F2Element> decode(BigInteger encoded) throws EncryptionException {
+    public static FieldPoint decode(BigInteger encoded) throws EncryptionException {
         final var y = ECCUtil.convertToF2Element(encoded.mod(POW_32));  // TODO: Potential endian problem here
         int signBit = (encoded.compareTo(BigInteger.ZERO) <= 0) ? 1 : 0;
 
@@ -99,8 +99,8 @@ public class CryptoUtil {
             x = FP2.fp2Neg1271(x);
         }
 
-        FieldPoint<F2Element> point = new FieldPoint<>(x, y);
-        ExtendedPoint<F2Element> testPoint = ECCUtil.pointSetup(point);
+        FieldPoint point = new FieldPoint(x, y);
+        ExtendedPoint testPoint = ECCUtil.pointSetup(point);
         if (!ECCUtil.eccPointValidate(testPoint)) {
             testPoint.x.im = FP.PUtil.fpNeg1271(testPoint.x.im);
             point.x.im = testPoint.x.im;

@@ -3,12 +3,12 @@ package crypto;
 import constants.PregeneratedTables;
 import exceptions.TableLookupException;
 import operations.FP2;
-import types.F2Element;
 import types.Point;
 import types.PreComputedExtendedPoint;
 
 import java.math.BigInteger;
 import java.util.Arrays;
+
 
 public class Table {
     private static LookupMode lookupMode;
@@ -31,13 +31,14 @@ public class Table {
         lookupMode = point.getTableLength() == 8 ? LookupMode.ONE_X_EIGHT : LookupMode.FIXED;
 
         // Create subset of table starting from offset
-        PreComputedExtendedPoint<F2Element>[] table =
+        PreComputedExtendedPoint[] table =
                 Arrays.copyOfRange(PregeneratedTables.FIXED_BASE_TABLE_POINTS,
                         tableLocation,
                         tableLocation + point.getTableLength()
                 );
 
-        PreComputedExtendedPoint<F2Element> tempPoint = null;
+        PreComputedExtendedPoint tempPoint = null;
+        //PreComputedExtendedPoint<F2Element> point = table[0];
         final int shiftAmount = Integer.SIZE - 1;
 
         for (int i = 1; i < point.getTableLength(); i++) {

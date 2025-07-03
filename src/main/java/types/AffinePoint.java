@@ -5,20 +5,20 @@ import constants.Params;
 import java.math.BigInteger;
 import java.util.Objects;
 
-public class AffinePoint<Field> implements Point<Field> {
-    public Field x;
-    public Field y;
-    public Field t;
+public class AffinePoint implements Point {
+    public F2Element x;
+    public F2Element y;
+    public F2Element t;
 
-    public AffinePoint(Field x, Field y, Field t) {
+    public AffinePoint(F2Element x, F2Element y, F2Element t) {
         this.x = x;
         this.y = y;
         this.t = t;
     }
 
     public AffinePoint() {
-        this.x = (Field) new F2Element(BigInteger.ZERO, BigInteger.ZERO);
-        this.y = (Field) new F2Element(BigInteger.ZERO, BigInteger.ZERO);
+        this.x = new F2Element(BigInteger.ZERO, BigInteger.ZERO);
+        this.y = new F2Element(BigInteger.ZERO, BigInteger.ZERO);
     }
 
     @Override
@@ -28,7 +28,7 @@ public class AffinePoint<Field> implements Point<Field> {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof AffinePoint<?> that)) return false;
+        if (!(o instanceof AffinePoint that)) return false;
         return this.x.equals(that.x) && this.y.equals(that.y);
     }
 
@@ -38,26 +38,26 @@ public class AffinePoint<Field> implements Point<Field> {
     }
 
     public void filterMaskForEach(
-            PreComputedExtendedPoint<F2Element> tempPoint,
+            PreComputedExtendedPoint tempPoint,
             BigInteger mask,
             boolean modifyZ
     ) {
-        x = (Field) ((F2Element) x).applyMasks(tempPoint.xy, mask);
-        y = (Field) ((F2Element) y).applyMasks(tempPoint.yx, mask);
+        x = x.applyMasks(tempPoint.xy, mask);
+        y = y.applyMasks(tempPoint.yx, mask);
     }
 
     @Override
     public F2Element getX() {
-        return (F2Element) x;
+        return x;
     }
 
     public void setX(F2Element x) {
-        this.x = (Field) x;
+        this.x = x;
     }
 
     @Override
     public F2Element getY() {
-        return (F2Element) y;
+        return y;
     }
 
     @Override
@@ -66,7 +66,7 @@ public class AffinePoint<Field> implements Point<Field> {
     }
 
     public void setY(F2Element y) {
-        this.y = (Field) y;
+        this.y = y;
     }
 
     @Override
@@ -76,10 +76,10 @@ public class AffinePoint<Field> implements Point<Field> {
 
     @Override
     public F2Element getT() {
-        return (F2Element) t;
+        return t;
     }
 
     public void setT(F2Element t) {
-        this.t = (Field) t;
+        this.t = t;
     }
 }

@@ -23,7 +23,7 @@ public class ECCUtil {
     private static final F2Element F2_ONE = new F2Element(BigInteger.ONE, BigInteger.ONE);
 
     // Supporting data structure for recode result
-        private record RecodeResult(int[] digits, int[] signMasks) {
+    private record RecodeResult(int[] digits, int[] signMasks) {
 
         /**
          * Get the effective signed digit at position i
@@ -31,21 +31,21 @@ public class ECCUtil {
          * @param i position in the recoded representation
          * @return signed digit value
          */
-            public int getSignedDigit(int i) {
-                if (i < 0 || i >= digits.length) {
-                    throw new IndexOutOfBoundsException("Index: " + i);
-                }
-
-                // If sign_mask[i] == 0xFFFFFFFF, digit is positive
-                // If sign_mask[i] == 0x00000000, digit is negative
-                return (signMasks[i] == -1) ? digits[i] : -digits[i];
+        public int getSignedDigit(int i) {
+            if (i < 0 || i >= digits.length) {
+                throw new IndexOutOfBoundsException("Index: " + i);
             }
+
+            // If sign_mask[i] == 0xFFFFFFFF, digit is positive
+            // If sign_mask[i] == 0x00000000, digit is negative
+            return (signMasks[i] == -1) ? digits[i] : -digits[i];
         }
+    }
 
     // Set generator
     // Output: P = (x,y)
     // TODO VeRy unsure about this and the helper
-    public static void eccSet(AffinePoint<F2Element> P) {
+    public static void eccSet(AffinePoint P) {
         P.x = convertToF2Element(Params.GENERATOR_X);    // X1
         P.y = convertToF2Element(Params.GENERATOR_Y);    // Y1
     }
@@ -60,7 +60,7 @@ public class ECCUtil {
     }
 
     @NotNull
-    public static FieldPoint<F2Element> eccMulFixed(BigInteger val) {
+    public static FieldPoint eccMulFixed(BigInteger val) {
         BigInteger temp = FP.moduloOrder(val);
         temp = FP.conversionToOdd(temp);
         int[] digits = mLSBSetRecode(temp, new int[270]);  // TODO: No idea how this works
@@ -71,13 +71,13 @@ public class ECCUtil {
         }
 
         // TODO: Both instances of TABLE in this function might need updating
-        AffinePoint<F2Element> affPoint = Table.tableLookup(
+        AffinePoint affPoint = Table.tableLookup(
                 (V_FIXEDBASE - 1) * (1 << (W_FIXEDBASE - 1)),
                 V_FIXEDBASE,
                 digit,
                 digits[D_FIXEDBASE - 1]
         );
-        ExtendedPoint<F2Element> exPoint = r5ToR1(affPoint);
+        ExtendedPoint exPoint = r5ToR1(affPoint);
 
         for (int j = 0; j < V_FIXEDBASE - 1; j++) {
             digit = digits[W_FIXEDBASE * D_FIXEDBASE - (j + 1) * E_FIXEDBASE - 1];
@@ -109,15 +109,15 @@ public class ECCUtil {
         return eccNorm(exPoint);
     }
 
-    private static ExtendedPoint<F2Element> r5ToR1(AffinePoint<F2Element> p) {
+    private static ExtendedPoint r5ToR1(AffinePoint p) {
         F2Element x = fp2Div1271(fp2Sub1271(p.x, p.y));
         F2Element y = fp2Div1271(fp2Add1271(p.x, p.y));
-        return new ExtendedPoint<>(x, y, F2_ONE, x, y);
+        return new ExtendedPoint(x, y, F2_ONE, x, y);
     }
 
-    private static PreComputedExtendedPoint<F2Element> r1ToR2(ExtendedPoint<F2Element> point) {
+    private static PreComputedExtendedPoint r1ToR2(ExtendedPoint point) {
         F2Element t = fp2Sub1271(fp2Add1271(point.ta, point.ta), point.tb);
-        return new PreComputedExtendedPoint<>(
+        return new PreComputedExtendedPoint(
                 fp2Add1271(point.y, point.x),
                 fp2Sub1271(point.y, point.x),
                 fp2Add1271(point.z, point.z),
@@ -125,8 +125,8 @@ public class ECCUtil {
         );
     }
 
-    private static PreComputedExtendedPoint<F2Element> r1ToR3(ExtendedPoint<F2Element> point) {
-        return new PreComputedExtendedPoint<>(
+    private static PreComputedExtendedPoint r1ToR3(ExtendedPoint point) {
+        return new PreComputedExtendedPoint(
                 fp2Add1271(point.x, point.y),
                 fp2Sub1271(point.y, point.x),
                 fp2Mul1271(point.ta, point.tb),
@@ -135,8 +135,8 @@ public class ECCUtil {
     }
 
     @NotNull
-    private static ExtendedPoint<F2Element> r2ToR4(@NotNull PreComputedExtendedPoint<F2Element> p, @NotNull ExtendedPoint<F2Element> q) {
-        return new ExtendedPoint<>(
+    private static ExtendedPoint r2ToR4(@NotNull PreComputedExtendedPoint p, @NotNull ExtendedPoint q) {
+        return new ExtendedPoint(
                 FP2.fp2Sub1271(p.xy, p.yx),
                 FP2.fp2Add1271(p.xy, p.yx),
                 FP2.fp2Copy1271(p.z),
@@ -145,9 +145,9 @@ public class ECCUtil {
         );
     }
 
-    private static ExtendedPoint<F2Element> eccMixedAdd(
-            AffinePoint<F2Element> q,
-            ExtendedPoint<F2Element> p
+    private static ExtendedPoint eccMixedAdd(
+            AffinePoint q,
+            ExtendedPoint p
     ) {
         F2Element ta = fp2Mul1271(p.ta, p.tb);          // Ta = T1
         F2Element t1 = fp2Add1271(p.z, p.z);            // t1 = 2Z1
@@ -173,7 +173,7 @@ public class ECCUtil {
     // Input: P = (X1:Y1:Z1) in twisted Edwards coordinates
     // Output: 2P = (Xfinal,Yfinal,Zfinal,Tafinal,Tbfinal), where Tfinal = Tafinal*Tbfinal,
     //         corresponding to (Xfinal:Yfinal:Zfinal:Tfinal) in extended twisted Edwards coordinates
-    private static ExtendedPoint<F2Element> eccDouble(ExtendedPoint<F2Element> p) {
+    private static ExtendedPoint eccDouble(ExtendedPoint p) {
         F2Element t1 = fp2Sqr1271(p.x);                 // t1 = X1^2
         F2Element t2 = fp2Sqr1271(p.y);                 // t2 = Y1^2
         F2Element t3 = fp2Add1271(p.x, p.y);            // t3 = X1+Y1
@@ -186,41 +186,41 @@ public class ECCUtil {
         final F2Element y = fp2Mul1271(t1, tb);         // Yfinal = (X1^2+Y1^2)(Y1^2-X1^2)
         final F2Element x = fp2Mul1271(t2, ta);         // Xfinal = 2X1*Y1*[2Z1^2-(Y1^2-X1^2)]
         final F2Element z = fp2Mul1271(t1, t2);         // Zfinal = (Y1^2-X1^2)[2Z1^2-(Y1^2-X1^2)]
-        return new ExtendedPoint<>(x, y, z, ta, tb);
+        return new ExtendedPoint(x, y, z, ta, tb);
     }
 
-    private static FieldPoint<F2Element> eccNorm(ExtendedPoint<F2Element> p) {
+    private static FieldPoint eccNorm(ExtendedPoint p) {
         final F2Element zInv = fp2Inv1271(p.z);
         final F2Element x = fp2Mul1271(p.x, zInv);
         final F2Element y = fp2Mul1271(p.y, zInv);
-        return new FieldPoint<>(x, y);
+        return new FieldPoint(x, y);
     }
 
-    public static FieldPoint<F2Element> eccMulDouble(
+    public static FieldPoint eccMulDouble(
             BigInteger k,
-            FieldPoint<F2Element> q, BigInteger l
+            FieldPoint q, BigInteger l
     ) throws EncryptionException {
         // Step 1: Compute l*Q
-        FieldPoint<F2Element> lQ = eccMul(q, l);
+        FieldPoint lQ = eccMul(q, l);
 
         // Step 2-3: Convert l*Q to precomputed format
-        ExtendedPoint<F2Element> extLQ = pointSetup(lQ);
-        PreComputedExtendedPoint<F2Element> preCompLQ = r1ToR2(extLQ);
+        ExtendedPoint extLQ = pointSetup(lQ);
+        PreComputedExtendedPoint preCompLQ = r1ToR2(extLQ);
 
         // Step 4: Compute k*G (generator multiplication)
-        FieldPoint<F2Element> kG = eccMulFixed(k);
+        FieldPoint kG = eccMulFixed(k);
 
         // Step 5-6: Add k*G + l*Q
-        ExtendedPoint<F2Element> extKG = pointSetup(kG);
-        ExtendedPoint<F2Element> result = eccAdd(preCompLQ, extKG);
+        ExtendedPoint extKG = pointSetup(kG);
+        ExtendedPoint result = eccAdd(preCompLQ, extKG);
 
         // Step 7: Normalize to affine coordinates
         return eccNorm(result);
     }
 
-    private static ExtendedPoint<F2Element> eccAddCore(
-            PreComputedExtendedPoint<F2Element> p,
-            PreComputedExtendedPoint<F2Element> q
+    private static ExtendedPoint eccAddCore(
+            PreComputedExtendedPoint p,
+            PreComputedExtendedPoint q
     ) {
         F2Element z = fp2Mul1271(p.t, q.t);
         F2Element t1 = fp2Mul1271(p.z, q.z);
@@ -230,7 +230,7 @@ public class ECCUtil {
         t1 = fp2Add1271(t1, z);
         F2Element tb = fp2Sub1271(x, y);
         F2Element ta = fp2Add1271(x, y);
-        return new ExtendedPoint<>(
+        return new ExtendedPoint(
                 fp2Mul1271(tb, t2),
                 fp2Mul1271(ta, t1),
                 fp2Mul1271(t1, t2),
@@ -239,23 +239,23 @@ public class ECCUtil {
         );
     }
 
-    private static ExtendedPoint<F2Element> eccAdd(
-            PreComputedExtendedPoint<F2Element> q,
-            ExtendedPoint<F2Element> p
+    private static ExtendedPoint eccAdd(
+            PreComputedExtendedPoint q,
+            ExtendedPoint p
     ) {
         return eccAddCore(q, r1ToR3(p));
     }
 
     @NotNull
-    private static FieldPoint<F2Element> eccMul(
-            FieldPoint<F2Element> p,
+    private static FieldPoint eccMul(
+            FieldPoint p,
             BigInteger k
     ) throws EncryptionException {
         throw new EncryptionException("");
     }
 
-    public static ExtendedPoint<F2Element> pointSetup(FieldPoint<F2Element> point) {
-        return new ExtendedPoint<>(
+    public static ExtendedPoint pointSetup(FieldPoint point) {
+        return new ExtendedPoint(
                 point.x,
                 point.y,
                 new F2Element(BigInteger.ONE, BigInteger.ZERO),
@@ -324,7 +324,7 @@ public class ECCUtil {
      *
      * @implNote this function does not run in constant time (input point P is assumed to be public)
      */
-    public static boolean eccPointValidate(@NotNull ExtendedPoint<F2Element> p) {
+    public static boolean eccPointValidate(@NotNull ExtendedPoint p) {
         F2Element t1 = fp2Sqr1271(p.y);                                 // y^2
         F2Element t2 = fp2Sqr1271(p.x);                                 // x^2
         F2Element t3 = fp2Sub1271(t1, t2);                              // y^2 - x^2 = -x^2 + y^2
@@ -358,13 +358,13 @@ public class ECCUtil {
      */
     @Contract(value = "null, _, _, _ -> fail; _, null, _, _ -> fail; _, _, null, _ -> fail", mutates = "param3")
     public static boolean eccMul(
-            FieldPoint<F2Element> P,
+            FieldPoint P,
             BigInteger K,
-            AffinePoint<F2Element> Q,
+            AffinePoint Q,
             boolean clearCofactor // Equivalent to the C Flag
     ) throws EncryptionException {
         // Convert to representation (X, Y, 1, Ta, Tb)
-        ExtendedPoint<F2Element> R = pointSetup(P);
+        ExtendedPoint R = pointSetup(P);
 
         // Scalar decomposition into 4 scalars using endomorphisms
         BigInteger[] scalars = decompose(K);
@@ -383,11 +383,11 @@ public class ECCUtil {
         int[] signMasks = recodeResult.signMasks;
 
         // Precomputation - create table of 8 precomputed points
-        PreComputedExtendedPoint<F2Element>[] table = eccPrecomp(R);
+        PreComputedExtendedPoint[] table = eccPrecomp(R);
 
         // Extract initial point in (X+Y,Y-X,2Z,2dT) representation
         try {
-            PreComputedExtendedPoint<F2Element> S = Table3.tableLookup1x8(table, digits[64], signMasks[64]);
+            PreComputedExtendedPoint S = Table3.tableLookup1x8(table, digits[64], signMasks[64]);
             // Convert to representation (2X,2Y,2Z) for doubling operations
             R = r2ToR4(S, R);
 
@@ -407,7 +407,7 @@ public class ECCUtil {
         }
 
         // Convert to affine coordinates (x,y) and store in output parameter Q
-        FieldPoint<F2Element> result = eccNorm(R);
+        FieldPoint result = eccNorm(R);
         Q.x = result.x;
         Q.y = result.y;
 
@@ -420,14 +420,14 @@ public class ECCUtil {
      * @return table T containing NPOINTS_VARBASE points: P, 3P, 5P, ... , (2*NPOINTS_VARBASE-1)P. NPOINTS_VARBASE is fixed to 8 (see FourQ.h).
      *         Precomputed points use the representation (X+Y,Y-X,2Z,2dT) corresponding to (X:Y:Z:T) in extended twisted Edwards coordinates.
      */
-    private static PreComputedExtendedPoint<F2Element>[] eccPrecomp(@NotNull ExtendedPoint<F2Element> p) {
+    private static PreComputedExtendedPoint[] eccPrecomp(@NotNull ExtendedPoint p) {
         // Initialize the output table
         @SuppressWarnings("unchecked")
-        PreComputedExtendedPoint<F2Element>[] t
+        PreComputedExtendedPoint[] t
                 = new PreComputedExtendedPoint[Params.NPOINTS_VARBASE.intValueExact()];
 
-        PreComputedExtendedPoint<F2Element> p2;
-        ExtendedPoint<F2Element> q;
+        PreComputedExtendedPoint p2;
+        ExtendedPoint q;
 
         // Generating P2 = 2(X1,Y1,Z1,T1a,T1b) and T[0] = P
         q = eccCopy(p);                    // Copy P to Q
@@ -451,8 +451,8 @@ public class ECCUtil {
      * @param source the point to copy from Q = (X:Y:Z:Ta:Tb)
      * @return dest the point to copy to P = (X:Y:Z:Ta:Tb)
      */
-    public static ExtendedPoint<F2Element> eccCopy(
-            ExtendedPoint<F2Element> source
+    public static ExtendedPoint eccCopy(
+            ExtendedPoint source
     ) {
         return new ExtendedPoint<>(
                 fp2Copy1271(source.x),
@@ -593,8 +593,8 @@ public class ECCUtil {
      * @param p the input point P = (X₁,Y₁,Z₁,Ta,Tb) in extended twisted Edwards coordinates,
      *          where T₁ = Ta×Tb corresponds to (X₁:Y₁:Z₁:T₁)
      */
-    private static ExtendedPoint<F2Element> cofactorClearing(ExtendedPoint<F2Element> p) {
-        PreComputedExtendedPoint<F2Element> q = r1ToR2(p);  // Converting from (X,Y,Z,Ta,Tb) to (X+Y,Y-X,2Z,2dT)
+    private static ExtendedPoint cofactorClearing(ExtendedPoint p) {
+        PreComputedExtendedPoint q = r1ToR2(p);  // Converting from (X,Y,Z,Ta,Tb) to (X+Y,Y-X,2Z,2dT)
 
         p = eccDouble(p);                                   // P = 2*P using representations (X,Y,Z,Ta,Tb) <- 2*(X,Y,Z)
         p = eccAdd(q, p);                                   // P = P+Q using representations (X,Y,Z,Ta,Tb) <- (X,Y,Z,Ta,Tb) + (X+Y,Y-X,2Z,2dT)
