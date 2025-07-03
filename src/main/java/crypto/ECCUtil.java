@@ -198,6 +198,7 @@ public class ECCUtil {
         return new FieldPoint(x, y);
     }
 
+    @NotNull
     public static FieldPoint eccMulDouble(
             BigInteger k,
             FieldPoint q, BigInteger l

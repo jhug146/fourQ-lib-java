@@ -48,17 +48,10 @@ public class Table {
             throw new IndexOutOfBoundsException("Table location out of bounds: " + tableLocation);
         }
 
-        // Create subset of table starting from offset
-        TablePoint[] table =
-                Arrays.copyOfRange(PregeneratedTables.FIXED_BASE_TABLE_POINTS,
-                        tableLocation,
-                        tableLocation + point.getTableLength()
-                );
-
-        return tableLookup(
-              table,
-                digit,
-                signMask
+        TablePoint[] table = Arrays.copyOfRange(PregeneratedTables.FIXED_BASE_TABLE_POINTS,
+                tableLocation,
+                tableLocation + point.getTableLength()
         );
+        return tableLookup(table, digit, signMask);
     }
 }
