@@ -71,7 +71,12 @@ public class ECCUtil {
         }
 
         // TODO: Both instances of TABLE in this function might need updating
-        AffinePoint<F2Element> affPoint = Table.tableLookupFixedBase(digit, digits[D_FIXEDBASE - 1]);
+        AffinePoint<F2Element> affPoint = Table2.tableLookup(
+                (V_FIXEDBASE - 1) * (1 << (W_FIXEDBASE - 1)),
+                V_FIXEDBASE,
+                digit,
+                digits[D_FIXEDBASE - 1]
+        );
         ExtendedPoint<F2Element> exPoint = r5ToR1(affPoint);
 
         for (int j = 0; j < V_FIXEDBASE - 1; j++) {
@@ -83,7 +88,7 @@ public class ECCUtil {
             }
             // Extract point in (x+y,y-x,2dt) representation
             int signDigit = D_FIXEDBASE - (j + 1) * E_FIXEDBASE - 1;
-            affPoint = Table.tableLookupFixedBase(digit, digits[signDigit]);
+            affPoint = Table2.tableLookup(, V_FIXEDBASE, digit, digits[signDigit]);
             exPoint = eccMixedAdd(affPoint, exPoint);
         }
 
@@ -97,7 +102,7 @@ public class ECCUtil {
                     digit = 2 * digit + digits[k];
                 }
                 int signDigit = D_FIXEDBASE - j * E_FIXEDBASE + i - E_FIXEDBASE;
-                affPoint = Table.tableLookupFixedBase(digit, signDigit);
+                affPoint = Table2.tableLookup(, V_FIXEDBASE, digit, signDigit);
                 exPoint = eccMixedAdd(affPoint, exPoint);
             }
         }
@@ -107,7 +112,7 @@ public class ECCUtil {
     private static ExtendedPoint<F2Element> r5ToR1(AffinePoint<F2Element> p) {
         F2Element x = fp2Div1271(fp2Sub1271(p.x, p.y));
         F2Element y = fp2Div1271(fp2Add1271(p.x, p.y));
-        return new ExtendedPoint<F2Element>(x, y, F2_ONE, x, y);
+        return new ExtendedPoint<>(x, y, F2_ONE, x, y);
     }
 
     private static PreComputedExtendedPoint<F2Element> r1ToR2(ExtendedPoint<F2Element> point) {

@@ -1,9 +1,11 @@
 package types;
 
+import constants.Params;
+
 import java.math.BigInteger;
 import java.util.Objects;
 
-public class AffinePoint<Field> {
+public class AffinePoint<Field> implements Point {
     public Field x;
     public Field y;
     public Field t;
@@ -17,6 +19,11 @@ public class AffinePoint<Field> {
     public AffinePoint() {
         this.x = (Field) new F2Element(BigInteger.ZERO, BigInteger.ZERO);
         this.y = (Field) new F2Element(BigInteger.ZERO, BigInteger.ZERO);
+    }
+
+    @Override
+    public int getTableLength() {
+        return Params.VPOINTS_FIXEDBASE;
     }
 
     @Override
