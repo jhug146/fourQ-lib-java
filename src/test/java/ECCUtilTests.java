@@ -5,7 +5,10 @@ import operations.FP2;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
-import types.*;
+import types.data.F2Element;
+import types.point.AffinePoint;
+import types.point.ExtendedPoint;
+import types.point.FieldPoint;
 
 import java.math.BigInteger;
 import java.util.*;

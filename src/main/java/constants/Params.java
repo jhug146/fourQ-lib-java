@@ -1,6 +1,6 @@
 package constants;
 
-import types.F2Element;
+import types.data.F2Element;
 
 import java.math.BigInteger;
 

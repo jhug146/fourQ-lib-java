@@ -4,9 +4,9 @@ import constants.Params;
 import exceptions.EncryptionException;
 import operations.FP;
 import operations.FP2;
-import types.ExtendedPoint;
-import types.F2Element;
-import types.FieldPoint;
+import types.point.ExtendedPoint;
+import types.data.F2Element;
+import types.point.FieldPoint;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;

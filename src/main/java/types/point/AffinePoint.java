@@ -1,7 +1,8 @@
-package types;
+package types.point;
 
 import constants.Params;
 import exceptions.TablePointCastException;
+import types.data.F2Element;
 
 import java.math.BigInteger;
 import java.util.Objects;

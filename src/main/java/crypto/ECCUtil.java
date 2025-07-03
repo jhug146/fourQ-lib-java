@@ -6,7 +6,11 @@ import exceptions.TableLookupException;
 import operations.FP;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import types.*;
+import types.data.F2Element;
+import types.point.AffinePoint;
+import types.point.ExtendedPoint;
+import types.point.FieldPoint;
+import types.point.PreComputedExtendedPoint;
 
 import java.math.BigInteger;
 

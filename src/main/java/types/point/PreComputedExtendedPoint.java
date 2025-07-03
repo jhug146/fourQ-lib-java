@@ -1,7 +1,8 @@
-package types;
+package types.point;
 
 import constants.Params;
 import operations.FP2;
+import types.data.F2Element;
 
 import java.math.BigInteger;
 
@@ -38,10 +39,6 @@ public class PreComputedExtendedPoint implements TablePoint{
         );
     }
 
-    /**
-     * Simplified version assuming z = 1 (normalized coordinates)
-     *  Often the case for precomputed table values
-     */
     @Override
     public AffinePoint toAffinePoint() {
         F2Element xy_f2 = xy;

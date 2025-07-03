@@ -7,8 +7,8 @@ import crypto.HashFunction;
 import exceptions.EncryptionException;
 import exceptions.InvalidArgumentException;
 import operations.FP;
-import types.Pair;
-import types.FieldPoint;
+import types.data.Pair;
+import types.point.FieldPoint;
 
 
 public class SchnorrQ {

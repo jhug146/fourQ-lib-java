@@ -1,6 +1,6 @@
 package operations;
 
-import types.Pair;
+import types.data.Pair;
 import constants.Params;
 
 import java.math.BigInteger;

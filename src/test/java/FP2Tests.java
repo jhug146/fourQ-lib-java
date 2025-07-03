@@ -1,5 +1,5 @@
 import operations.FP2;
-import types.F2Element;
+import types.data.F2Element;
 import constants.Params;
 
 import org.junit.jupiter.api.Test;

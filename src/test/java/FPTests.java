@@ -3,7 +3,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigInteger;
 
-import types.Pair;
+import types.data.Pair;
 import constants.Params;
 import operations.FP;
 

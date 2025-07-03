@@ -1,4 +1,6 @@
-package types;
+package types.point;
+
+import types.data.F2Element;
 
 public interface Point {
     F2Element getX();

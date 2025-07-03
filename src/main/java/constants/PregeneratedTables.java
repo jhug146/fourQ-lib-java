@@ -1,7 +1,7 @@
 package constants;
 
-import types.F2Element;
-import types.PreComputedExtendedPoint;
+import types.data.F2Element;
+import types.point.PreComputedExtendedPoint;
 
 import java.math.BigInteger;
 

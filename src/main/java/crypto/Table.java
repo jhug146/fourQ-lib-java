@@ -5,10 +5,9 @@ import java.util.Arrays;
 
 import constants.PregeneratedTables;
 import exceptions.TableLookupException;
-import exceptions.TablePointCastException;
 import operations.FP2;
-import types.PreComputedExtendedPoint;
-import types.TablePoint;
+import types.point.PreComputedExtendedPoint;
+import types.point.TablePoint;
 
 
 public class Table {

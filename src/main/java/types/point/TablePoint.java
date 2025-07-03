@@ -1,8 +1,9 @@
-package types;
+package types.point;
 
 import java.math.BigInteger;
 
 import exceptions.TableLookupException;
+import types.data.F2Element;
 
 
 public interface TablePoint extends Point {

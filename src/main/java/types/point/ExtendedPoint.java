@@ -1,5 +1,7 @@
-package types;
+package types.point;
 
+
+import types.data.F2Element;
 
 public class ExtendedPoint implements Point {
     private F2Element x;

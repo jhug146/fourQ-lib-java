@@ -3,8 +3,8 @@
 //import constants.Params;
 //import constants.PregeneratedTables;
 //import operations.FP2;
-//import types.F2Element;
-//import types.PreComputedExtendedPoint;
+//import types.data.F2Element;
+//import types.point.PreComputedExtendedPoint;
 //
 //import java.math.BigInteger;
 //import java.util.Arrays;

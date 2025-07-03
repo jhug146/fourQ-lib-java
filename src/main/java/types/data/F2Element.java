@@ -1,4 +1,4 @@
-package types;
+package types.data;
 
 import java.math.BigInteger;
 import java.util.Objects;

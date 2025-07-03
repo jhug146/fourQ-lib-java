@@ -1,6 +1,6 @@
 package operations;
 
-import types.*;
+import types.data.F2Element;
 
 import java.math.BigInteger;
 

@@ -1,4 +1,4 @@
-package types;
+package types.data;
 
 public class Pair<T, S> {
     public T first;
