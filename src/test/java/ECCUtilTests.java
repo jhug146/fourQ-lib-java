@@ -918,7 +918,7 @@ class ECCUtilTests {
             AffinePoint generator = new AffinePoint();
             ECCUtil.eccSet(generator);
 
-            ExtendedPoint genExt = convertToExtended(generator);
+            ExtendedPoint genExt = generator.toExtendedPoint();
             assertTrue(ECCUtil.eccPointValidate(genExt), "Generator should be valid");
 
             // Test point doubling

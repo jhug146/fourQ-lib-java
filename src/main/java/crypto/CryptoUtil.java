@@ -14,7 +14,6 @@ import java.security.SecureRandom;
 public class CryptoUtil {
     private static final BigInteger POW_32 = BigInteger.ONE.shiftLeft(32);
     private static final SecureRandom secureRandom = new SecureRandom();
-    private static final F2Element PARAM_D_F2 = ECCUtil.convertToF2Element(Params.PARAMETER_D);
     private static final F2Element ONE = new F2Element(BigInteger.ONE, BigInteger.ZERO);
 
     public static BigInteger randomBytes(int size) {
@@ -41,11 +40,11 @@ public class CryptoUtil {
     }
 
     public static FieldPoint decode(BigInteger encoded) throws EncryptionException {
-        final var y = ECCUtil.convertToF2Element(encoded.mod(POW_32));  // TODO: Potential endian problem here
+        final var y = Params.convertBigIntegerToF2Element(encoded.mod(POW_32));  // TODO: Potential endian problem here
         int signBit = (encoded.compareTo(BigInteger.ZERO) <= 0) ? 1 : 0;
 
         F2Element u = FP2.fp2Sqr1271(y);
-        F2Element v = FP2.fp2Mul1271(u, PARAM_D_F2);
+        F2Element v = FP2.fp2Mul1271(u, Params.PARAMETER_d);
         u = FP2.fp2Sub1271(u, ONE);
         v = FP2.fp2Add1271(v, ONE);
 

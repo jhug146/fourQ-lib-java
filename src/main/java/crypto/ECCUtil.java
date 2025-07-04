@@ -50,19 +50,10 @@ public class ECCUtil {
 
     // Set generator
     // Output: P = (x,y)
-    // TODO VeRy unsure about this and the helper
     public static void eccSet(AffinePoint P) {
-        P.setX(convertToF2Element(Params.GENERATOR_X));    // X1
-        P.setY(convertToF2Element(Params.GENERATOR_Y));    // Y1
-    }
-
-    // Helper method to convert BigInteger to F2Element
-    public static F2Element convertToF2Element(BigInteger generator) {
-        // Split the 256-bit generator into two 127-bit parts for GF(p²)
-        BigInteger realPart = generator.and(Params.MASK_127);                           // Lower 127 bits
-        BigInteger imagPart = generator.shiftRight(127).and(Params.MASK_127);        // Upper 127 bits
-
-        return new F2Element(realPart, imagPart);
+        P.setX(Params.GENERATOR_x);    // X1
+        P.setY(Params.GENERATOR_y);    // Y1
+        P.setT(null);                  // TODO may be wrong
     }
 
     @NotNull
@@ -213,7 +204,7 @@ public class ECCUtil {
                 fp2Add1271(point.getY(), point.getX()),
                 fp2Sub1271(point.getY(), point.getX()),
                 fp2Add1271(point.getZ(), point.getZ()),
-                fp2Mul1271(t, convertToF2Element(Params.PARAMETER_D))
+                fp2Mul1271(t, Params.PARAMETER_d)
         );
     }
 
@@ -431,10 +422,14 @@ public class ECCUtil {
         F2Element t3 = fp2Sub1271(t1, t2);                              // y^2 - x^2 = -x^2 + y^2
 
         t1 = fp2Mul1271(t1, t2);                                        // x^2*y^2
-        t2 = fp2Mul1271(convertToF2Element(Params.PARAMETER_D), t1);    // dx^2*y^2
+        t2 = fp2Mul1271(Params.PARAMETER_d, t1);    // dx^2*y^2
 
         // Create F2Element representing 1 + 0i
-        F2Element one = new F2Element(BigInteger.ONE, BigInteger.ZERO);
+        F2Element one = new F2Element(
+                BigInteger.ONE,
+                BigInteger.ZERO
+        );
+
         t2 = fp2Add1271(t2, one);                                       // 1 + dx^2*y^2
         t1 = fp2Sub1271(t3, t2);                                        // -x^2 + y^2 - 1 - dx^2*y^2
 
