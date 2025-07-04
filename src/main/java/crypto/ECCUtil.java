@@ -26,26 +26,6 @@ public class ECCUtil {
 
     private static final F2Element F2_ONE = new F2Element(BigInteger.ONE, BigInteger.ONE);
 
-    // Supporting data structure for recode result
-    private record RecodeResult(int[] digits, int[] signMasks) {
-
-        /**
-         * Get the effective signed digit at position i
-         *
-         * @param i position in the recoded representation
-         * @return signed digit value
-         */
-        public int getSignedDigit(int i) {
-            if (i < 0 || i >= digits.length) {
-                throw new IndexOutOfBoundsException("Index: " + i);
-            }
-
-            // If sign_mask[i] == 0xFFFFFFFF, digit is positive
-            // If sign_mask[i] == 0x00000000, digit is negative
-            return (signMasks[i] == -1) ? digits[i] : -digits[i];
-        }
-    }
-
     // Set generator
     // Output: P = (x,y)
     // TODO VeRy unsure about this and the helper
