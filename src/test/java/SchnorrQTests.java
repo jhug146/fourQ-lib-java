@@ -14,8 +14,8 @@ import java.util.Random;
 
 public class SchnorrQTests {
     private final int HEX_RADIX = 16;
-    private final BigInteger VALID_PRIVATE_KEY = new BigInteger("1489641c237dabe74622c6ee30529aeb85da467414230ff95364d12585e3eb", HEX_RADIX);
-    private final BigInteger VALID_PUBLIC_KEY = new BigInteger("8f83d7a1e3b11b9bf1ea1cd3877b53a21aee081ecaf948763df67a5b53b422165c3d0e7d3cd9c41e59d5ce58ae037401214e48544588867f59aa883b74", HEX_RADIX);
+    private final BigInteger VALID_PRIVATE_KEY = new BigInteger("8e75f78bd329ea18638184cf936503954f0ae64b1fa59e6b5d2d361b3fca34", HEX_RADIX);
+    private final BigInteger VALID_PUBLIC_KEY = new BigInteger("3620b8f42f4670434b326fbf93763561603fd76c1179ee4c96c68084f41cb621", HEX_RADIX);
     private final BigInteger VALID_SIGNATURE = new BigInteger("987654321098765432109876543210987654321");
     private final byte[] VALID_MESSAGE = "The quick brown fox".getBytes(UTF_8);
 
@@ -215,6 +215,8 @@ public class SchnorrQTests {
     @Test
     void testPublicKeyGeneration() throws EncryptionException {
         BigInteger publicKey = SchnorrQ.schnorrQKeyGeneration(VALID_PRIVATE_KEY);
+        System.out.println(VALID_PRIVATE_KEY);
+        System.out.println(publicKey.toString());
         assertEquals(publicKey, VALID_PUBLIC_KEY);
     }
 
