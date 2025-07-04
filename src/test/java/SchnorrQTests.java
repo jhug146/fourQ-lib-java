@@ -18,34 +18,34 @@ public class SchnorrQTests {
     private final byte[] VALID_MESSAGE = "The quick brown fox".getBytes(UTF_8);
 
     @Test
-    void testValidSignature() throws EncryptionException, InvalidArgumentException {
+    void testValidSignature() throws EncryptionException {
         boolean result = SchnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, VALID_SIGNATURE, VALID_MESSAGE);
         assertTrue(result, "Valid signature should return true");
     }
 
     @Test
-    void testInvalidSignature() throws EncryptionException, InvalidArgumentException {
+    void testInvalidSignature() throws EncryptionException {
         BigInteger tamperedSignature = VALID_SIGNATURE.add(BigInteger.ONE);
         boolean result = SchnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, tamperedSignature, VALID_MESSAGE);
         assertFalse(result, "Invalid signature should return false");
     }
 
     @Test
-    void testInvalidMessage() throws EncryptionException, InvalidArgumentException {
+    void testInvalidMessage() throws EncryptionException {
         byte[] tamperedMessage = "The quick brown fox jumps".getBytes(UTF_8);
         boolean result = SchnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, VALID_SIGNATURE, tamperedMessage);
         assertFalse(result, "Signature should be invalid for altered message");
     }
 
     @Test
-    void testInvalidPublicKey() throws EncryptionException, InvalidArgumentException {
+    void testInvalidPublicKey() throws EncryptionException {
         BigInteger tamperedKey = VALID_PUBLIC_KEY.add(BigInteger.TEN);
         boolean result = SchnorrQ.schnorrQVerify(tamperedKey, VALID_SIGNATURE, VALID_MESSAGE);
         assertFalse(result, "Signature should be invalid for wrong public key");
     }
 
     @Test
-    void testEmptyMessage() throws EncryptionException, InvalidArgumentException {
+    void testEmptyMessage() throws EncryptionException {
         byte[] emptyMessage = new byte[0];
         boolean result = SchnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, VALID_SIGNATURE, emptyMessage);
         assertFalse(result, "Empty message should not produce valid signature");

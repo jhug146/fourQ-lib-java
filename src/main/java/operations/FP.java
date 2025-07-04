@@ -157,7 +157,7 @@ public class FP {
         }
 
         static BigInteger fpExp1251(BigInteger a) {
-            // TODO ASSM: The "1251" in the name might refer to a specific windowing or addition chain strategy,
+            // TODO: The "1251" in the name might refer to a specific windowing or addition chain strategy,
             //  not the literal exponent 1251
             BigInteger exponent = BigInteger.ONE.shiftLeft(125).subtract(BigInteger.ONE);
             return modPow1271(a, exponent);
