@@ -9,7 +9,6 @@ public class Params {
     private static final int HEX_RADIX = 16;
 
     public static final int NWORDS_ORDER = 8;
-    public static final int NWORDS_FIELD = 4;
 
     public static final int PRE_COMPUTE_TABLE_LENGTH = 8;
 

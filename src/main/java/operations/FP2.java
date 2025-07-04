@@ -10,11 +10,6 @@ public class FP2 {
         return a;  // BigInteger is immutable, so copy is not needed
     }
 
-    // Zeroing a GF(p^2) element, a = 0
-    public static F2Element fp2Zero1271() {
-        return new F2Element(BigInteger.ZERO, BigInteger.ZERO);
-    }
-
     // GF(p^2) negation, a = -a in GF((2^127-1)^2)
     public static F2Element fp2Neg1271(F2Element a) {
         return new F2Element(FP.PUtil.fpNeg1271(a.real), FP.PUtil.fpNeg1271(a.im));
