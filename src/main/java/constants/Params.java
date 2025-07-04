@@ -36,10 +36,17 @@ public class Params {
             HEX_RADIX
     );
 
+    public static F2Element PARAMETER_d = new F2Element(
+            new BigInteger("00000000000000E40000000000000142", HEX_RADIX),
+            new BigInteger("5E472F846657E0FCB3821488F1FC0C8D", HEX_RADIX)
+    );
+
+    /*
     public static F2Element PARAMETER_d = convertLongArrayToF2Element(new long[]{ 0x0000000000000142L, 0x00000000000000E4L, 0xB3821488F1FC0C8DL, 0x5E472F846657E0FCL });
+
+     */
     public static F2Element GENERATOR_x = convertLongArrayToF2Element(new long[]{ 0x286592AD7B3833AAL, 0x1A3472237C2FB305L, 0x96869FB360AC77F6L, 0x1E1F553F2878AA9CL });
     public static F2Element GENERATOR_y = convertLongArrayToF2Element(new long[]{ 0xB924A2462BCBB287L, 0x0E3FEE9BA120785AL, 0x49A7C344844C8B5CL, 0x6E1C4AF8630E0242L });
-
     public static F2Element convertLongArrayToF2Element(long[] toConvert){
         BigInteger realLeastSigDigit1 = BigInteger.valueOf(toConvert[0]);
         BigInteger realLeastSigDigit2 = BigInteger.valueOf(toConvert[1]);
