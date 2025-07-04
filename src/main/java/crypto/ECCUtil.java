@@ -138,9 +138,7 @@ public class ECCUtil {
 
         for (int i = (T_VARBASE -1); i >= 0; i--) {
             r = eccDouble(r);
-            s = Table
-                    .tableLookup(table, digits[i], signMasks[i])
-                    .toPreComputedExtendedPoint();
+            s = Table.tableLookup(table, digits[i], signMasks[i]);
             r = eccDouble(r);
             r = eccDouble(r);
             r = eccDouble(r);
