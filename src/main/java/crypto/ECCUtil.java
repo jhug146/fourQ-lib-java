@@ -225,7 +225,7 @@ public class ECCUtil {
     // Input: P = (X1:Y1:Z1) in twisted Edwards coordinates
     // Output: 2P = (Xfinal,Yfinal,Zfinal,Tafinal,Tbfinal), where Tfinal = Tafinal*Tbfinal,
     //         corresponding to (Xfinal:Yfinal:Zfinal:Tfinal) in extended twisted Edwards coordinates
-    static ExtendedPoint eccDouble(ExtendedPoint p) {
+    public static ExtendedPoint eccDouble(ExtendedPoint p) {
         F2Element t1 = fp2Sqr1271(p.getX());                 // t1 = X1^2
         F2Element t2 = fp2Sqr1271(p.getY());                 // t2 = Y1^2
         F2Element t3 = fp2Add1271(p.getX(), p.getY());            // t3 = X1+Y1
@@ -241,7 +241,7 @@ public class ECCUtil {
         return new ExtendedPoint(x, y, z, ta, tb);
     }
 
-    static FieldPoint eccNorm(ExtendedPoint p) {
+    public static FieldPoint eccNorm(ExtendedPoint p) {
         final F2Element zInv = fp2Inv1271(p.getZ());
         final F2Element x = fp2Mul1271(p.getX(), zInv);
         final F2Element y = fp2Mul1271(p.getY(), zInv);

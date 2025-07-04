@@ -34,15 +34,7 @@ public class Params {
             "2FB2540EC7768CE7DFBD004DFE0F7999F05397829CBC14E50029CBC14E5E0A72",
             HEX_RADIX
     );
-//    // CORRECTED versions:
-//    public static final BigInteger PARAMETER_D = new BigInteger(
-//            "000000000000014200000000000000E4B3821488F1FC0C8D5E472F846657E0FC", HEX_RADIX);
-//
-//    public static final BigInteger GENERATOR_X = new BigInteger(
-//            "286592AD7B3833AA1A3472237C2FB30596869FB360AC77F61E1F553F2878AA9C", HEX_RADIX);
-//
-//    public static final BigInteger GENERATOR_Y = new BigInteger(
-//            "B924A2462BCBB2870E3FEE9BA120785A49A7C344844C8B5C6E1C4AF8630E0242", 16);
+
 
     public static F2Element PARAMETER_d = convertLongArrayToF2Element(new long[]{ 0x0000000000000142L, 0x00000000000000E4L, 0xB3821488F1FC0C8DL, 0x5E472F846657E0FCL });
     public static F2Element GENERATOR_x = convertLongArrayToF2Element(new long[]{ 0x286592AD7B3833AAL, 0x1A3472237C2FB305L, 0x96869FB360AC77F6L, 0x1E1F553F2878AA9CL });
@@ -52,21 +44,18 @@ public class Params {
         BigInteger realLeastSigDigit1 = BigInteger.valueOf(toConvert[0]);
         BigInteger realLeastSigDigit2 = BigInteger.valueOf(toConvert[1]);
         BigInteger combinedReal = realLeastSigDigit2.shiftLeft(64).or(realLeastSigDigit1);
-        BigInteger fieldElementReal = combinedReal.mod(prime4Q);
+        BigInteger fieldElementReal = combinedReal.mod(PRIME_1271);
 
         BigInteger imLeastSigDigit1 = BigInteger.valueOf(toConvert[2]);
         BigInteger imLeastSigDigit2 = BigInteger.valueOf(toConvert[3]);
         BigInteger combinedIm = imLeastSigDigit2.shiftLeft(64).or(imLeastSigDigit1);
-        BigInteger fieldElementIm = combinedIm.mod(prime4Q);
+        BigInteger fieldElementIm = combinedIm.mod(PRIME_1271);
 
         return new F2Element(
                 fieldElementReal,
                 fieldElementIm
         );
     }
-
-    private static final BigInteger MASK_127_BITS = BigInteger.ONE.shiftLeft(127).subtract(BigInteger.ONE);
-    private static final BigInteger prime4Q = BigInteger.ONE.shiftLeft(127).subtract(BigInteger.ONE); // 2^127 - 1
 
     /**
      * Convert BigInteger to F2Element by splitting into real and imaginary parts
@@ -78,12 +67,12 @@ public class Params {
         }
 
         // Extract real part (lower 127 bits)
-        BigInteger realPart = toConvert.and(MASK_127_BITS);
-        BigInteger fieldElementReal = realPart.mod(prime4Q);
+        BigInteger realPart = toConvert.and(MASK_127);
+        BigInteger fieldElementReal = realPart.mod(PRIME_1271);
 
         // Extract imaginary part (upper bits, shifted down)
-        BigInteger imagPart = toConvert.shiftRight(127).and(MASK_127_BITS);
-        BigInteger fieldElementIm = imagPart.mod(prime4Q);
+        BigInteger imagPart = toConvert.shiftRight(127).and(MASK_127);
+        BigInteger fieldElementIm = imagPart.mod(PRIME_1271);
 
         return new F2Element(fieldElementReal, fieldElementIm);
     }
