@@ -1,5 +1,7 @@
 package types.data;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.math.BigInteger;
 import java.util.Objects;
 
@@ -38,7 +40,7 @@ public class F2Element {
         return real + " " + im + "i";
     }
 
-    public F2Element applyMasks(F2Element point2, BigInteger mask) {
+    public F2Element applyMasks(@NotNull F2Element point2, @NotNull BigInteger mask) {
         return new F2Element(
                 mask.and(this.real.xor(point2.real)).xor(this.real),
                 mask.and(this.im.xor(point2.im)).xor(this.im)

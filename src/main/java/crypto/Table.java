@@ -27,17 +27,17 @@ public class Table {
             point.filterMaskForEach(tempPoint, mask, true);
         }
 
-        if (tempPoint != null) {
-            tempPoint.setT(point.getT().dup());
-            tempPoint.setY(point.getX().dup());
-            tempPoint.setX(point.getY().dup());
-            tempPoint.setT(FP2.fp2Neg1271(tempPoint.getT()));
-        } else {
+        if (tempPoint == null) {
             throw new TableLookupException("""
                     TableLookup expected table to provide non-null value.
                     Likely cause: generated table is faulty.
                     """);
         }
+
+        tempPoint.setT(point.getT().dup());
+        tempPoint.setY(point.getX().dup());
+        tempPoint.setX(point.getY().dup());
+        tempPoint.setT(FP2.fp2Neg1271(tempPoint.getT()));
 
         BigInteger bigMask = BigInteger.valueOf(signMask);     // TODO: Potential conversion problem here
         point.filterMaskForEach(tempPoint, bigMask, false);

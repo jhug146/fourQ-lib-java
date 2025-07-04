@@ -2,9 +2,7 @@ package crypto;
 
 import constants.Params;
 import exceptions.EncryptionException;
-import exceptions.TableLookupException;
 import operations.FP;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import types.data.F2Element;
 import types.point.AffinePoint;
@@ -15,7 +13,7 @@ import types.point.PreComputedExtendedPoint;
 import java.math.BigInteger;
 
 import static constants.Params.*;
-import static constants.Params.t_VARBASE;
+import static constants.Params.T_VARBASE;
 import static operations.FP2.*;
 
 
@@ -113,31 +111,32 @@ public class ECCUtil {
         return eccNorm(exPoint);
     }
 
-    public static boolean eccMul(
-            AffinePoint p,
+    public static FieldPoint eccMul(
+            FieldPoint p,
             BigInteger k,
-            FieldPoint q,
             boolean clearCofactor
-    ) throws TableLookupException {
+    ) throws EncryptionException {
         PreComputedExtendedPoint s;
+        int[] signMasks = new int[T_VARBASE + 1];
 
-        PreComputedExtendedPoint[] table = new PreComputedExtendedPoint[NPOINTS_VARBASE.intValueExact()];
-        int[] digits = new int[t_VARBASE+1], signMasks = new int[t_VARBASE+1];
+        ExtendedPoint r = pointSetup(p);
 
-        ExtendedPoint r = p.toExtendedPoint();
-
-        if(!ECCUtil.eccPointValidate(r)) { return false; }
-        if(clearCofactor) { ECCUtil.cofactorClearing(r); }
+        if (!ECCUtil.eccPointValidate(r)) {
+            throw new EncryptionException("Point validation failed within eccMul");
+        }
+        if (clearCofactor) {
+            r = ECCUtil.cofactorClearing(r);
+        }
 
         BigInteger kOdd = FP.moduloOrder(k);
         kOdd = FP.conversionToOdd(kOdd);
-        table = ECCUtil.eccPrecomp(r);
-        fixedWindowRecode(kOdd, digits, signMasks);
+        PreComputedExtendedPoint[] table = ECCUtil.eccPrecomp(r);
+        int[] digits = fixedWindowRecode(kOdd, signMasks);
 
-        s = Table.tableLookup(table, digits[t_VARBASE], signMasks[t_VARBASE]);
+        s = Table.tableLookup(table, digits[T_VARBASE], signMasks[T_VARBASE]);
         r = ECCUtil.r2ToR4(s, r);
 
-        for (int i = (t_VARBASE-1); i >= 0; i--) {
+        for (int i = (T_VARBASE -1); i >= 0; i--) {
             r = eccDouble(r);
             s = Table
                     .tableLookup(table, digits[i], signMasks[i])
@@ -148,48 +147,40 @@ public class ECCUtil {
             r = eccAdd(s, r);
         }
 
-        eccNorm(r, q);
-        return true;
+        return eccNorm(r);
     }
 
 
-    public static void fixedWindowRecode(BigInteger scalar, int[] digits, int[] signMasks) {
+    public static int[] fixedWindowRecode(BigInteger scalar, int[] signMasks) {
+        int[] digits = new int[T_VARBASE + 1];
         BigInteger val1 = BigInteger.ONE.shiftLeft(W_VARBASE.intValue()).subtract(BigInteger.ONE);
         BigInteger val2 = BigInteger.ONE.shiftLeft(W_VARBASE.intValue() - 1);
 
         BigInteger currentScalar = scalar;
         int windowSize = W_VARBASE.intValue() - 1;
 
-        for (int i = 0; i < t_VARBASE; i++) {
+        for (int i = 0; i < T_VARBASE; i++) {
             BigInteger temp = currentScalar.and(val1).subtract(val2);
-
-            // C: sign_masks[i] = ~((unsigned int)(temp >> (RADIX64-1)));
-            boolean isNegative = temp.signum() < 0;
-            signMasks[i] = isNegative ? 0x00000000 : 0xFFFFFFFF;
-
-            // C: digits[i] = ((sign_masks[i] & (unsigned int)(temp ^ -temp)) ^ (unsigned int)-temp) >> 1;
-            BigInteger tempXorNeg = temp.xor(temp.negate());
-            BigInteger signMaskBig = BigInteger.valueOf(signMasks[i] & 0xFFFFFFFFL);
-            BigInteger digitCalc = signMaskBig
-                    .and(tempXorNeg)
-                    .xor(temp.negate())
-                    .shiftRight(1);
-            digits[i] = digitCalc.intValue();
-
+            computeDigit(i, digits, signMasks, temp);
             currentScalar = currentScalar.subtract(temp).shiftRight(windowSize);
         }
 
         // Final digit computation
-        boolean finalNegative = currentScalar.signum() < 0;
-        signMasks[t_VARBASE] = finalNegative ? 0x00000000 : 0xFFFFFFFF;
+        computeDigit(T_VARBASE, digits, signMasks, currentScalar);
+        return digits;
+    }
 
-        BigInteger finalXorNeg = currentScalar.xor(currentScalar.negate());
-        BigInteger finalSignMask = BigInteger.valueOf(signMasks[t_VARBASE] & 0xFFFFFFFFL);
-        BigInteger finalDigit = finalSignMask
-                .and(finalXorNeg)
-                .xor(currentScalar.negate())
+    private static void computeDigit(int pos, int[] digits, int[] signMasks, BigInteger scalar) {
+        boolean isNegative = scalar.signum() < 0;
+        signMasks[pos] = isNegative ? 0x00000000 : 0xFFFFFFFF;
+
+        BigInteger tempXorNeg = scalar.xor(scalar.negate());
+        BigInteger signMaskBig = BigInteger.valueOf(signMasks[pos] & 0xFFFFFFFFL);
+        BigInteger digitCalc = signMaskBig
+                .and(tempXorNeg)
+                .xor(scalar.negate())
                 .shiftRight(1);
-        digits[t_VARBASE] = finalDigit.intValue();
+        digits[pos] = digitCalc.intValue();
     }
 
     private static ExtendedPoint r5ToR1(AffinePoint p) {
@@ -279,21 +270,14 @@ public class ECCUtil {
         return new FieldPoint(x, y);
     }
 
-    static FieldPoint eccNorm(ExtendedPoint p, FieldPoint q) {
-        final F2Element zInv = fp2Inv1271(p.getZ());
-
-        q.setX(fp2Mul1271(p.getX(), zInv));
-        q.setY(fp2Mul1271(p.getY(), zInv));
-        return q;
-    }
-
     @NotNull
     public static FieldPoint eccMulDouble(
             BigInteger k,
-            FieldPoint q, BigInteger l
+            FieldPoint q,
+            BigInteger l
     ) throws EncryptionException {
         // Step 1: Compute l*Q
-        FieldPoint lQ = eccMul(q, l);
+        FieldPoint lQ = eccMul(q, l, false);
 
         // Step 2-3: Convert l*Q to precomputed format
         ExtendedPoint extLQ = pointSetup(lQ);
@@ -338,14 +322,6 @@ public class ECCUtil {
         return eccAddCore(q, r1ToR3(p));
     }
 
-    @NotNull
-    private static FieldPoint eccMul(
-            FieldPoint p,
-            BigInteger k
-    ) throws EncryptionException {
-        throw new EncryptionException("");
-    }
-
     public static ExtendedPoint pointSetup(FieldPoint point) {
         return new ExtendedPoint(
                 point.getX(),
@@ -363,7 +339,6 @@ public class ECCUtil {
      *               - First d values (indices 0 to d-1) store signs: -1 (negative), 0 (positive)
      *               - Remaining values (indices d to l-1) store recoded values (excluding sign)
      */
-    @Contract(value = "_, _ -> _", mutates = "param2")
     public static int @NotNull [] mLSBSetRecode(
             BigInteger inputScalar,
             int @NotNull [] digits
@@ -563,9 +538,8 @@ public class ECCUtil {
      * @param p the input point P = (X₁,Y₁,Z₁,Ta,Tb) in extended twisted Edwards coordinates,
      *          where T₁ = Ta×Tb corresponds to (X₁:Y₁:Z₁:T₁)
      */
-    public static void cofactorClearing(ExtendedPoint p) {
+    public static ExtendedPoint cofactorClearing(ExtendedPoint p) {
         PreComputedExtendedPoint q = r1ToR2(p);  // Converting from (X,Y,Z,Ta,Tb) to (X+Y,Y-X,2Z,2dT)
-
         p = eccDouble(p);                                   // P = 2*P using representations (X,Y,Z,Ta,Tb) <- 2*(X,Y,Z)
         p = eccAdd(q, p);                                   // P = P+Q using representations (X,Y,Z,Ta,Tb) <- (X,Y,Z,Ta,Tb) + (X+Y,Y-X,2Z,2dT)
         p = eccDouble(p);
@@ -575,7 +549,6 @@ public class ECCUtil {
         p = eccAdd(q, p);
         p = eccDouble(p);
         p = eccDouble(p);
-        p = eccDouble(p);
-
+        return eccDouble(p);
     }
 }

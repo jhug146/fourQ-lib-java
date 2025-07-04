@@ -25,7 +25,7 @@ public class Params {
             = BigInteger.ONE.shiftLeft(W_VARBASE.subtract(BigInteger.TWO).intValue());
     public static final int VPOINTS_FIXEDBASE = (1 << (W_FIXEDBASE-1));
     public static final int NBITS_ORDER_PLUS_ONE = 246+1;
-    public static final int t_VARBASE = ((NBITS_ORDER_PLUS_ONE+W_VARBASE.intValueExact()-2)/(W_VARBASE.intValueExact()-1));
+    public static final int T_VARBASE = ((NBITS_ORDER_PLUS_ONE+W_VARBASE.intValueExact()-2)/(W_VARBASE.intValueExact()-1));
 
     public static final BigInteger MONTGOMERY_R_PRIME = new BigInteger(
             "C81DB8795FF3D621173EA5AAEA6B387D3D01B7C72136F61C0006A5F16AC8F9D3",
