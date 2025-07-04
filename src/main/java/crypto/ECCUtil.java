@@ -47,12 +47,12 @@ public class ECCUtil {
 
         // TODO: Both instances of TABLE in this function might need updating
         AffinePoint affPoint = new AffinePoint();
-        Table.tableLookup(
+        affPoint = Table.tableLookup(
                 (V_FIXEDBASE - 1) * (1 << (W_FIXEDBASE - 1)),
                 digit,
                 digits[D_FIXEDBASE - 1],
                 affPoint
-        );
+        ).toAffinePoint();
         ExtendedPoint exPoint = r5ToR1(affPoint);
 
         for (int j = 0; j < V_FIXEDBASE - 1; j++) {
@@ -425,7 +425,7 @@ public class ECCUtil {
             t[i] = r1ToR2(q);              // Convert result to R2 format
         }
 
-        return null;
+        return t;
     }
 
     /**
