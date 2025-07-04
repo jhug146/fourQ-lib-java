@@ -3,7 +3,6 @@ package crypto;
 import constants.Params;
 import exceptions.EncryptionException;
 import operations.FP;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import types.data.F2Element;
 import types.point.AffinePoint;
@@ -127,9 +126,7 @@ public class ECCUtil {
             boolean clearCofactor
     ) throws EncryptionException {
         PreComputedExtendedPoint s;
-
-        PreComputedExtendedPoint[] table = new PreComputedExtendedPoint[NPOINTS_VARBASE.intValueExact()];
-        int[] signMasks = new int[T_VARBASE +1];
+        int[] signMasks = new int[T_VARBASE + 1];
 
         ExtendedPoint r = pointSetup(p);
 
@@ -142,7 +139,7 @@ public class ECCUtil {
 
         BigInteger kOdd = FP.moduloOrder(k);
         kOdd = FP.conversionToOdd(kOdd);
-        table = ECCUtil.eccPrecomp(r);
+        PreComputedExtendedPoint[] table = ECCUtil.eccPrecomp(r);
         int[] digits = fixedWindowRecode(kOdd, signMasks);
 
         s = Table.tableLookup(table, digits[T_VARBASE], signMasks[T_VARBASE]);
@@ -173,35 +170,26 @@ public class ECCUtil {
 
         for (int i = 0; i < T_VARBASE; i++) {
             BigInteger temp = currentScalar.and(val1).subtract(val2);
-
-            // C: sign_masks[i] = ~((unsigned int)(temp >> (RADIX64-1)));
-            boolean isNegative = temp.signum() < 0;
-            signMasks[i] = isNegative ? 0x00000000 : 0xFFFFFFFF;
-
-            // C: digits[i] = ((sign_masks[i] & (unsigned int)(temp ^ -temp)) ^ (unsigned int)-temp) >> 1;
-            BigInteger tempXorNeg = temp.xor(temp.negate());
-            BigInteger signMaskBig = BigInteger.valueOf(signMasks[i] & 0xFFFFFFFFL);
-            BigInteger digitCalc = signMaskBig
-                    .and(tempXorNeg)
-                    .xor(temp.negate())
-                    .shiftRight(1);
-            digits[i] = digitCalc.intValue();
-
+            computeDigit(i, digits, signMasks, temp);
             currentScalar = currentScalar.subtract(temp).shiftRight(windowSize);
         }
 
         // Final digit computation
-        boolean finalNegative = currentScalar.signum() < 0;
-        signMasks[T_VARBASE] = finalNegative ? 0x00000000 : 0xFFFFFFFF;
-
-        BigInteger finalXorNeg = currentScalar.xor(currentScalar.negate());
-        BigInteger finalSignMask = BigInteger.valueOf(signMasks[T_VARBASE] & 0xFFFFFFFFL);
-        BigInteger finalDigit = finalSignMask
-                .and(finalXorNeg)
-                .xor(currentScalar.negate())
-                .shiftRight(1);
-        digits[T_VARBASE] = finalDigit.intValue();
+        computeDigit(T_VARBASE, digits, signMasks, currentScalar);
         return digits;
+    }
+
+    private static void computeDigit(int pos, int[] digits, int[] signMasks, BigInteger scalar) {
+        boolean isNegative = scalar.signum() < 0;
+        signMasks[pos] = isNegative ? 0x00000000 : 0xFFFFFFFF;
+
+        BigInteger tempXorNeg = scalar.xor(scalar.negate());
+        BigInteger signMaskBig = BigInteger.valueOf(signMasks[pos] & 0xFFFFFFFFL);
+        BigInteger digitCalc = signMaskBig
+                .and(tempXorNeg)
+                .xor(scalar.negate())
+                .shiftRight(1);
+        digits[pos] = digitCalc.intValue();
     }
 
     private static ExtendedPoint r5ToR1(AffinePoint p) {
@@ -360,7 +348,6 @@ public class ECCUtil {
      *               - First d values (indices 0 to d-1) store signs: -1 (negative), 0 (positive)
      *               - Remaining values (indices d to l-1) store recoded values (excluding sign)
      */
-    @Contract(value = "_, _ -> _", mutates = "param2")
     public static int @NotNull [] mLSBSetRecode(
             BigInteger inputScalar,
             int @NotNull [] digits
