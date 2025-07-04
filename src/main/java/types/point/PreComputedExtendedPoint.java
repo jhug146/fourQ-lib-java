@@ -2,6 +2,7 @@ package types.point;
 
 import constants.Params;
 import operations.FP2;
+import org.jetbrains.annotations.NotNull;
 import types.data.F2Element;
 
 import java.math.BigInteger;
@@ -64,8 +65,8 @@ public class PreComputedExtendedPoint implements TablePoint{
 
     @Override
     public void filterMaskForEach(
-            TablePoint tempPoint,
-            BigInteger mask,
+            @NotNull TablePoint tempPoint,
+            @NotNull BigInteger mask,
             boolean modZ
     ) {
         xy = xy.applyMasks(tempPoint.getX(), mask);
@@ -98,7 +99,7 @@ public class PreComputedExtendedPoint implements TablePoint{
 
     @Override
     public F2Element getZ() {
-        return null;
+        return z;
     }
 
     @Override
@@ -117,5 +118,5 @@ public class PreComputedExtendedPoint implements TablePoint{
     }
 
     @Override
-    public void setZ(F2Element z) {}
+    public void setZ(F2Element z) { this.z = z; }
 }
