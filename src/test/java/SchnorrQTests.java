@@ -2,6 +2,8 @@ import constants.Params;
 import exceptions.EncryptionException;
 import exceptions.InvalidArgumentException;
 import org.junit.jupiter.api.Test;
+import types.data.Pair;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -209,11 +211,30 @@ public class SchnorrQTests {
 
 
 
-    // Extra important tests
+    // Extra important tests comparing results to the C code
     @Test
     void testPublicKeyGeneration() throws EncryptionException {
         BigInteger publicKey = SchnorrQ.schnorrQKeyGeneration(VALID_PRIVATE_KEY);
         assertEquals(publicKey, VALID_PUBLIC_KEY);
     }
 
+    @Test
+    void testPairGeneration() throws EncryptionException {
+        Pair<BigInteger, BigInteger> keys = SchnorrQ.schnorrQFullKeyGeneration();
+        BigInteger secretKey = keys.first;
+        BigInteger publicKey = keys.second;
+        BigInteger genPublicKey = SchnorrQ.schnorrQKeyGeneration(secretKey);
+        assertEquals(publicKey, genPublicKey);
+    }
+
+    @Test
+    void testSign() throws EncryptionException {
+        BigInteger signature = SchnorrQ.schnorrQSign(VALID_PRIVATE_KEY, VALID_PUBLIC_KEY, VALID_MESSAGE);
+        assertEquals(signature, VALID_SIGNATURE);
+    }
+
+    @Test
+    void testVerify() throws EncryptionException {
+
+    }
 }

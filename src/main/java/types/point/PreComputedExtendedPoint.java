@@ -59,6 +59,7 @@ public class PreComputedExtendedPoint implements TablePoint{
         AffinePoint ret = new AffinePoint();
         ret.setX(x);
         ret.setY(y);
+        ret.setT(new F2Element(BigInteger.ONE, BigInteger.ZERO));
 
         return ret;
     }
