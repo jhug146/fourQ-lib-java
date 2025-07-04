@@ -93,7 +93,7 @@ class ECCUtilTests {
         for (BigInteger multiplier : testMultipliers) {
             try {
                 AffinePoint result = new AffinePoint();
-                if (ECCUtil.eccMul(convertToField(generator), multiplier, result, false)) {
+                if (ECCUtil.eccMul(result, multiplier, convertToField(generator), false)) {
                     testPointsAffine.add(result);
                     testPointsExtended.add(convertToExtended(result));
                     testPointsField.add(convertToField(result));
@@ -229,8 +229,8 @@ class ECCUtilTests {
             ECCUtil.eccSet(generator);
 
             AffinePoint result = new AffinePoint();
-            boolean success = ECCUtil.eccMul(convertToField(generator),
-                    BigInteger.valueOf(multiplier), result, false);
+            boolean success = ECCUtil.eccMul(result,
+                                BigInteger.valueOf(multiplier), convertToField(generator), false);
 
             assertTrue(success, "Multiplication by " + multiplier + " should succeed");
 
@@ -658,7 +658,7 @@ class ECCUtilTests {
                 if (scalar.bitLength() > 64) continue; // Skip very large scalars for basic test
 
                 AffinePoint result = new AffinePoint();
-                boolean success = ECCUtil.eccMul(genField, scalar, result, false);
+                boolean success = ECCUtil.eccMul(result, scalar, genField, false);
 
                 if (success) {
                     ExtendedPoint resultExt = convertToExtended(result);
@@ -680,7 +680,7 @@ class ECCUtilTests {
             FieldPoint genField = convertToField(generator);
 
             AffinePoint result = new AffinePoint();
-            boolean success = ECCUtil.eccMul(genField, BigInteger.ONE, result, false);
+            boolean success = ECCUtil.eccMul(result, BigInteger.ONE, genField, false);
 
             assertTrue(success, "Multiplication by 1 should succeed");
 
@@ -701,7 +701,7 @@ class ECCUtilTests {
 
             // Multiplication by zero behavior depends on implementation
             // It might succeed (returning point at infinity) or fail
-            assertDoesNotThrow(() -> ECCUtil.eccMul(genField, BigInteger.ZERO, result, false),
+            assertDoesNotThrow(() -> ECCUtil.eccMul(result, BigInteger.ZERO, genField, false),
                     "Multiplication by zero should not throw");
 
             //Check output
@@ -719,7 +719,7 @@ class ECCUtilTests {
 
             // Test 2*P = P + P (conceptually)
             AffinePoint result2 = new AffinePoint();
-            boolean success = ECCUtil.eccMul(genField, BigInteger.valueOf(2), result2, false);
+            boolean success = ECCUtil.eccMul(result2, BigInteger.valueOf(2), genField, false);
 
             if (success) {
                 ExtendedPoint result2Ext = convertToExtended(result2);
@@ -729,7 +729,7 @@ class ECCUtilTests {
 
             // Test 3*P
             AffinePoint result3 = new AffinePoint();
-            success = ECCUtil.eccMul(genField, BigInteger.valueOf(3), result3, false);
+            success = ECCUtil.eccMul(result3, BigInteger.valueOf(3), genField, false);
 
             if (success) {
                 ExtendedPoint result3Ext = convertToExtended(result3);
@@ -751,8 +751,8 @@ class ECCUtilTests {
 
             BigInteger scalar = BigInteger.valueOf(7);
 
-            boolean success1 = ECCUtil.eccMul(genField, scalar, result1, false);
-            boolean success2 = ECCUtil.eccMul(genField, scalar, result2, true);
+            boolean success1 = ECCUtil.eccMul(result1, scalar, genField, false);
+            boolean success2 = ECCUtil.eccMul(result2, scalar, genField, true);
 
             // Both should succeed (or both fail)
             assertEquals(success1, success2, "Cofactor clearing should not affect success");
@@ -795,7 +795,7 @@ class ECCUtilTests {
             FieldPoint genField = convertToField(generator);
 
             AffinePoint result = new AffinePoint();
-            boolean success = ECCUtil.eccMul(genField, BigInteger.valueOf(prime), result, false);
+            boolean success = ECCUtil.eccMul(result, BigInteger.valueOf(prime), genField, false);
 
             if (success) {
                 ExtendedPoint resultExt = convertToExtended(result);
@@ -1278,7 +1278,7 @@ class ECCUtilTests {
                 // 3. Perform scalar multiplication
                 AffinePoint result = new AffinePoint();
                 FieldPoint genField = convertToField(generator);
-                boolean success = ECCUtil.eccMul(genField, scalar, result, false);
+                boolean success = ECCUtil.eccMul(result, scalar, genField, false);
 
                 if (success) {
                     // 4. Validate result
@@ -1301,7 +1301,7 @@ class ECCUtilTests {
             FieldPoint genField = convertToField(generator);
 
             AffinePoint result1 = new AffinePoint();
-            boolean success1 = ECCUtil.eccMul(genField, scalar, result1, false);
+            boolean success1 = ECCUtil.eccMul(result1, scalar, genField, false);
 
             // Method 2: Fixed-base multiplication (if generator is used)
             FieldPoint result2 = ECCUtil.eccMulFixed(scalar);
