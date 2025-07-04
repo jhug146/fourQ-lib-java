@@ -67,6 +67,7 @@ public class Params {
 
     private static final BigInteger MASK_127_BITS = BigInteger.ONE.shiftLeft(127).subtract(BigInteger.ONE);
     private static final BigInteger prime4Q = BigInteger.ONE.shiftLeft(127).subtract(BigInteger.ONE); // 2^127 - 1
+
     /**
      * Convert BigInteger to F2Element by splitting into real and imaginary parts
      * Assumes the BigInteger contains two 127-bit field elements packed together
