@@ -1,5 +1,6 @@
 package crypto;
 
+import constants.Params;
 import types.data.F2Element;
 import types.point.AffinePoint;
 import types.point.ExtendedPoint;
@@ -16,6 +17,7 @@ public class Test {
 
         ExtendedPoint genExt = generator.toExtendedPoint();
         System.out.println(ECCUtil.eccPointValidate(genExt));
+        System.out.println(Params.PARAMETER_d.real + " i " + Params.PARAMETER_d.im);
         //System.out.println(ECCUtil.eccMul(generator.to, BigInteger.valueOf(0), false));
     }
 }

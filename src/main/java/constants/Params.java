@@ -15,7 +15,7 @@ public class Params {
     public static final F2Element F2_ZERO = new F2Element(BigInteger.ZERO, BigInteger.ZERO);
 
     public static final BigInteger PRIME_1271
-            = BigInteger.ONE.shiftLeft(127).subtract(BigInteger.ONE);
+            = BigInteger.ONE.shiftLeft(127).subtract(BigInteger.ONE);  // Same as 2^127 - 1
     public static final BigInteger MASK_127 = PRIME_1271;  // Same as 2^127 - 1
 
     public static final BigInteger W_VARBASE = BigInteger.valueOf(5);
@@ -36,9 +36,10 @@ public class Params {
             HEX_RADIX
     );
 
-    public static F2Element PARAMETER_d = convertLongArrayToF2Element(new long[]{ 0x0000000000000142L, 0x00000000000000E4L, 0xB3821488F1FC0C8DL, 0x5E472F846657E0FCL });
+    public static F2Element PARAMETER_d = convertLongArrayToF2Element(new long[]{ 0x0000000000000142L, 0x00000000000000E4L, Long.parseUnsignedLong("0xB3821488F1FC0C8D"), Long.parseUnsignedLong("0x5E472F846657E0FC") });
     public static F2Element GENERATOR_x = convertLongArrayToF2Element(new long[]{ 0x286592AD7B3833AAL, 0x1A3472237C2FB305L, 0x96869FB360AC77F6L, 0x1E1F553F2878AA9CL });
     public static F2Element GENERATOR_y = convertLongArrayToF2Element(new long[]{ 0xB924A2462BCBB287L, 0x0E3FEE9BA120785AL, 0x49A7C344844C8B5CL, 0x6E1C4AF8630E0242L });
+
 
     public static F2Element convertLongArrayToF2Element(long[] toConvert){
         BigInteger realLeastSigDigit1 = BigInteger.valueOf(toConvert[0]);
