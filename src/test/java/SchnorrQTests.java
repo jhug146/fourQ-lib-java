@@ -223,8 +223,10 @@ public class SchnorrQTests {
         Pair<BigInteger, BigInteger> keys = SchnorrQ.schnorrQFullKeyGeneration();
         BigInteger secretKey = keys.first;
         BigInteger publicKey = keys.second;
+        System.out.println(secretKey.toString());
+        System.out.println(publicKey.toString());
         BigInteger genPublicKey = SchnorrQ.schnorrQKeyGeneration(secretKey);
-        assertEquals(publicKey, genPublicKey);
+        assertEquals(genPublicKey, publicKey);
     }
 
     @Test

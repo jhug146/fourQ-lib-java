@@ -116,8 +116,7 @@ public class FP {
 
         // Field multiplication using schoolbook method, c = a*b mod p
         static BigInteger fpMul1271(BigInteger a, BigInteger b) {
-            return a.multiply(b).mod(Params.PRIME_1271);
-           // return Mersenne.mersenneReduce127Fast(multiply(a, b));
+            return Mersenne.mersenneReduce127(multiply(a, b));
         }
 
         // Field squaring using schoolbook method, output = a^2 mod p
