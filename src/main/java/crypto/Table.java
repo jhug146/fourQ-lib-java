@@ -41,6 +41,7 @@ public class Table {
 
         BigInteger bigMask = BigInteger.valueOf(signMask);     // TODO: Potential conversion problem here
         point.filterMaskForEach(tempPoint, bigMask, false);
+        System.out.println(point);
         return point;
     }
 

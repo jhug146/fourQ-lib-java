@@ -1,6 +1,7 @@
 package crypto;
 
 import constants.Params;
+import operations.FP2;
 import types.data.F2Element;
 import types.point.AffinePoint;
 import types.point.ExtendedPoint;
@@ -14,10 +15,16 @@ public class Test {
                 new F2Element(BigInteger.valueOf(1), BigInteger.ZERO),
                 null
         );
+        ECCUtil.eccSet(generator);
+
+        //ECCUtil.eccMul(generator, BigInteger.TEN, false);
+
+        System.out.println(new BigInteger("f068e2d286047d0a", 16));
+        System.out.println(new BigInteger(Long.toUnsignedString(0xf068e2d286047d0aL), 16));
 
         ExtendedPoint genExt = generator.toExtendedPoint();
-        System.out.println(ECCUtil.eccPointValidate(genExt));
-        System.out.println(Params.PARAMETER_d.real + " i " + Params.PARAMETER_d.im);
+        //System.out.println(ECCUtil.eccPointValidate(genExt));
+       // System.out.println(Params.PARAMETER_d.real + " i " + Params.PARAMETER_d.im);
         //System.out.println(ECCUtil.eccMul(generator.to, BigInteger.valueOf(0), false));
     }
 }

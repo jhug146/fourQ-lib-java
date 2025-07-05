@@ -245,6 +245,12 @@ public class ECCUtil {
         final F2Element zInv = fp2Inv1271(p.getZ());
         final F2Element x = fp2Mul1271(p.getX(), zInv);
         final F2Element y = fp2Mul1271(p.getY(), zInv);
+
+        x.im = FP.PUtil.mod1271(x.im);
+        x.real = FP.PUtil.mod1271(x.real);
+
+        y.im = FP.PUtil.mod1271(y.im);
+        y.real = FP.PUtil.mod1271(y.real);
         return new FieldPoint(x, y);
     }
 

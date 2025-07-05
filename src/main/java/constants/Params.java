@@ -6,7 +6,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 public class Params {
-    private static final int HEX_RADIX = 16;
+    public static final int HEX_RADIX = 16;
 
     public static final int NWORDS_ORDER = 8;
 
@@ -50,25 +50,33 @@ public class Params {
             new BigInteger("6E1C4AF8630E024249A7C344844C8B5C", HEX_RADIX)
     );
 
+//    public static F2Element convertBigIntegerToF2Element(BigInteger toConvert) {
+//        if (toConvert == null) {
+//            return new F2Element(BigInteger.ZERO, BigInteger.ZERO);
+//        }
+//
+//        // Extract real part (lower 127 bits)
+//        BigInteger realPart = toConvert.and(MASK_127);
+//        BigInteger fieldElementReal = realPart.mod(PRIME_1271);
+//
+//        // Extract imaginary part (upper bits, shifted down)
+//        BigInteger imagPart = toConvert.shiftRight(127).and(MASK_127);
+//        BigInteger fieldElementIm = imagPart.mod(PRIME_1271);
+//
+//        return new F2Element(fieldElementReal, fieldElementIm);
+//    }
 
-    /**
-     * Convert BigInteger to F2Element by splitting into real and imaginary parts
-     * Assumes the BigInteger contains two 127-bit field elements packed together
-     */
     public static F2Element convertBigIntegerToF2Element(BigInteger toConvert) {
         if (toConvert == null) {
             return new F2Element(BigInteger.ZERO, BigInteger.ZERO);
         }
 
-        // Extract real part (lower 127 bits)
-        BigInteger realPart = toConvert.and(MASK_127);
-        BigInteger fieldElementReal = realPart.mod(PRIME_1271);
+        // Treat the 64-bit value as a single field element
+        // This is likely the real part, with imaginary part = 0
+        BigInteger realPart = toConvert.mod(PRIME_1271);
+        BigInteger imagPart = BigInteger.ZERO;
 
-        // Extract imaginary part (upper bits, shifted down)
-        BigInteger imagPart = toConvert.shiftRight(127).and(MASK_127);
-        BigInteger fieldElementIm = imagPart.mod(PRIME_1271);
-
-        return new F2Element(fieldElementReal, fieldElementIm);
+        return new F2Element(realPart, imagPart);
     }
 
 
