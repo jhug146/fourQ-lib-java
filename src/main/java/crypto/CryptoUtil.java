@@ -1,6 +1,8 @@
 package crypto;
 
 import constants.Params;
+import crypto.util.Curve;
+import crypto.util.ECC;
 import exceptions.EncryptionException;
 import operations.FP;
 import operations.FP2;
@@ -99,11 +101,11 @@ public class CryptoUtil {
         }
 
         FieldPoint point = new FieldPoint(x, y);
-        ExtendedPoint testPoint = ECCUtil.pointSetup(point);
-        if (!ECCUtil.eccPointValidate(testPoint)) {
+        ExtendedPoint testPoint = Curve.pointSetup(point);
+        if (!ECC.eccPointValidate(testPoint)) {
             testPoint.getX().im = FP.PUtil.fpNeg1271(testPoint.getX().im);
             point.getX().im = testPoint.getX().im;
-            if (!ECCUtil.eccPointValidate(testPoint)) {       // Final point validation
+            if (!ECC.eccPointValidate(testPoint)) {       // Final point validation
                 throw new EncryptionException("");
             }
         }

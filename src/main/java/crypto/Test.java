@@ -1,7 +1,6 @@
 package crypto;
 
-import constants.Params;
-import operations.FP2;
+import crypto.util.ECC;
 import types.data.F2Element;
 import types.point.AffinePoint;
 import types.point.ExtendedPoint;
@@ -15,7 +14,7 @@ public class Test {
                 new F2Element(BigInteger.valueOf(1), BigInteger.ZERO),
                 null
         );
-        ECCUtil.eccSet(generator);
+        ECC.eccSet(generator);
 
         //ECCUtil.eccMul(generator, BigInteger.TEN, false);
 

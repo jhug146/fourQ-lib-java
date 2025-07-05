@@ -1,5 +1,6 @@
 import constants.Params;
-import crypto.ECCUtil;
+import crypto.util.Curve;
+import crypto.util.ECC;
 import exceptions.EncryptionException;
 import operations.FP2;
 import org.junit.jupiter.api.*;
@@ -19,7 +20,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Comprehensive test suite for crypto.ECCUtil class covering all mathematical properties,
+ * Comprehensive test suite for crypto.util.ECCUtil class covering all mathematical properties,
  * security requirements, edge cases, and performance characteristics.
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -77,7 +78,7 @@ class ECCUtilTests {
     private void createTestPoints() {
         // Generator point
         AffinePoint generator = new AffinePoint();
-        ECCUtil.eccSet(generator);
+        ECC.eccSet(generator);
         testPointsAffine.add(generator);
         testPointsExtended.add(convertToExtended(generator));
         testPointsField.add(convertToField(generator));
@@ -93,7 +94,7 @@ class ECCUtilTests {
         for (BigInteger multiplier : testMultipliers) {
             try {
                 FieldPoint genField = convertToField(generator);
-                FieldPoint result = ECCUtil.eccMul(genField, multiplier, false);
+                FieldPoint result = ECC.eccMul(genField, multiplier, false);
                 if (result != null) {
                     AffinePoint affineResult = convertToAffine(result);
                     testPointsAffine.add(affineResult);
@@ -187,8 +188,8 @@ class ECCUtilTests {
             AffinePoint gen1 = new AffinePoint();
             AffinePoint gen2 = new AffinePoint();
 
-            ECCUtil.eccSet(gen1);
-            ECCUtil.eccSet(gen2);
+            ECC.eccSet(gen1);
+            ECC.eccSet(gen2);
 
             assertPointsEqual(gen1, gen2, "Generator should be deterministic");
         }
@@ -198,7 +199,7 @@ class ECCUtilTests {
         @DisplayName("Generator point mathematical properties")
         void testGeneratorProperties() {
             AffinePoint generator = new AffinePoint();
-            ECCUtil.eccSet(generator);
+            ECC.eccSet(generator);
 
             // Check coordinates are in valid field range
             assertFieldElementValid(generator.getX(), "Generator X coordinate");
@@ -206,7 +207,7 @@ class ECCUtilTests {
 
             // Check generator is on curve
             ExtendedPoint extGen = convertToExtended(generator);
-            assertTrue(ECCUtil.eccPointValidate(extGen), "Generator must be on curve");
+            assertTrue(ECC.eccPointValidate(extGen), "Generator must be on curve");
         }
 
         @Test
@@ -214,7 +215,7 @@ class ECCUtilTests {
         @DisplayName("Generator point conversion consistency")
         void testGeneratorConversions() {
             AffinePoint affine = new AffinePoint();
-            ECCUtil.eccSet(affine);
+            ECC.eccSet(affine);
 
             ExtendedPoint extended = convertToExtended(affine);
             FieldPoint field = convertToField(affine);
@@ -232,15 +233,15 @@ class ECCUtilTests {
         @DisplayName("Generator multiplication by small primes")
         void testGeneratorMultiplicationSmallPrimes(int multiplier) throws EncryptionException {
             AffinePoint generator = new AffinePoint();
-            ECCUtil.eccSet(generator);
+            ECC.eccSet(generator);
 
             FieldPoint genField = convertToField(generator);
-            FieldPoint result = ECCUtil.eccMul(genField, BigInteger.valueOf(multiplier), false);
+            FieldPoint result = ECC.eccMul(genField, BigInteger.valueOf(multiplier), false);
 
             assertNotNull(result, "Multiplication by " + multiplier + " should succeed");
 
             ExtendedPoint resultExtended = convertToExtended(convertToAffine(result));
-            assertTrue(ECCUtil.eccPointValidate(resultExtended),
+            assertTrue(ECC.eccPointValidate(resultExtended),
                     "Result of " + multiplier + "*G should be on curve");
         }
     }
@@ -259,7 +260,7 @@ class ECCUtilTests {
             for (int i = 0; i < Math.min(testPointsExtended.size(), 10); i++) {
                 ExtendedPoint point = testPointsExtended.get(i);
                 try {
-                    boolean isValid = ECCUtil.eccPointValidate(point);
+                    boolean isValid = ECC.eccPointValidate(point);
                     if (!isValid) {
                         System.out.printf("Point %d failed validation: (%s, %s)%n",
                                 i, point.getX(), point.getY());
@@ -277,9 +278,9 @@ class ECCUtilTests {
             ExtendedPoint testPoint = testPointsExtended.getFirst();
 
             // Test multiple times to ensure consistency
-            boolean firstResult = ECCUtil.eccPointValidate(testPoint);
+            boolean firstResult = ECC.eccPointValidate(testPoint);
             for (int i = 0; i < 100; i++) {
-                boolean result = ECCUtil.eccPointValidate(testPoint);
+                boolean result = ECC.eccPointValidate(testPoint);
                 assertEquals(firstResult, result,
                         "Validation should be consistent across calls");
             }
@@ -294,7 +295,7 @@ class ECCUtilTests {
 
             for (int i = 0; i < invalidPoints.size(); i++) {
                 ExtendedPoint point = invalidPoints.get(i);
-                boolean isValid = ECCUtil.eccPointValidate(point);
+                boolean isValid = ECC.eccPointValidate(point);
                 assertFalse(isValid, "Invalid point " + i + " should fail validation");
             }
         }
@@ -317,7 +318,7 @@ class ECCUtilTests {
             };
 
             for (ExtendedPoint point : boundaryPoints) {
-                assertDoesNotThrow(() -> ECCUtil.eccPointValidate(point),
+                assertDoesNotThrow(() -> ECC.eccPointValidate(point),
                         "Validation should not throw on boundary cases");
             }
         }
@@ -326,7 +327,7 @@ class ECCUtilTests {
         @MethodSource("provideRandomPoints")
         @DisplayName("Random point validation stress test")
         void testRandomPointValidation(ExtendedPoint point) {
-            assertDoesNotThrow(() -> ECCUtil.eccPointValidate(point),
+            assertDoesNotThrow(() -> ECC.eccPointValidate(point),
                     "Validation should not throw on random points");
         }
 
@@ -367,8 +368,8 @@ class ECCUtilTests {
         @DisplayName("Decomposition determinism")
         void testDecompositionDeterminism() {
             for (BigInteger scalar : testScalars.subList(0, Math.min(20, testScalars.size()))) {
-                BigInteger[] result1 = ECCUtil.decompose(scalar);
-                BigInteger[] result2 = ECCUtil.decompose(scalar);
+                BigInteger[] result1 = Curve.decompose(scalar);
+                BigInteger[] result2 = Curve.decompose(scalar);
 
                 assertArrayEquals(result1, result2,
                         "Decomposition should be deterministic for " + scalar);
@@ -380,7 +381,7 @@ class ECCUtilTests {
         @DisplayName("Decomposition properties")
         void testDecompositionProperties() {
             for (BigInteger scalar : testScalars.subList(0, Math.min(15, testScalars.size()))) {
-                BigInteger[] decomposed = ECCUtil.decompose(scalar);
+                BigInteger[] decomposed = Curve.decompose(scalar);
 
                 assertNotNull(decomposed, "Decomposition should not be null");
                 assertEquals(4, decomposed.length, "Should have 4 components");
@@ -415,7 +416,7 @@ class ECCUtilTests {
                 BigInteger value = entry.getValue();
 
                 assertDoesNotThrow(() -> {
-                    BigInteger[] result = ECCUtil.decompose(value);
+                    BigInteger[] result = Curve.decompose(value);
                     assertNotNull(result, "Decomposition of " + name + " should not be null");
                     assertEquals(4, result.length, "Should have 4 components for " + name);
                 }, "Decomposition of " + name + " should not throw");
@@ -428,7 +429,7 @@ class ECCUtilTests {
         void testDecompositionBitLengths(int bitLength) {
             BigInteger scalar = new BigInteger(bitLength, DETERMINISTIC_RANDOM);
 
-            BigInteger[] result = ECCUtil.decompose(scalar);
+            BigInteger[] result = Curve.decompose(scalar);
             assertNotNull(result);
             assertEquals(4, result.length);
 
@@ -449,7 +450,7 @@ class ECCUtilTests {
             for (int i = 0; i < 1000; i++) {
                 BigInteger scalar = new BigInteger(256, DETERMINISTIC_RANDOM);
                 try {
-                    BigInteger[] result = ECCUtil.decompose(scalar);
+                    BigInteger[] result = Curve.decompose(scalar);
                     assertNotNull(result);
                     assertEquals(4, result.length);
                 } catch (Exception e) {
@@ -472,12 +473,12 @@ class ECCUtilTests {
             List<Future<Boolean>> futures = new ArrayList<>();
 
             BigInteger testScalar = new BigInteger("123456789ABCDEF0123456789ABCDEF0", 16);
-            BigInteger[] expectedResult = ECCUtil.decompose(testScalar);
+            BigInteger[] expectedResult = Curve.decompose(testScalar);
 
             for (int i = 0; i < THREAD_COUNT; i++) {
                 futures.add(executor.submit(() -> {
                     for (int j = 0; j < ITERATIONS_PER_THREAD; j++) {
-                        BigInteger[] result = ECCUtil.decompose(testScalar);
+                        BigInteger[] result = Curve.decompose(testScalar);
                         if (!Arrays.equals(result, expectedResult)) {
                             return false;
                         }
@@ -515,7 +516,7 @@ class ECCUtilTests {
             for (BigInteger scalar : testScalars.subList(0, Math.min(10, testScalars.size()))) {
                 int[] digits = new int[L_FIXEDBASE];
 
-                int[] result = ECCUtil.mLSBSetRecode(scalar, digits);
+                int[] result = Curve.mLSBSetRecode(scalar, digits);
                 assertSame(digits, result, "Should return same array reference");
 
                 // Validate sign digits (indices 0 to D_FIXEDBASE-1)
@@ -542,8 +543,8 @@ class ECCUtilTests {
             int[] digits1 = new int[L_FIXEDBASE];
             int[] digits2 = new int[L_FIXEDBASE];
 
-            ECCUtil.mLSBSetRecode(scalar, digits1);
-            ECCUtil.mLSBSetRecode(scalar, digits2);
+            Curve.mLSBSetRecode(scalar, digits1);
+            Curve.mLSBSetRecode(scalar, digits2);
 
             assertArrayEquals(digits1, digits2, "mLSB recoding should be deterministic");
         }
@@ -564,7 +565,7 @@ class ECCUtilTests {
 
             for (BigInteger scalar : edgeCases) {
                 int[] digits = new int[L_FIXEDBASE];
-                assertDoesNotThrow(() -> ECCUtil.mLSBSetRecode(scalar, digits),
+                assertDoesNotThrow(() -> Curve.mLSBSetRecode(scalar, digits),
                         "Should handle edge case scalar: " + scalar);
             }
         }
@@ -577,19 +578,19 @@ class ECCUtilTests {
 
             // Test null array
             assertThrows(NullPointerException.class,
-                    () -> ECCUtil.mLSBSetRecode(scalar, null),
+                    () -> Curve.mLSBSetRecode(scalar, null),
                     "Should throw on null array");
 
             // Test insufficient array size
             int[] smallArray = new int[10];
             assertThrows(ArrayIndexOutOfBoundsException.class,
-                    () -> ECCUtil.mLSBSetRecode(scalar, smallArray),
+                    () -> Curve.mLSBSetRecode(scalar, smallArray),
                     "Should throw on insufficient array size");
 
             // Test null scalar
             int[] digits = new int[270];
             assertThrows(NullPointerException.class,
-                    () -> ECCUtil.mLSBSetRecode(null, digits),
+                    () -> Curve.mLSBSetRecode(null, digits),
                     "Should throw on null scalar");
         }
 
@@ -600,7 +601,7 @@ class ECCUtilTests {
             final int L_FIXEDBASE = 54 * 5;
             int[] digits = new int[L_FIXEDBASE];
 
-            assertDoesNotThrow(() -> ECCUtil.mLSBSetRecode(powerOfTwo, digits),
+            assertDoesNotThrow(() -> Curve.mLSBSetRecode(powerOfTwo, digits),
                     "Should handle power of two: " + powerOfTwo);
 
             // Verify the recoding makes sense for powers of two
@@ -655,7 +656,7 @@ class ECCUtilTests {
         @DisplayName("Variable-base scalar multiplication basic")
         void testVariableBaseMulBasic() throws EncryptionException {
             AffinePoint generator = new AffinePoint();
-            ECCUtil.eccSet(generator);
+            ECC.eccSet(generator);
             FieldPoint genField = convertToField(generator);
 
             long startTime = System.currentTimeMillis();
@@ -664,11 +665,11 @@ class ECCUtilTests {
                 BigInteger scalar = testScalars.get(i);
                 if (scalar.bitLength() > 64) continue; // Skip very large scalars for basic test
 
-                FieldPoint result = ECCUtil.eccMul(genField, scalar, false);
+                FieldPoint result = ECC.eccMul(genField, scalar, false);
 
                 if (result != null) {
                     ExtendedPoint resultExt = convertToExtended(convertToAffine(result));
-                    assertTrue(ECCUtil.eccPointValidate(resultExt),
+                    assertTrue(ECC.eccPointValidate(resultExt),
                             "Result of scalar multiplication should be valid point");
                 }
             }
@@ -682,10 +683,10 @@ class ECCUtilTests {
         @DisplayName("Scalar multiplication by one")
         void testScalarMulByOne() throws EncryptionException {
             AffinePoint generator = new AffinePoint();
-            ECCUtil.eccSet(generator);
+            ECC.eccSet(generator);
             FieldPoint genField = convertToField(generator);
 
-            FieldPoint result = ECCUtil.eccMul(genField, BigInteger.ONE, false);
+            FieldPoint result = ECC.eccMul(genField, BigInteger.ONE, false);
 
             assertNotNull(result, "Multiplication by 1 should succeed");
 
@@ -699,13 +700,13 @@ class ECCUtilTests {
         @DisplayName("Scalar multiplication by zero")
         void testScalarMulByZero() throws EncryptionException {
             AffinePoint generator = new AffinePoint();
-            ECCUtil.eccSet(generator);
+            ECC.eccSet(generator);
             FieldPoint genField = convertToField(generator);
 
             // Multiplication by zero behavior depends on implementation
             // It might succeed (returning point at infinity) or return null
             assertDoesNotThrow(() -> {
-                FieldPoint result = ECCUtil.eccMul(genField, BigInteger.ZERO, false);
+                FieldPoint result = ECC.eccMul(genField, BigInteger.ZERO, false);
                 if (result != null) {
                     // Check if result represents point at infinity
                     assertTrue(result.getX().real.equals(BigInteger.ZERO) && result.getX().im.equals(BigInteger.ZERO));
@@ -719,24 +720,24 @@ class ECCUtilTests {
         @DisplayName("Scalar multiplication mathematical properties")
         void testScalarMulProperties() throws EncryptionException {
             AffinePoint generator = new AffinePoint();
-            ECCUtil.eccSet(generator);
+            ECC.eccSet(generator);
             FieldPoint genField = convertToField(generator);
 
             // Test 2*P = P + P (conceptually)
-            FieldPoint result2 = ECCUtil.eccMul(genField, BigInteger.valueOf(2), false);
+            FieldPoint result2 = ECC.eccMul(genField, BigInteger.valueOf(2), false);
 
             if (result2 != null) {
                 ExtendedPoint result2Ext = convertToExtended(convertToAffine(result2));
-                assertTrue(ECCUtil.eccPointValidate(result2Ext),
+                assertTrue(ECC.eccPointValidate(result2Ext),
                         "2*P should be valid point");
             }
 
             // Test 3*P
-            FieldPoint result3 = ECCUtil.eccMul(genField, BigInteger.valueOf(3), false);
+            FieldPoint result3 = ECC.eccMul(genField, BigInteger.valueOf(3), false);
 
             if (result3 != null) {
                 ExtendedPoint result3Ext = convertToExtended(convertToAffine(result3));
-                assertTrue(ECCUtil.eccPointValidate(result3Ext),
+                assertTrue(ECC.eccPointValidate(result3Ext),
                         "3*P should be valid point");
             }
         }
@@ -746,13 +747,13 @@ class ECCUtilTests {
         @DisplayName("Scalar multiplication with cofactor clearing")
         void testScalarMulWithCofactor() throws EncryptionException {
             AffinePoint generator = new AffinePoint();
-            ECCUtil.eccSet(generator);
+            ECC.eccSet(generator);
             FieldPoint genField = convertToField(generator);
 
             BigInteger scalar = BigInteger.valueOf(7);
 
-            FieldPoint result1 = ECCUtil.eccMul(genField, scalar, false);
-            FieldPoint result2 = ECCUtil.eccMul(genField, scalar, true);
+            FieldPoint result1 = ECC.eccMul(genField, scalar, false);
+            FieldPoint result2 = ECC.eccMul(genField, scalar, true);
 
             // Both should succeed or both be null
             assertEquals(result1 == null, result2 == null, "Cofactor clearing should not affect success status");
@@ -762,8 +763,8 @@ class ECCUtilTests {
                 ExtendedPoint ext1 = convertToExtended(convertToAffine(result1));
                 ExtendedPoint ext2 = convertToExtended(convertToAffine(result2));
 
-                assertTrue(ECCUtil.eccPointValidate(ext1), "Result without cofactor should be valid");
-                assertTrue(ECCUtil.eccPointValidate(ext2), "Result with cofactor should be valid");
+                assertTrue(ECC.eccPointValidate(ext1), "Result without cofactor should be valid");
+                assertTrue(ECC.eccPointValidate(ext2), "Result with cofactor should be valid");
             }
         }
 
@@ -772,14 +773,14 @@ class ECCUtilTests {
         @DisplayName("Double scalar multiplication")
         void testDoubleScalarMul() throws EncryptionException {
             AffinePoint generator = new AffinePoint();
-            ECCUtil.eccSet(generator);
+            ECC.eccSet(generator);
             FieldPoint genField = convertToField(generator);
 
             BigInteger k = BigInteger.valueOf(3);
             BigInteger l = BigInteger.valueOf(5);
 
             assertDoesNotThrow(() -> {
-                FieldPoint result = ECCUtil.eccMulDouble(k, genField, l);
+                FieldPoint result = ECC.eccMulDouble(k, genField, l);
                 assertNotNull(result, "Double scalar multiplication should return result");
             }, "Double scalar multiplication should not throw");
         }
@@ -789,14 +790,14 @@ class ECCUtilTests {
         @DisplayName("Scalar multiplication by small primes")
         void testScalarMulSmallPrimes(int prime) throws EncryptionException {
             AffinePoint generator = new AffinePoint();
-            ECCUtil.eccSet(generator);
+            ECC.eccSet(generator);
             FieldPoint genField = convertToField(generator);
 
-            FieldPoint result = ECCUtil.eccMul(genField, BigInteger.valueOf(prime), false);
+            FieldPoint result = ECC.eccMul(genField, BigInteger.valueOf(prime), false);
 
             if (result != null) {
                 ExtendedPoint resultExt = convertToExtended(convertToAffine(result));
-                assertTrue(ECCUtil.eccPointValidate(resultExt),
+                assertTrue(ECC.eccPointValidate(resultExt),
                         prime + "*G should be valid point");
 
                 // Verify result is not the identity (unless prime divides curve order)
@@ -837,7 +838,7 @@ class ECCUtilTests {
                 ExtendedPoint extended = testPointsExtended.get(i);
 
                 assertDoesNotThrow(() -> {
-                    FieldPoint field = ECCUtil.eccNorm(extended);
+                    FieldPoint field = ECC.eccNorm(extended);
                     assertNotNull(field, "Field conversion should not be null");
                     assertNotNull(field.getX(), "Field X should not be null");
                     assertNotNull(field.getY(), "Field Y should not be null");
@@ -853,7 +854,7 @@ class ECCUtilTests {
 
             // Affine -> Extended -> Field -> Affine
             ExtendedPoint extended = convertToExtended(original);
-            FieldPoint field = ECCUtil.eccNorm(extended);
+            FieldPoint field = ECC.eccNorm(extended);
             AffinePoint roundTrip = convertToAffine(field);
 
             // Verify coordinates are preserved
@@ -913,16 +914,16 @@ class ECCUtilTests {
         void testGroupLawProperties() {
             // Test that point operations follow group law
             AffinePoint generator = new AffinePoint();
-            ECCUtil.eccSet(generator);
+            ECC.eccSet(generator);
 
             ExtendedPoint genExt = convertToExtended(generator);
-            assertTrue(ECCUtil.eccPointValidate(genExt), "Generator should be valid");
+            assertTrue(ECC.eccPointValidate(genExt), "Generator should be valid");
 
             // Test point doubling
             assertDoesNotThrow(() -> {
-                ExtendedPoint doubled = ECCUtil.eccDouble(genExt);
+                ExtendedPoint doubled = ECC.eccDouble(genExt);
                 assertNotNull(doubled, "Doubling should produce result");
-                assertTrue(ECCUtil.eccPointValidate(doubled), "Doubled point should be valid");
+                assertTrue(ECC.eccPointValidate(doubled), "Doubled point should be valid");
             });
         }
     }
@@ -947,11 +948,11 @@ class ECCUtilTests {
             // Measure decomposition times
             for (int i = 0; i < 100; i++) {
                 long start = System.nanoTime();
-                ECCUtil.decompose(scalar1);
+                Curve.decompose(scalar1);
                 times1.add(System.nanoTime() - start);
 
                 start = System.nanoTime();
-                ECCUtil.decompose(scalar2);
+                Curve.decompose(scalar2);
                 times2.add(System.nanoTime() - start);
             }
 
@@ -969,10 +970,10 @@ class ECCUtilTests {
         @DisplayName("Input validation robustness")
         void testInputValidation() {
             // Test that functions properly handle invalid inputs
-            assertThrows(Exception.class, () -> ECCUtil.decompose(null));
-            assertThrows(Exception.class, () -> ECCUtil.eccPointValidate(null));
-            assertThrows(Exception.class, () -> ECCUtil.mLSBSetRecode(null, new int[270]));
-            assertThrows(Exception.class, () -> ECCUtil.mLSBSetRecode(BigInteger.ONE, null));
+            assertThrows(Exception.class, () -> Curve.decompose(null));
+            assertThrows(Exception.class, () -> ECC.eccPointValidate(null));
+            assertThrows(Exception.class, () -> Curve.mLSBSetRecode(null, new int[270]));
+            assertThrows(Exception.class, () -> Curve.mLSBSetRecode(BigInteger.ONE, null));
         }
 
         @Test
@@ -983,7 +984,7 @@ class ECCUtilTests {
             BigInteger huge = BigInteger.ONE.shiftLeft(1000);
 
             assertDoesNotThrow(() -> {
-                BigInteger[] decomposed = ECCUtil.decompose(huge);
+                BigInteger[] decomposed = Curve.decompose(huge);
                 assertNotNull(decomposed);
             }, "Should handle very large scalars gracefully");
         }
@@ -1004,7 +1005,7 @@ class ECCUtilTests {
             for (BigInteger input : testInputs) {
                 // All inputs should either succeed or fail consistently
                 assertDoesNotThrow(() -> {
-                    ECCUtil.decompose(input);
+                    Curve.decompose(input);
                     // The operation should complete without revealing input-dependent paths
                 }, "Operation should not leak information for input: " + input);
             }
@@ -1026,7 +1027,7 @@ class ECCUtilTests {
 
             for (int i = 0; i < PERFORMANCE_TEST_ITERATIONS; i++) {
                 BigInteger scalar = new BigInteger(256, DETERMINISTIC_RANDOM);
-                ECCUtil.decompose(scalar);
+                Curve.decompose(scalar);
             }
 
             long duration = System.currentTimeMillis() - startTime;
@@ -1046,7 +1047,7 @@ class ECCUtilTests {
             long startTime = System.currentTimeMillis();
 
             for (int i = 0; i < PERFORMANCE_TEST_ITERATIONS; i++) {
-                ECCUtil.eccPointValidate(testPoint);
+                ECC.eccPointValidate(testPoint);
             }
 
             long duration = System.currentTimeMillis() - startTime;
@@ -1068,7 +1069,7 @@ class ECCUtilTests {
 
             for (int i = 0; i < PERFORMANCE_TEST_ITERATIONS; i++) {
                 int[] digits = new int[L_FIXEDBASE];
-                ECCUtil.mLSBSetRecode(scalar, digits);
+                Curve.mLSBSetRecode(scalar, digits);
             }
 
             long duration = System.currentTimeMillis() - startTime;
@@ -1092,7 +1093,7 @@ class ECCUtilTests {
             List<BigInteger[]> results = new ArrayList<>();
             for (int i = 0; i < 1000; i++) {
                 BigInteger scalar = new BigInteger(256, DETERMINISTIC_RANDOM);
-                results.add(ECCUtil.decompose(scalar));
+                results.add(Curve.decompose(scalar));
             }
 
             long afterMemory = runtime.totalMemory() - runtime.freeMemory();
@@ -1124,7 +1125,7 @@ class ECCUtilTests {
             for (int i = 0; i < STRESS_TEST_ITERATIONS; i++) {
                 BigInteger scalar = new BigInteger(256, random);
                 try {
-                    BigInteger[] result = ECCUtil.decompose(scalar);
+                    BigInteger[] result = Curve.decompose(scalar);
                     assertNotNull(result);
                     assertEquals(4, result.length);
                 } catch (Exception e) {
@@ -1157,7 +1158,7 @@ class ECCUtilTests {
                     for (int j = 0; j < OPS_PER_THREAD; j++) {
                         try {
                             BigInteger scalar = new BigInteger(128, random);
-                            BigInteger[] result = ECCUtil.decompose(scalar);
+                            BigInteger[] result = Curve.decompose(scalar);
                             if (result.length == 4) {
                                 successCount++;
                             }
@@ -1195,12 +1196,12 @@ class ECCUtilTests {
             for (BigInteger edgeCase : edgeCases) {
                 try {
                     // Test decomposition
-                    BigInteger[] decomposed = ECCUtil.decompose(edgeCase);
+                    BigInteger[] decomposed = Curve.decompose(edgeCase);
                     assertNotNull(decomposed);
 
                     // Test recoding
                     int[] digits = new int[270];
-                    ECCUtil.mLSBSetRecode(edgeCase, digits);
+                    Curve.mLSBSetRecode(edgeCase, digits);
 
                 } catch (Exception e) {
                     failures.add(edgeCase);
@@ -1256,27 +1257,27 @@ class ECCUtilTests {
         @DisplayName("Complete scalar multiplication pipeline")
         void testCompleteScalarMulPipeline() {
             AffinePoint generator = new AffinePoint();
-            ECCUtil.eccSet(generator);
+            ECC.eccSet(generator);
 
             BigInteger scalar = BigInteger.valueOf(123);
 
             // Test the complete pipeline
             assertDoesNotThrow(() -> {
                 // 1. Decompose scalar
-                BigInteger[] decomposed = ECCUtil.decompose(scalar);
+                BigInteger[] decomposed = Curve.decompose(scalar);
                 assertNotNull(decomposed);
 
                 // 2. Validate point
                 ExtendedPoint genExt = convertToExtended(generator);
-                assertTrue(ECCUtil.eccPointValidate(genExt));
+                assertTrue(ECC.eccPointValidate(genExt));
 
                 // 3. Perform scalar multiplication
                 FieldPoint genField = convertToField(generator);
-                FieldPoint result = ECCUtil.eccMul(genField, scalar, false);
+                FieldPoint result = ECC.eccMul(genField, scalar, false);
 
                 // 4. Validate result
                 ExtendedPoint resultExt = convertToExtended(convertToAffine(result));
-                assertTrue(ECCUtil.eccPointValidate(resultExt));
+                assertTrue(ECC.eccPointValidate(resultExt));
             }, "Complete scalar multiplication pipeline should work");
         }
 
@@ -1289,13 +1290,13 @@ class ECCUtilTests {
 
             // Method 1: Variable-base multiplication
             AffinePoint generator = new AffinePoint();
-            ECCUtil.eccSet(generator);
+            ECC.eccSet(generator);
             FieldPoint genField = convertToField(generator);
 
-            FieldPoint result1 = ECCUtil.eccMul(genField, scalar, false);
+            FieldPoint result1 = ECC.eccMul(genField, scalar, false);
 
             // Method 2: Fixed-base multiplication (if generator is used)
-            FieldPoint result2 = ECCUtil.eccMulFixed(scalar);
+            FieldPoint result2 = ECC.eccMulFixed(scalar);
 
             // Both methods should succeed or fail consistently
             assertEquals(result1 == null, result2 == null, "Both methods should have same success status");

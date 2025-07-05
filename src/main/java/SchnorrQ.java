@@ -2,7 +2,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 import crypto.CryptoUtil;
-import crypto.ECCUtil;
+import crypto.util.ECC;
 import crypto.HashFunction;
 import exceptions.EncryptionException;
 import exceptions.InvalidArgumentException;
@@ -19,7 +19,7 @@ public class SchnorrQ {
 
     public static BigInteger schnorrQKeyGeneration(BigInteger secretKey) throws EncryptionException {
         final BigInteger hash = HashFunction.computeHash(secretKey);
-        final FieldPoint point = ECCUtil.eccMulFixed(hash);
+        final FieldPoint point = ECC.eccMulFixed(hash);
         return CryptoUtil.encode(point);
     }
 
@@ -36,7 +36,7 @@ public class SchnorrQ {
         System.arraycopy(message, 0, bytes, 2 * KEY_SIZE, message.length);
 
         BigInteger rHash = HashFunction.computeHash(Arrays.copyOfRange(bytes, KEY_SIZE, bytes.length));
-        final FieldPoint rPoint = ECCUtil.eccMulFixed(rHash);
+        final FieldPoint rPoint = ECC.eccMulFixed(rHash);
         final BigInteger sigStart = CryptoUtil.encode(rPoint);
 
         System.arraycopy(sigStart.toByteArray(), 0, bytes, 0, KEY_SIZE);
@@ -76,7 +76,7 @@ public class SchnorrQ {
         System.arraycopy(publicKey.toByteArray(), 0, bytes, KEY_SIZE, KEY_SIZE);
         System.arraycopy(message, 0, bytes, 2 * KEY_SIZE, message.length);
 
-        FieldPoint affPoint = ECCUtil.eccMulDouble(
+        FieldPoint affPoint = ECC.eccMulDouble(
                 new BigInteger(Arrays.copyOfRange(bytes, KEY_SIZE, bytes.length - 1)),
                 CryptoUtil.decode(publicKey),       // Implicitly checks that public key lies on the curve
                 HashFunction.computeHash(bytes)
