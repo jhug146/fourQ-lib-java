@@ -59,7 +59,7 @@ public class Curve {
             BigInteger inputScalar,
             int @NotNull [] digits
     ) {
-        final int d = Conversions.D_FIXEDBASE;                              // ceil(bitlength(order)/(w*v))*v
+        final int d = Params.D_FIXEDBASE;                              // ceil(bitlength(order)/(w*v))*v
 
         BigInteger scalar = inputScalar;
 
@@ -80,7 +80,7 @@ public class Curve {
         }
 
         // Part 2: Extract digits for indices d to l-1
-        for (int i = d; i < Conversions.L_FIXEDBASE; i++) {
+        for (int i = d; i < Params.L_FIXEDBASE; i++) {
             // Extract LSB as digit value
             digits[i] = scalar.testBit(0) ? 1 : 0;
 

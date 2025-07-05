@@ -30,49 +30,49 @@ public class ECC {
         BigInteger temp = FP.moduloOrder(val);
         temp = FP.conversionToOdd(temp);
         int[] digits = Curve.mLSBSetRecode(temp, new int[270]);  // TODO: No idea how this works
-        int digit = digits[Conversions.W_FIXEDBASE * Conversions.D_FIXEDBASE - 1];
-        int startI = (Conversions.W_FIXEDBASE - 1) * Conversions.D_FIXEDBASE - 1;
-        for (int i = startI; i >= 2 * Conversions.D_FIXEDBASE - 1; i -= Conversions.D_FIXEDBASE) {
+        int digit = digits[Params.W_FIXEDBASE * Params.D_FIXEDBASE - 1];
+        int startI = (Params.W_FIXEDBASE - 1) * Params.D_FIXEDBASE - 1;
+        for (int i = startI; i >= 2 * Params.D_FIXEDBASE - 1; i -= Params.D_FIXEDBASE) {
             digit = 2 * digit + digits[i];
         }
 
         // TODO: Both instances of TABLE in this function might need updating
         AffinePoint affPoint = new AffinePoint();
         affPoint = Table.tableLookup(
-                (Conversions.V_FIXEDBASE - 1) * (1 << (Conversions.W_FIXEDBASE - 1)),
+                (Params.V_FIXEDBASE - 1) * (1 << (Params.W_FIXEDBASE - 1)),
                 digit,
-                digits[Conversions.D_FIXEDBASE - 1],
+                digits[Params.D_FIXEDBASE - 1],
                 affPoint
         ).toAffinePoint();
         ExtendedPoint exPoint = Conversions.r5ToR1(affPoint);
 
-        for (int j = 0; j < Conversions.V_FIXEDBASE - 1; j++) {
-            digit = digits[Conversions.W_FIXEDBASE * Conversions.D_FIXEDBASE - (j + 1) * Conversions.E_FIXEDBASE - 1];
-            final int iStart = (Conversions.W_FIXEDBASE - 1) * Conversions.D_FIXEDBASE - (j + 1) * Conversions.E_FIXEDBASE - 1;
-            final int iMin = 2 * Conversions.D_FIXEDBASE - (j + 1) * Conversions.E_FIXEDBASE - 1;
-            for (int i = iStart; i >= iMin; i -= Conversions.D_FIXEDBASE) {
+        for (int j = 0; j < Params.V_FIXEDBASE - 1; j++) {
+            digit = digits[Params.W_FIXEDBASE * Params.D_FIXEDBASE - (j + 1) * Params.E_FIXEDBASE - 1];
+            final int iStart = (Params.W_FIXEDBASE - 1) * Params.D_FIXEDBASE - (j + 1) * Params.E_FIXEDBASE - 1;
+            final int iMin = 2 * Params.D_FIXEDBASE - (j + 1) * Params.E_FIXEDBASE - 1;
+            for (int i = iStart; i >= iMin; i -= Params.D_FIXEDBASE) {
                 digit = 2 * digit + digits[i];
             }
             // Extract point in (x+y,y-x,2dt) representation
-            final int signDigit = Conversions.D_FIXEDBASE - (j + 1) * Conversions.E_FIXEDBASE - 1;
-            final int tableStart = (Conversions.V_FIXEDBASE - j - 2) * (1 << (Conversions.W_FIXEDBASE - 1));
+            final int signDigit = Params.D_FIXEDBASE - (j + 1) * Params.E_FIXEDBASE - 1;
+            final int tableStart = (Params.V_FIXEDBASE - j - 2) * (1 << (Params.W_FIXEDBASE - 1));
             affPoint = Table
                     .tableLookup(tableStart, digit, digits[signDigit], affPoint)
                     .toAffinePoint();
             exPoint = eccMixedAdd(affPoint, exPoint);
         }
 
-        for (int i = Conversions.E_FIXEDBASE - 2; i >= 0; i--) {
+        for (int i = Params.E_FIXEDBASE - 2; i >= 0; i--) {
             exPoint = eccDouble(exPoint);
-            for (int j = 0; j < Conversions.V_FIXEDBASE; j++) {
-                digit = digits[Conversions.W_FIXEDBASE * Conversions.D_FIXEDBASE - j * Conversions.E_FIXEDBASE + i - Conversions.E_FIXEDBASE];
-                final int kStart = (Conversions.W_FIXEDBASE - 1) * Conversions.D_FIXEDBASE - j * Conversions.E_FIXEDBASE + i - Conversions.E_FIXEDBASE;
-                final int kMin = 2 * Conversions.D_FIXEDBASE - j * Conversions.E_FIXEDBASE + i - Conversions.E_FIXEDBASE;
-                for (int k = kStart; k >= kMin; k -= Conversions.D_FIXEDBASE) {
+            for (int j = 0; j < Params.V_FIXEDBASE; j++) {
+                digit = digits[Params.W_FIXEDBASE * Params.D_FIXEDBASE - j * Params.E_FIXEDBASE + i - Params.E_FIXEDBASE];
+                final int kStart = (Params.W_FIXEDBASE - 1) * Params.D_FIXEDBASE - j * Params.E_FIXEDBASE + i - Params.E_FIXEDBASE;
+                final int kMin = 2 * Params.D_FIXEDBASE - j * Params.E_FIXEDBASE + i - Params.E_FIXEDBASE;
+                for (int k = kStart; k >= kMin; k -= Params.D_FIXEDBASE) {
                     digit = 2 * digit + digits[k];
                 }
-                final int signDigit = Conversions.D_FIXEDBASE - j * Conversions.E_FIXEDBASE + i - Conversions.E_FIXEDBASE;
-                final int tableStart = (Conversions.V_FIXEDBASE - j - 1) * (1 << (Conversions.W_FIXEDBASE - 1));
+                final int signDigit = Params.D_FIXEDBASE - j * Params.E_FIXEDBASE + i - Params.E_FIXEDBASE;
+                final int tableStart = (Params.V_FIXEDBASE - j - 1) * (1 << (Params.W_FIXEDBASE - 1));
                 affPoint = Table
                         .tableLookup(tableStart, digit, signDigit, affPoint)
                         .toAffinePoint();

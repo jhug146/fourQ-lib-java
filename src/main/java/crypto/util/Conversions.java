@@ -12,18 +12,10 @@ import java.math.BigInteger;
 import static operations.FP2.*;
 
 public class Conversions {
-    static final int W_FIXEDBASE = 5;
-    static final int V_FIXEDBASE = 5;
-    static final int D_FIXEDBASE = 54;
-    static final int E_FIXEDBASE = 10;
-    static final int L_FIXEDBASE = D_FIXEDBASE * W_FIXEDBASE;
-
-    static final F2Element F2_ONE = new F2Element(BigInteger.ONE, BigInteger.ONE);
-
     static ExtendedPoint r5ToR1(AffinePoint p) {
         F2Element x = fp2Div1271(fp2Sub1271(p.getX(), p.getY()));
         F2Element y = fp2Div1271(fp2Add1271(p.getX(), p.getY()));
-        return new ExtendedPoint(x, y, F2_ONE, x, y);
+        return new ExtendedPoint(x, y, F2Element.ONE, x, y);
     }
 
     static PreComputedExtendedPoint r1ToR2(ExtendedPoint point) {

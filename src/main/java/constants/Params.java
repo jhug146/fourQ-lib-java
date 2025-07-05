@@ -6,6 +6,12 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 public class Params {
+    public static final int W_FIXEDBASE = 5;
+    public static final int V_FIXEDBASE = 5;
+    public static final int D_FIXEDBASE = 54;
+    public static final int E_FIXEDBASE = 10;
+
+    public static final int L_FIXEDBASE = D_FIXEDBASE * W_FIXEDBASE;
     public static final int HEX_RADIX = 16;
 
     public static final int NWORDS_ORDER = 8;
@@ -19,7 +25,6 @@ public class Params {
     public static final BigInteger MASK_127 = PRIME_1271;  // Same as 2^127 - 1
 
     public static final BigInteger W_VARBASE = BigInteger.valueOf(5);
-    public static final int W_FIXEDBASE = 5;
     public static final BigInteger NPOINTS_VARBASE
             = BigInteger.ONE.shiftLeft(W_VARBASE.subtract(BigInteger.TWO).intValue());
     public static final int VPOINTS_FIXEDBASE = (1 << (W_FIXEDBASE-1));

@@ -6,6 +6,8 @@ import java.math.BigInteger;
 import java.util.Objects;
 
 public class F2Element {
+    public static final F2Element ONE = new F2Element(BigInteger.ONE, BigInteger.ONE);
+
     public BigInteger real;
     public BigInteger im;
     public F2Element(BigInteger _real, BigInteger _im) {
