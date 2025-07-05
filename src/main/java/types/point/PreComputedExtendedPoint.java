@@ -1,7 +1,7 @@
 package types.point;
 
 import constants.Params;
-import operations.FP2;
+import field.operations.FP2;
 import org.jetbrains.annotations.NotNull;
 import types.data.F2Element;
 

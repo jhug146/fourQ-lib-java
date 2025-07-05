@@ -1,4 +1,4 @@
-package crypto.util;
+package crypto.core;
 
 import constants.Params;
 import org.jetbrains.annotations.NotNull;
@@ -7,9 +7,7 @@ import types.point.AffinePoint;
 import types.point.ExtendedPoint;
 import types.point.PreComputedExtendedPoint;
 
-import java.math.BigInteger;
-
-import static operations.FP2.*;
+import static field.operations.FP2.*;
 
 public class Conversions {
     static ExtendedPoint r5ToR1(AffinePoint p) {

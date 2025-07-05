@@ -1,6 +1,6 @@
 package crypto;
 
-import crypto.util.ECC;
+import crypto.core.ECC;
 import types.data.F2Element;
 import types.point.AffinePoint;
 import types.point.ExtendedPoint;

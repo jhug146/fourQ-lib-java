@@ -1,4 +1,4 @@
-import operations.FP2;
+import field.operations.FP2;
 import types.data.F2Element;
 import constants.Params;
 

@@ -2,11 +2,11 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 import crypto.CryptoUtil;
-import crypto.util.ECC;
+import crypto.core.ECC;
 import crypto.HashFunction;
 import exceptions.EncryptionException;
 import exceptions.InvalidArgumentException;
-import operations.FP;
+import field.operations.FP;
 import types.data.Pair;
 import types.point.FieldPoint;
 

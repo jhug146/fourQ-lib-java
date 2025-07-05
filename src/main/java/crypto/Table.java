@@ -5,7 +5,7 @@ import java.util.Arrays;
 
 import constants.PregeneratedTables;
 import exceptions.TableLookupException;
-import operations.FP2;
+import field.operations.FP2;
 import types.point.PreComputedExtendedPoint;
 import types.point.TablePoint;
 

@@ -1,9 +1,9 @@
-package crypto.util;
+package crypto.core;
 
 import constants.Params;
 import crypto.Table;
 import exceptions.EncryptionException;
-import operations.FP;
+import field.operations.FP;
 import org.jetbrains.annotations.NotNull;
 import types.data.F2Element;
 import types.point.AffinePoint;
@@ -14,7 +14,7 @@ import types.point.PreComputedExtendedPoint;
 import java.math.BigInteger;
 
 import static constants.Params.T_VARBASE;
-import static operations.FP2.*;
+import static field.operations.FP2.*;
 
 public class ECC {
     // Set generator

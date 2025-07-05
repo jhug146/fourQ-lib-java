@@ -1,11 +1,11 @@
 package crypto;
 
 import constants.Params;
-import crypto.util.Curve;
-import crypto.util.ECC;
+import crypto.core.Curve;
+import crypto.core.ECC;
 import exceptions.EncryptionException;
-import operations.FP;
-import operations.FP2;
+import field.operations.FP;
+import field.operations.FP2;
 import types.point.ExtendedPoint;
 import types.data.F2Element;
 import types.point.FieldPoint;

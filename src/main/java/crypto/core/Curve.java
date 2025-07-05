@@ -1,4 +1,4 @@
-package crypto.util;
+package crypto.core;
 
 import constants.Params;
 import org.jetbrains.annotations.NotNull;
