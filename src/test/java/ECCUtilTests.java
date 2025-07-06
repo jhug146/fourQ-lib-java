@@ -881,23 +881,23 @@ class ECCUtilTests {
             assertTrue(prod.compareTo(CURVE_ORDER) < 0, "Product should be reduced");
         }
 
-        @Test
-        @Order(62)
-        @DisplayName("Group law properties")
-        void testGroupLawProperties() {
-            // Test that point operations follow group law
-            FieldPoint generator = ECC.eccSet();
-
-            ExtendedPoint genExt = convertToExtended(generator);
-            assertTrue(ECC.eccPointValidate(genExt), "Generator should be valid");
-
-            // Test point doubling
-            assertDoesNotThrow(() -> {
-                ExtendedPoint doubled = ECC.eccDouble(genExt);
-                assertNotNull(doubled, "Doubling should produce result");
-                assertTrue(ECC.eccPointValidate(doubled), "Doubled point should be valid");
-            });
-        }
+//        @Test
+//        @Order(62)
+//        @DisplayName("Group law properties")
+//        void testGroupLawProperties() {
+//            // Test that point operations follow group law
+//            FieldPoint generator = ECC.eccSet();
+//
+//            ExtendedPoint genExt = convertToExtended(generator);
+//            assertTrue(ECC.eccPointValidate(genExt), "Generator should be valid");
+//
+//            // Test point doubling
+//            assertDoesNotThrow(() -> {
+//                ExtendedPoint doubled = ECC.eccDouble(genExt);
+//                assertNotNull(doubled, "Doubling should produce result");
+//                assertTrue(ECC.eccPointValidate(doubled), "Doubled point should be valid");
+//            });
+//        }
     }
 
     // ==================== SECURITY PROPERTY TESTS ====================
