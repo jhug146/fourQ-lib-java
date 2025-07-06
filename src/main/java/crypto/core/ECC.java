@@ -19,10 +19,8 @@ import static field.operations.FP2.*;
 public class ECC {
     // Set generator
     // Output: P = (x,y)
-    public static void eccSet(AffinePoint P) {
-        P.setX(Params.GENERATOR_x);    // X1
-        P.setY(Params.GENERATOR_y);    // Y1
-        P.setT(null);                  // TODO may be wrong
+    public static FieldPoint eccSet() {
+        return new FieldPoint(Params.GENERATOR_x, Params.GENERATOR_y);
     }
 
     @NotNull
@@ -99,7 +97,8 @@ public class ECC {
             r = Curve.cofactorClearing(r);
         }
 
-        BigInteger kOdd = FP.moduloOrder(k);
+        //BigInteger kOdd = FP.moduloOrder(k);
+        BigInteger kOdd = BigInteger.ONE;
         kOdd = FP.conversionToOdd(kOdd);
         PreComputedExtendedPoint[] table = eccPrecomp(r);
         int[] digits = Curve.fixedWindowRecode(kOdd, signMasks);
@@ -107,7 +106,7 @@ public class ECC {
         s = Table.tableLookup(table, digits[T_VARBASE], signMasks[T_VARBASE]);
         r = Conversions.r2ToR4(s, r);
 
-        for (int i = (T_VARBASE -1); i >= 0; i--) {
+        for (int i = T_VARBASE - 1; i >= 0; i--) {
             r = eccDouble(r);
             s = Table.tableLookup(table, digits[i], signMasks[i]);
             r = eccDouble(r);

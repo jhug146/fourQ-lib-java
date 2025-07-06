@@ -22,4 +22,9 @@ public class FieldPoint implements Point {
 
     @Override
     public void setY(F2Element y) { this.y = y; }
+
+    @Override
+    public String toString() {
+        return "(" + x + ", " + y + ")";
+    }
 }
