@@ -20,10 +20,10 @@ public class PreComputedExtendedPoint implements TablePoint{
     }
 
     public PreComputedExtendedPoint() {
-        this.xy = Params.F2_ZERO.dup();
-        this.yx = Params.F2_ZERO.dup();
-        this.z = Params.F2_ZERO.dup();
-        this.t = Params.F2_ZERO.dup();
+        this.xy = F2Element.ONE.dup();
+        this.yx = F2Element.ONE.dup();
+        this.z = F2Element.ONE.dup();
+        this.t = F2Element.ONE.dup();
     }
 
     @Override

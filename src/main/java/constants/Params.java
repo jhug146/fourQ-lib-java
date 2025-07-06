@@ -18,8 +18,6 @@ public class Params {
 
     public static final int PRE_COMPUTE_TABLE_LENGTH = 8;
 
-    public static final F2Element F2_ZERO = new F2Element(BigInteger.ZERO, BigInteger.ZERO);
-
     public static final BigInteger PRIME_1271
             = BigInteger.ONE.shiftLeft(127).subtract(BigInteger.ONE);
     public static final BigInteger MASK_127 = PRIME_1271;  // Same as 2^127 - 1

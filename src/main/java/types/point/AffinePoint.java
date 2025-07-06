@@ -20,8 +20,8 @@ public class AffinePoint implements TablePoint {
     }
 
     public AffinePoint() {
-        this.x = Params.F2_ZERO.dup();
-        this.y = Params.F2_ZERO.dup();
+        this.x = F2Element.ONE.dup();
+        this.y = F2Element.ONE.dup();
     }
 
     public ExtendedPoint toExtendedPoint() {

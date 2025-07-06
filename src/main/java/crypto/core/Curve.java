@@ -32,30 +32,12 @@ public class Curve {
         return digits;
     }
 
-//    static void computeDigit(int pos, int[] digits, int[] signMasks, BigInteger scalar) {
-//        boolean isNegative = scalar.signum() < 0;
-//        signMasks[pos] = isNegative ? 0x00000000 : 0xFFFFFFFF;
-//
-//        BigInteger tempXorNeg = scalar.xor(scalar.negate());
-//        BigInteger signMaskBig = BigInteger.valueOf(signMasks[pos] & 0xFFFFFFFFL);
-//        BigInteger digitCalc = signMaskBig
-//                .and(tempXorNeg)
-//                .xor(scalar.negate())
-//                .shiftRight(1);
-//        digits[pos] = digitCalc.intValue();
-//    }
-
     static void computeDigit(int pos, int[] digits, int[] signMasks, BigInteger temp) {
-        // Fix 1: Check temp, not scalar
         boolean isNegative = temp.signum() < 0;
         signMasks[pos] = isNegative ? 0x00000000 : 0xFFFFFFFF;
-
-        // Fix 2: Use int arithmetic like C code
         int tempInt = temp.intValue();
         int negTempInt = -tempInt;
         int tempXorNeg = tempInt ^ negTempInt;
-
-        // Replicate C bit manipulation exactly
         digits[pos] = ((signMasks[pos] & tempXorNeg) ^ negTempInt) >>> 1;
     }
 
