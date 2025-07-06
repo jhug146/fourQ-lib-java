@@ -51,6 +51,12 @@ public class Table {
             int digit,
             int signMask
     ) throws TableLookupException, NullPointerException {
+        if (table[digit] == null) {
+            throw new TableLookupException("""
+                    TableLookup expected table to provide non-null value.
+                    Likely cause: generated table is faulty.
+                    """);
+        }
         T point = (T) table[digit].dup();
         if (signMask == -1) {
             return point;

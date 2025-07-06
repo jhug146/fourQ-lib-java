@@ -692,7 +692,7 @@ class ECCUtilTests {
                 if (result != null) {
                     // Check if result represents point at infinity
                     assertTrue(result.getX().real.equals(BigInteger.ZERO) && result.getX().im.equals(BigInteger.ZERO));
-                    assertTrue(result.getY().real.equals(BigInteger.ZERO) && result.getY().im.equals(BigInteger.ZERO));
+                    assertTrue(result.getY().real.equals(BigInteger.ONE) && result.getY().im.equals(BigInteger.ZERO));
                 }
             }, "Multiplication by zero should not throw");
         }

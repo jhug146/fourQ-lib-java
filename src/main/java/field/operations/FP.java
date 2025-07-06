@@ -6,16 +6,13 @@ import constants.Params;
 import java.math.BigInteger;
 
 public class FP {
-
     public static BigInteger montgomeryMultiplyModOrder(BigInteger ma, BigInteger mb) {
-        // Proper Montgomery multiplication mod curve_order
         BigInteger product = ma.multiply(mb);
         BigInteger q = product.multiply(Params.MONTGOMERY_r_PRIME)
                 .remainder(BigInteger.ONE.shiftLeft(256)); // mod 2^256
         BigInteger temp = q.multiply(Params.CURVE_ORDER);
         BigInteger result = product.add(temp).shiftRight(256); // divide by 2^256
 
-        // Conditional subtraction
         if (result.compareTo(Params.CURVE_ORDER) >= 0) {
             result = result.subtract(Params.CURVE_ORDER);
         }
@@ -41,16 +38,7 @@ public class FP {
 
     // Convert scalar to odd if even using the prime subgroup order r
     public static BigInteger conversionToOdd(BigInteger scalar) {
-        byte[] k = scalar.toByteArray();
-
-        // Check if scalar is even (use last byte for parity)
-        /*
-        Java uses big-endian for the BigInteger class (msb comes first here)
-        Hence, the least significant bit will determine odd/even: i.e. the last digit
-         */
-        boolean isEven = (k[k.length-1] & 1) == 0;
-
-        if (!isEven) {
+        if (scalar.testBit(0)) {
             return scalar;  // Already odd
         }
 

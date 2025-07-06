@@ -80,7 +80,7 @@ public class ECC {
         return eccNorm(exPoint);
     }
 
-    public static FieldPoint eccMul(
+    public static FieldPoint  eccMul(
             FieldPoint p,
             BigInteger k,
             boolean clearCofactor
