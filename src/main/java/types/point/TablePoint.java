@@ -17,6 +17,8 @@ public interface TablePoint extends Point {
 
     void filterMaskForEach(TablePoint tempPoint, BigInteger mask, boolean modZ);
 
+    TablePoint dup();
+
     PreComputedExtendedPoint toPreComputedExtendedPoint();
     AffinePoint toAffinePoint();
 }

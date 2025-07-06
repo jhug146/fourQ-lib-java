@@ -6,11 +6,13 @@ import java.util.Arrays;
 import constants.PregeneratedTables;
 import exceptions.TableLookupException;
 import field.operations.FP2;
+import types.data.F2Element;
 import types.point.PreComputedExtendedPoint;
 import types.point.TablePoint;
 
 
 public class Table {
+    /*
     public static <T extends TablePoint> T tableLookup(
             T[] table,
             int digit,
@@ -41,6 +43,22 @@ public class Table {
 
         BigInteger bigMask = BigInteger.valueOf(signMask);     // TODO: Potential conversion problem here
         point.filterMaskForEach(tempPoint, bigMask, false);
+        return point;
+    }*/
+
+    public static <T extends TablePoint> T tableLookup(
+            T[] table,
+            int digit,
+            int signMask
+    ) throws TableLookupException, NullPointerException {
+        T point = (T) table[digit].dup();
+        if (signMask == -1) {
+            return point;
+        }
+        F2Element tempY = point.getX().dup();
+        point.setX(point.getY().dup());
+        point.setY(tempY);
+        point.setT(FP2.fp2Neg1271(point.getT()));
         return point;
     }
 

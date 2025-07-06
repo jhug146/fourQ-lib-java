@@ -5,6 +5,7 @@ import exceptions.TablePointCastException;
 import types.data.F2Element;
 
 import java.math.BigInteger;
+import java.util.ArrayDeque;
 import java.util.Objects;
 
 public class AffinePoint implements TablePoint {
@@ -33,6 +34,15 @@ public class AffinePoint implements TablePoint {
                 ),
                 this.x,
                 this.y
+        );
+    }
+
+    @Override
+    public AffinePoint dup() {
+        return new AffinePoint(
+                x,
+                y,
+                t
         );
     }
 

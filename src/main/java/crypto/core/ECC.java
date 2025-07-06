@@ -23,10 +23,6 @@ public class ECC {
         return new FieldPoint(Params.GENERATOR_x, Params.GENERATOR_y);
     }
 
-    public static FieldPoint eccSet(FieldPoint p) {
-        return new FieldPoint(Params.GENERATOR_x, Params.GENERATOR_y);
-    }
-
     @NotNull
     public static FieldPoint eccMulFixed(BigInteger val) throws EncryptionException {
         BigInteger temp = FP.moduloOrder(val);
