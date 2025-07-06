@@ -279,7 +279,7 @@ public class ECC {
         // Generating P2 = 2(X1,Y1,Z1,T1a,T1b) and T[0] = P
         q = p.dup();
         t[0] = Conversions.r1ToR2(p);                  // T[0] = P in (X+Y,Y-X,2Z,2dT) format
-        q = eccDouble(q);                  // Q = 2P
+        q = eccDouble(q);                              // Q = 2P
         p2 = Conversions.r1ToR3(q);                    // P2 = 2P in R3 format
 
         // Generate odd multiples: 3P, 5P, 7P, ..., (2*NPOINTS_VARBASE-1)P
@@ -290,23 +290,5 @@ public class ECC {
         }
 
         return t;
-    }
-
-    /**
-     * Copy extended projective point source to destination
-     * Equivalent to C macro: ecccopy(source, dest)
-     * @param source the point to copy from Q = (X:Y:Z:Ta:Tb)
-     * @return dest the point to copy to P = (X:Y:Z:Ta:Tb)
-     */
-    public static ExtendedPoint eccCopy(
-            ExtendedPoint source
-    ) {
-        return new ExtendedPoint(
-                fp2Copy1271(source.getX()),
-                fp2Copy1271(source.getY()),
-                fp2Copy1271(source.getZ()),
-                fp2Copy1271(source.getTa()),
-                fp2Copy1271(source.getTb())
-        );
     }
 }
