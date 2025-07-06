@@ -9,7 +9,7 @@ import types.point.PreComputedExtendedPoint;
 
 import static field.operations.FP2.*;
 
-public class Conversions {
+public class Conversion {
     static ExtendedPoint r5ToR1(AffinePoint p) {
         F2Element x = fp2Div1271(fp2Sub1271(p.getX(), p.getY()));
         F2Element y = fp2Div1271(fp2Add1271(p.getX(), p.getY()));

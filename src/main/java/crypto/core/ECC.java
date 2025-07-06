@@ -44,7 +44,7 @@ public class ECC {
                 digits[Params.D_FIXEDBASE - 1],
                 affPoint
         ).toAffinePoint();
-        ExtendedPoint exPoint = Conversions.r5ToR1(affPoint);
+        ExtendedPoint exPoint = Conversion.r5ToR1(affPoint);
 
         for (int j = 0; j < Params.V_FIXEDBASE - 1; j++) {
             digit = digits[Params.W_FIXEDBASE * Params.D_FIXEDBASE - (j + 1) * Params.E_FIXEDBASE - 1];
@@ -105,7 +105,7 @@ public class ECC {
         int[] digits = Curve.fixedWindowRecode(kOdd, signMasks);
 
         s = Table.tableLookup(table, digits[T_VARBASE], signMasks[T_VARBASE]);
-        r = Conversions.r2ToR4(s, r);
+        r = Conversion.r2ToR4(s, r);
 
         for (int i = (T_VARBASE -1); i >= 0; i--) {
             r = eccDouble(r);
@@ -187,7 +187,7 @@ public class ECC {
 
         // Step 2-3: Convert l*Q to precomputed format
         ExtendedPoint extLQ = Curve.pointSetup(lQ);
-        PreComputedExtendedPoint preCompLQ = Conversions.r1ToR2(extLQ);
+        PreComputedExtendedPoint preCompLQ = Conversion.r1ToR2(extLQ);
 
         // Step 4: Compute k*G (generator multiplication)
         FieldPoint kG = eccMulFixed(k);
@@ -225,7 +225,7 @@ public class ECC {
             PreComputedExtendedPoint q,
             ExtendedPoint p
     ) {
-        return eccAddCore(q, Conversions.r1ToR3(p));
+        return eccAddCore(q, Conversion.r1ToR3(p));
     }
 
     /**
@@ -279,15 +279,15 @@ public class ECC {
 
         // Generating P2 = 2(X1,Y1,Z1,T1a,T1b) and T[0] = P
         q = eccCopy(p);                    // Copy P to Q
-        t[0] = Conversions.r1ToR2(p);                  // T[0] = P in (X+Y,Y-X,2Z,2dT) format
+        t[0] = Conversion.r1ToR2(p);                  // T[0] = P in (X+Y,Y-X,2Z,2dT) format
         q = eccDouble(q);                  // Q = 2P
-        p2 = Conversions.r1ToR3(q);                    // P2 = 2P in R3 format
+        p2 = Conversion.r1ToR3(q);                    // P2 = 2P in R3 format
 
         // Generate odd multiples: 3P, 5P, 7P, ..., (2*NPOINTS_VARBASE-1)P
         for (int i = 1; i < Params.NPOINTS_VARBASE.intValueExact(); i++) {
             // T[i] = 2P + T[i-1] = (2*i+1)P
             q = eccAddCore(p2, t[i-1]);    // Add 2P to previous odd multiple
-            t[i] = Conversions.r1ToR2(q);              // Convert result to R2 format
+            t[i] = Conversion.r1ToR2(q);              // Convert result to R2 format
         }
 
         return t;

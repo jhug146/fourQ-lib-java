@@ -7,30 +7,26 @@ import java.math.BigInteger;
 
 public class FP {
 
+    public static BigInteger montgomeryMultiplyModOrder(BigInteger ma, BigInteger mb) {
+        // Proper Montgomery multiplication mod curve_order
+        BigInteger product = ma.multiply(mb);
+        BigInteger q = product.multiply(Params.MONTGOMERY_r_PRIME)
+                .remainder(BigInteger.ONE.shiftLeft(256)); // mod 2^256
+        BigInteger temp = q.multiply(Params.CURVE_ORDER);
+        BigInteger result = product.add(temp).shiftRight(256); // divide by 2^256
+
+        // Conditional subtraction
+        if (result.compareTo(Params.CURVE_ORDER) >= 0) {
+            result = result.subtract(Params.CURVE_ORDER);
+        }
+        return result;
+    }
+
     public static BigInteger moduloOrder(BigInteger key) {
         return montgomeryMultiplyModOrder(
                 montgomeryMultiplyModOrder(key, Params.MONTGOMERY_R_PRIME),
                 BigInteger.ONE
         );
-    }
-
-    public static BigInteger montgomeryMultiplyModOrder(BigInteger a, BigInteger b) {
-        BigInteger product = a.multiply(b);
-
-        // Compute Montgomery quotient
-        BigInteger quotient = product.multiply(Params.MONTGOMERY_R_PRIME);
-        int wordBits = Params.NWORDS_ORDER * 32; //TODO Change based on system
-        BigInteger rMask = BigInteger.ONE.shiftLeft(wordBits).subtract(BigInteger.ONE);
-        quotient = quotient.and(rMask);  // quotient mod R
-
-        // Montgomery reduction: (product + quotient * modulus) / R
-        BigInteger numerator = product.add(quotient.multiply(Params.CURVE_ORDER));
-        BigInteger result = numerator.shiftRight(wordBits);
-
-        // Final conditional subtraction
-        return result.compareTo(Params.CURVE_ORDER) >= 0
-                ? result.subtract(Params.CURVE_ORDER)
-                : result;
     }
 
     // Subtraction modulo the curve order, c = a+b mod order

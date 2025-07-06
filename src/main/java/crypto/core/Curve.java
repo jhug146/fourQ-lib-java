@@ -19,7 +19,7 @@ public class Curve {
         BigInteger val2 = BigInteger.ONE.shiftLeft(W_VARBASE.intValue() - 1);
 
         BigInteger currentScalar = scalar;
-        int windowSize = W_VARBASE.intValue() - 1;
+        int windowSize = W_VARBASE.intValueExact() - 1;
 
         for (int i = 0; i < T_VARBASE; i++) {
             BigInteger temp = currentScalar.and(val1).subtract(val2);
@@ -32,17 +32,31 @@ public class Curve {
         return digits;
     }
 
-    static void computeDigit(int pos, int[] digits, int[] signMasks, BigInteger scalar) {
-        boolean isNegative = scalar.signum() < 0;
+//    static void computeDigit(int pos, int[] digits, int[] signMasks, BigInteger scalar) {
+//        boolean isNegative = scalar.signum() < 0;
+//        signMasks[pos] = isNegative ? 0x00000000 : 0xFFFFFFFF;
+//
+//        BigInteger tempXorNeg = scalar.xor(scalar.negate());
+//        BigInteger signMaskBig = BigInteger.valueOf(signMasks[pos] & 0xFFFFFFFFL);
+//        BigInteger digitCalc = signMaskBig
+//                .and(tempXorNeg)
+//                .xor(scalar.negate())
+//                .shiftRight(1);
+//        digits[pos] = digitCalc.intValue();
+//    }
+
+    static void computeDigit(int pos, int[] digits, int[] signMasks, BigInteger temp) {
+        // Fix 1: Check temp, not scalar
+        boolean isNegative = temp.signum() < 0;
         signMasks[pos] = isNegative ? 0x00000000 : 0xFFFFFFFF;
 
-        BigInteger tempXorNeg = scalar.xor(scalar.negate());
-        BigInteger signMaskBig = BigInteger.valueOf(signMasks[pos] & 0xFFFFFFFFL);
-        BigInteger digitCalc = signMaskBig
-                .and(tempXorNeg)
-                .xor(scalar.negate())
-                .shiftRight(1);
-        digits[pos] = digitCalc.intValue();
+        // Fix 2: Use int arithmetic like C code
+        int tempInt = temp.intValue();
+        int negTempInt = -tempInt;
+        int tempXorNeg = tempInt ^ negTempInt;
+
+        // Replicate C bit manipulation exactly
+        digits[pos] = ((signMasks[pos] & tempXorNeg) ^ negTempInt) >>> 1;
     }
 
     public static ExtendedPoint pointSetup(FieldPoint point) {
@@ -170,7 +184,7 @@ public class Curve {
      *          where T₁ = Ta×Tb corresponds to (X₁:Y₁:Z₁:T₁)
      */
     public static ExtendedPoint cofactorClearing(ExtendedPoint p) {
-        PreComputedExtendedPoint q = Conversions.r1ToR2(p);  // Converting from (X,Y,Z,Ta,Tb) to (X+Y,Y-X,2Z,2dT)
+        PreComputedExtendedPoint q = Conversion.r1ToR2(p);  // Converting from (X,Y,Z,Ta,Tb) to (X+Y,Y-X,2Z,2dT)
         p = ECC.eccDouble(p);                                   // P = 2*P using representations (X,Y,Z,Ta,Tb) <- 2*(X,Y,Z)
         p = ECC.eccAdd(q, p);                                   // P = P+Q using representations (X,Y,Z,Ta,Tb) <- (X,Y,Z,Ta,Tb) + (X+Y,Y-X,2Z,2dT)
         p = ECC.eccDouble(p);

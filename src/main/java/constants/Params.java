@@ -14,7 +14,7 @@ public class Params {
     public static final int L_FIXEDBASE = D_FIXEDBASE * W_FIXEDBASE;
     public static final int HEX_RADIX = 16;
 
-    public static final int NWORDS_ORDER = 8;
+    public static final int NWORDS_ORDER = 8; // TODO
 
     public static final int PRE_COMPUTE_TABLE_LENGTH = 8;
 
@@ -28,16 +28,20 @@ public class Params {
     public static final BigInteger NPOINTS_VARBASE
             = BigInteger.ONE.shiftLeft(W_VARBASE.subtract(BigInteger.TWO).intValue());
     public static final int VPOINTS_FIXEDBASE = (1 << (W_FIXEDBASE-1));
-    public static final int NBITS_ORDER_PLUS_ONE = 246+1;
-    public static final int T_VARBASE = ((NBITS_ORDER_PLUS_ONE+W_VARBASE.intValueExact()-2)/(W_VARBASE.intValueExact()-1));
+    public static final int NBITS_ORDER_PLUS_ONE = 247;
+    public static final int T_VARBASE = (NBITS_ORDER_PLUS_ONE+W_VARBASE.intValueExact()-2)/(W_VARBASE.intValueExact()-1);
 
     public static final BigInteger MONTGOMERY_R_PRIME = new BigInteger(
-            "C81DB8795FF3D621173EA5AAEA6B387D3D01B7C72136F61C0006A5F16AC8F9D3",
+            "0006A5F16AC8F9D33D01B7C72136F61C173EA5AAEA6B387DC81DB8795FF3D621",
+            HEX_RADIX
+    );
+    public static final BigInteger MONTGOMERY_r_PRIME = new BigInteger(
+            "F32702FDAFC1C074BCE409ED76B5DB21D75E78B8D1FCDCF3E12FE5F079BC3929",
             HEX_RADIX
     );
 
     public static final BigInteger CURVE_ORDER = new BigInteger(
-            "2FB2540EC7768CE7DFBD004DFE0F7999F05397829CBC14E50029CBC14E5E0A72",
+            "0029CBC14E5E0A72F05397829CBC14E5DFBD004DFE0F79992FB2540EC7768CE7",
             HEX_RADIX
     );
 
@@ -113,10 +117,10 @@ public class Params {
 
     // Precomputed integers for fast-Babai rounding
     // Note: C arrays are little-endian, so we reverse the order for BigInteger
-    public static final BigInteger ELL1 = new BigInteger("07FC5BB5C5EA2BE5DFF75682ACE6A6BD66259686E09D1A7D4F", HEX_RADIX);
-    public static final BigInteger ELL2 = new BigInteger("038FD4B04CAA6C0F8A2BD235580F468D8DD1BA1D84DD627AFB", HEX_RADIX);
-    public static final BigInteger ELL3 = new BigInteger("D038BF8D0BFFBAF6C42BD6C965DCA9029B291A33678C203C", HEX_RADIX);
-    public static final BigInteger ELL4 = new BigInteger("031B073877A22D841081CBDC3714983D8212E5666B77E7FDC0", HEX_RADIX);
+    public static final BigInteger ELL1 = new BigInteger("0700000000000000FC5BB5C5EA2BE5DFF75682ACE6A6BD66259686E09D1A7D4F", HEX_RADIX);
+    public static final BigInteger ELL2 = new BigInteger("03000000000000008FD4B04CAA6C0F8A2BD235580F468D8DD1BA1D84DD627AFB", HEX_RADIX);
+    public static final BigInteger ELL3 = new BigInteger("0000000000000000D038BF8D0BFFBAF6C42BD6C965DCA9029B291A33678C203C", HEX_RADIX);
+    public static final BigInteger ELL4 = new BigInteger("03000000000000001B073877A22D841081CBDC3714983D8212E5666B77E7FDC0", HEX_RADIX);
 
     public static final BigInteger MASK_ALL_ONES =
             new BigInteger("FFFFFFFFFFFFFFFF", HEX_RADIX); // 64-bit all ones mask
