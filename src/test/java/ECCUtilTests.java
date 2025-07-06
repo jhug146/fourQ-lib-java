@@ -179,7 +179,7 @@ class ECCUtilTests {
     @DisplayName("Generator Point Tests")
     class GeneratorPointTests {
 
-        @Test
+        @Experiment
         @Order(1)
         @DisplayName("Generator point deterministic creation")
         void testGeneratorDeterministic() {
@@ -189,7 +189,7 @@ class ECCUtilTests {
             assertPointsEqual(gen1, gen2, "Generator should be deterministic");
         }
 
-        @Test
+        @Experiment
         @Order(2)
         @DisplayName("Generator point mathematical properties")
         void testGeneratorProperties() {
@@ -204,7 +204,7 @@ class ECCUtilTests {
             assertTrue(ECC.eccPointValidate(extGen), "Generator must be on curve");
         }
 
-        @Test
+        @Experiment
         @Order(3)
         @DisplayName("Generator point conversion consistency")
         void testGeneratorConversions() {
@@ -241,7 +241,7 @@ class ECCUtilTests {
     @DisplayName("Point Validation Tests")
     class PointValidationTests {
 
-        @Test
+        @Experiment
         @Order(10)
         @DisplayName("Valid points pass validation")
         void testValidPointsPass() {
@@ -259,7 +259,7 @@ class ECCUtilTests {
             }
         }
 
-        @Test
+        @Experiment
         @Order(11)
         @DisplayName("Point validation consistency")
         void testValidationConsistency() {
@@ -274,7 +274,7 @@ class ECCUtilTests {
             }
         }
 
-        @Test
+        @Experiment
         @Order(12)
         @DisplayName("Invalid points fail validation")
         void testInvalidPointsFail() {
@@ -288,7 +288,7 @@ class ECCUtilTests {
             }
         }
 
-        @Test
+        @Experiment
         @Order(13)
         @DisplayName("Point validation boundary cases")
         void testValidationBoundaries() {
@@ -351,7 +351,7 @@ class ECCUtilTests {
     @DisplayName("Scalar Decomposition Tests")
     class ScalarDecompositionTests {
 
-        @Test
+        @Experiment
         @Order(20)
         @DisplayName("Decomposition determinism")
         void testDecompositionDeterminism() {
@@ -364,7 +364,7 @@ class ECCUtilTests {
             }
         }
 
-        @Test
+        @Experiment
         @Order(21)
         @DisplayName("Decomposition properties")
         void testDecompositionProperties() {
@@ -386,7 +386,7 @@ class ECCUtilTests {
             }
         }
 
-        @Test
+        @Experiment
         @Order(22)
         @DisplayName("Decomposition of special values")
         void testDecompositionSpecialValues() {
@@ -429,7 +429,7 @@ class ECCUtilTests {
             }
         }
 
-        @Test
+        @Experiment
         @Order(23)
         @DisplayName("Decomposition stress test")
         void testDecompositionStressTest() {
@@ -451,7 +451,7 @@ class ECCUtilTests {
                             failures.subList(0, Math.min(5, failures.size())));
         }
 
-        @Test
+        @Experiment
         @Order(24)
         @DisplayName("Decomposition thread safety")
         void testDecompositionThreadSafety() throws InterruptedException {
@@ -495,7 +495,7 @@ class ECCUtilTests {
     @DisplayName("mLSB Set Recoding Tests")
     class MLSBSetRecodingTests {
 
-        @Test
+        @Experiment
         @Order(30)
         @DisplayName("mLSB recoding basic functionality")
         void testMLSBRecodingBasic() {
@@ -521,7 +521,7 @@ class ECCUtilTests {
             }
         }
 
-        @Test
+        @Experiment
         @Order(31)
         @DisplayName("mLSB recoding determinism")
         void testMLSBRecodingDeterminism() {
@@ -537,7 +537,7 @@ class ECCUtilTests {
             assertArrayEquals(digits1, digits2, "mLSB recoding should be deterministic");
         }
 
-        @Test
+        @Experiment
         @Order(32)
         @DisplayName("mLSB recoding edge cases")
         void testMLSBRecodingEdgeCases() {
@@ -558,7 +558,7 @@ class ECCUtilTests {
             }
         }
 
-        @Test
+        @Experiment
         @Order(33)
         @DisplayName("mLSB recoding error conditions")
         void testMLSBRecodingErrors() {
@@ -639,7 +639,7 @@ class ECCUtilTests {
             performanceMetrics.put("FixedBaseMul-Basic", duration);
         }*/
 
-        @Test
+        @Experiment
         @Order(41)
         @DisplayName("Variable-base scalar multiplication basic")
         void testVariableBaseMulBasic() throws EncryptionException {
@@ -664,7 +664,7 @@ class ECCUtilTests {
             performanceMetrics.put("VariableBaseMul-Basic", duration);
         }
 
-        @Test
+        @Experiment
         @Order(42)
         @DisplayName("Scalar multiplication by one")
         void testScalarMulByOne() throws EncryptionException {
@@ -679,7 +679,7 @@ class ECCUtilTests {
             assertFieldElementsEqual(genField.getY(), result.getY(), "Y coordinates should match");
         }
 
-        @Test
+        @Experiment
         @Order(43)
         @DisplayName("Scalar multiplication by zero")
         void testScalarMulByZero() throws EncryptionException {
@@ -697,7 +697,7 @@ class ECCUtilTests {
             }, "Multiplication by zero should not throw");
         }
 
-        @Test
+        @Experiment
         @Order(44)
         @DisplayName("Scalar multiplication mathematical properties")
         void testScalarMulProperties() throws EncryptionException {
@@ -722,7 +722,7 @@ class ECCUtilTests {
             }
         }
 
-        @Test
+        @Experiment
         @Order(45)
         @DisplayName("Scalar multiplication with cofactor clearing")
         void testScalarMulWithCofactor() throws EncryptionException {
@@ -745,7 +745,7 @@ class ECCUtilTests {
             }
         }
 
-        @Test
+        @Experiment
         @Order(46)
         @DisplayName("Double scalar multiplication")
         void testDoubleScalarMul() {
@@ -785,7 +785,7 @@ class ECCUtilTests {
     @DisplayName("Coordinate Conversion Tests")
     class CoordinateConversionTests {
 
-        @Test
+        @Experiment
         @Order(50)
         @DisplayName("Affine to Extended conversion")
         void testAffineToExtended() {
@@ -803,7 +803,7 @@ class ECCUtilTests {
             }
         }
 
-        @Test
+        @Experiment
         @Order(51)
         @DisplayName("Extended to Field conversion")
         void testExtendedToField() {
@@ -819,7 +819,7 @@ class ECCUtilTests {
             }
         }
 
-        @Test
+        @Experiment
         @Order(52)
         @DisplayName("Round-trip conversion consistency")
         void testConversionRoundTrip() {
@@ -842,7 +842,7 @@ class ECCUtilTests {
     @DisplayName("Mathematical Property Tests")
     class MathematicalPropertyTests {
 
-        @Test
+        @Experiment
         @Order(60)
         @DisplayName("Field arithmetic properties")
         void testFieldArithmetic() {
@@ -863,7 +863,7 @@ class ECCUtilTests {
             });
         }
 
-        @Test
+        @Experiment
         @Order(61)
         @DisplayName("Scalar arithmetic properties")
         void testScalarArithmetic() {
@@ -906,7 +906,7 @@ class ECCUtilTests {
     @DisplayName("Security Property Tests")
     class SecurityPropertyTests {
 
-        @Test
+        @Experiment
         @Order(70)
         @DisplayName("Constant-time behavior simulation")
         void testConstantTimeBehavior() {
@@ -937,7 +937,7 @@ class ECCUtilTests {
                     "Timing should be consistent for different inputs (ratio: " + ratio + ")");
         }
 
-        @Test
+        @Experiment
         @Order(71)
         @DisplayName("Input validation robustness")
         void testInputValidation() {
@@ -948,7 +948,7 @@ class ECCUtilTests {
             assertThrows(Exception.class, () -> Curve.mLSBSetRecode(BigInteger.ONE, null));
         }
 
-        @Test
+        @Experiment
         @Order(72)
         @DisplayName("Large input handling")
         void testLargeInputHandling() {
@@ -961,7 +961,7 @@ class ECCUtilTests {
             }, "Should handle very large scalars gracefully");
         }
 
-        @Test
+        @Experiment
         @Order(73)
         @DisplayName("Side-channel resistance simulation")
         void testSideChannelResistance() {
@@ -990,7 +990,7 @@ class ECCUtilTests {
     @DisplayName("Performance Tests")
     class PerformanceTests {
 
-        @Test
+        @Experiment
         @Order(80)
         @Timeout(value = 30, unit = TimeUnit.SECONDS)
         @DisplayName("Scalar decomposition performance")
@@ -1009,7 +1009,7 @@ class ECCUtilTests {
                     "1000 decompositions should complete within 10 seconds");
         }
 
-        @Test
+        @Experiment
         @Order(81)
         @Timeout(value = 30, unit = TimeUnit.SECONDS)
         @DisplayName("Point validation performance")
@@ -1029,7 +1029,7 @@ class ECCUtilTests {
                     "1000 validations should complete within 5 seconds");
         }
 
-        @Test
+        @Experiment
         @Order(82)
         @Timeout(value = 60, unit = TimeUnit.SECONDS)
         @DisplayName("mLSB recoding performance")
@@ -1051,7 +1051,7 @@ class ECCUtilTests {
                     "1000 recodings should complete within 15 seconds");
         }
 
-        @Test
+        @Experiment
         @Order(83)
         @DisplayName("Memory usage test")
         void testMemoryUsage() {
@@ -1086,7 +1086,7 @@ class ECCUtilTests {
     @DisplayName("Stress Tests")
     class StressTests {
 
-        @Test
+        @Experiment
         @Order(90)
         @Timeout(value = 120, unit = TimeUnit.SECONDS)
         @DisplayName("High-volume decomposition stress test")
@@ -1111,7 +1111,7 @@ class ECCUtilTests {
                     "Failure rate should be less than 1%, got " + (failureRate * 100) + "%");
         }
 
-        @Test
+        @Experiment
         @Order(91)
         @Timeout(value = 60, unit = TimeUnit.SECONDS)
         @DisplayName("Concurrent operation stress test")
@@ -1158,7 +1158,7 @@ class ECCUtilTests {
                     "Success rate should be > 95%, got " + (successRate * 100) + "%");
         }
 
-        @Test
+        @Experiment
         @Order(92)
         @DisplayName("Edge case exhaustive testing")
         void testEdgeCaseExhaustive() {
@@ -1224,7 +1224,7 @@ class ECCUtilTests {
     @DisplayName("Integration Tests")
     class IntegrationTests {
 
-        @Test
+        @Experiment
         @Order(100)
         @DisplayName("Complete scalar multiplication pipeline")
         void testCompleteScalarMulPipeline() {
@@ -1251,7 +1251,7 @@ class ECCUtilTests {
             }, "Complete scalar multiplication pipeline should work");
         }
 
-        @Test
+        @Experiment
         @Order(101)
         @DisplayName("Cross-validation between methods")
         void testCrossValidation() throws EncryptionException {
