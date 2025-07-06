@@ -6,13 +6,6 @@ import java.math.BigInteger;
 import static constants.Params.MASK_127;
 import static constants.Params.PRIME_1271;
 
-/**
- * Performance Benefits:
- * Replaces division with additions and bit shifts
- * O(log k) where k is the bit length of input
- * Much faster than general modular reduction for large numbers
- */
-
 class Mersenne {
     // Mersenne prime reduction for p = 2^127-1
     static BigInteger mersenneReduce127(BigInteger x) {
