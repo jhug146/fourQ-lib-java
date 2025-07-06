@@ -277,7 +277,7 @@ public class ECC {
         ExtendedPoint q;
 
         // Generating P2 = 2(X1,Y1,Z1,T1a,T1b) and T[0] = P
-        q = eccCopy(p);                    // Copy P to Q
+        q = p.dup();
         t[0] = Conversions.r1ToR2(p);                  // T[0] = P in (X+Y,Y-X,2Z,2dT) format
         q = eccDouble(q);                  // Q = 2P
         p2 = Conversions.r1ToR3(q);                    // P2 = 2P in R3 format

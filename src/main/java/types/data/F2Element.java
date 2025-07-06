@@ -39,7 +39,7 @@ public class F2Element {
 
     @Override
     public String toString() {
-        return real + " + " + im + "i";
+        return "0x" + real.toString(16) + " + 0x" + im.toString(16) + "i";
     }
 
     public F2Element applyMasks(@NotNull F2Element point2, @NotNull BigInteger mask) {
