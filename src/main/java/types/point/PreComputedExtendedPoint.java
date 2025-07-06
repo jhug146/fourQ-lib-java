@@ -120,4 +120,9 @@ public class PreComputedExtendedPoint implements TablePoint{
 
     @Override
     public void setZ(F2Element z) { this.z = z; }
+
+    @Override
+    public String toString() {
+        return "(xy = " + xy + ", yx = " + yx + ", z = " + z + ", t = " + t + ")";
+    }
 }

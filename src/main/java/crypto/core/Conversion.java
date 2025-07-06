@@ -16,22 +16,23 @@ public class Conversion {
         return new ExtendedPoint(x, y, F2Element.ONE, x, y);
     }
 
-    static PreComputedExtendedPoint r1ToR2(ExtendedPoint point) {
-        F2Element t = fp2Sub1271(fp2Add1271(point.getTa(), point.getTb()), point.getTb());
+    public static PreComputedExtendedPoint r1ToR2(ExtendedPoint point) {
+        F2Element t = fp2Add1271(point.getTa(), point.getTa());
+        t = fp2Mul1271(t, point.getTb());
         return new PreComputedExtendedPoint(
-                fp2Add1271(point.getY(), point.getX()),
+                fp2Add1271(point.getX(), point.getY()),
                 fp2Sub1271(point.getY(), point.getX()),
                 fp2Add1271(point.getZ(), point.getZ()),
                 fp2Mul1271(t, Params.PARAMETER_d)
         );
     }
 
-    static PreComputedExtendedPoint r1ToR3(ExtendedPoint point) {
+    public static PreComputedExtendedPoint r1ToR3(ExtendedPoint point) {
         return new PreComputedExtendedPoint(
                 fp2Add1271(point.getX(), point.getY()),
                 fp2Sub1271(point.getY(), point.getX()),
-                fp2Mul1271(point.getTa(), point.getTb()),
-                point.getZ()
+                point.getZ(),
+                fp2Mul1271(point.getTa(), point.getTb())
         );
     }
 

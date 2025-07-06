@@ -95,4 +95,9 @@ public class AffinePoint implements TablePoint {
 
     @Override
     public void setZ(F2Element z) {}
+
+    @Override
+    public String toString() {
+        return "(" + x + ", " + y + ", " + t + ")";
+    }
 }

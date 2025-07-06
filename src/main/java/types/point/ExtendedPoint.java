@@ -40,4 +40,19 @@ public class ExtendedPoint implements Point {
     public void setTa(F2Element ta) { this.ta = ta; }
 
     public void setTb(F2Element tb) { this.tb = tb; }
+
+    public ExtendedPoint dup() {
+        return new ExtendedPoint(
+                x.dup(),
+                y.dup(),
+                z.dup(),
+                ta.dup(),
+                tb.dup()
+        );
+    }
+
+    @Override
+    public String toString() {
+        return "(" + x + ", " + y + ", " + z + ", " + ta + ", " + tb + ")";
+    }
 }

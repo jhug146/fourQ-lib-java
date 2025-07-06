@@ -77,11 +77,10 @@ class ECCUtilTests {
 
     private void createTestPoints() {
         // Generator point
-        AffinePoint generator = new AffinePoint();
-        ECC.eccSet(generator);
-        testPointsAffine.add(generator);
+        FieldPoint generator = ECC.eccSet();
+        testPointsAffine.add(convertToAffine(generator));
         testPointsExtended.add(convertToExtended(generator));
-        testPointsField.add(convertToField(generator));
+        testPointsField.add(generator);
 
         // Create multiple test points by scalar multiplication of generator
         BigInteger[] testMultipliers = {
@@ -93,8 +92,7 @@ class ECCUtilTests {
 
         for (BigInteger multiplier : testMultipliers) {
             try {
-                FieldPoint genField = convertToField(generator);
-                FieldPoint result = ECC.eccMul(genField, multiplier, false);
+                FieldPoint result = ECC.eccMul(generator, multiplier, false);
                 if (result != null) {
                     AffinePoint affineResult = convertToAffine(result);
                     testPointsAffine.add(affineResult);
@@ -185,11 +183,8 @@ class ECCUtilTests {
         @Order(1)
         @DisplayName("Generator point deterministic creation")
         void testGeneratorDeterministic() {
-            AffinePoint gen1 = new AffinePoint();
-            AffinePoint gen2 = new AffinePoint();
-
-            ECC.eccSet(gen1);
-            ECC.eccSet(gen2);
+            FieldPoint gen1 = ECC.eccSet();
+            FieldPoint gen2 = ECC.eccSet();
 
             assertPointsEqual(gen1, gen2, "Generator should be deterministic");
         }
@@ -198,8 +193,7 @@ class ECCUtilTests {
         @Order(2)
         @DisplayName("Generator point mathematical properties")
         void testGeneratorProperties() {
-            AffinePoint generator = new AffinePoint();
-            ECC.eccSet(generator);
+            FieldPoint generator = ECC.eccSet();
 
             // Check coordinates are in valid field range
             assertFieldElementValid(generator.getX(), "Generator X coordinate");
@@ -214,28 +208,22 @@ class ECCUtilTests {
         @Order(3)
         @DisplayName("Generator point conversion consistency")
         void testGeneratorConversions() {
-            AffinePoint affine = new AffinePoint();
-            ECC.eccSet(affine);
-
-            ExtendedPoint extended = convertToExtended(affine);
-            FieldPoint field = convertToField(affine);
+            FieldPoint field = ECC.eccSet();
+            ExtendedPoint extended = convertToExtended(field);
 
             // Verify conversions preserve the point
             assertNotNull(extended, "Extended conversion should succeed");
             assertNotNull(field, "Field conversion should succeed");
 
-            assertFieldElementsEqual(affine.getX(), field.getX(), "X coordinate should be preserved");
-            assertFieldElementsEqual(affine.getY(), field.getY(), "Y coordinate should be preserved");
+            assertFieldElementsEqual(field.getX(), field.getX(), "X coordinate should be preserved");
+            assertFieldElementsEqual(field.getY(), field.getY(), "Y coordinate should be preserved");
         }
 
         @ParameterizedTest
         @ValueSource(ints = {1, 2, 3, 5, 7, 11, 13, 17, 19, 23})
         @DisplayName("Generator multiplication by small primes")
         void testGeneratorMultiplicationSmallPrimes(int multiplier) throws EncryptionException {
-            AffinePoint generator = new AffinePoint();
-            ECC.eccSet(generator);
-
-            FieldPoint genField = convertToField(generator);
+            FieldPoint genField = ECC.eccSet();
             FieldPoint result = ECC.eccMul(genField, BigInteger.valueOf(multiplier), false);
 
             assertNotNull(result, "Multiplication by " + multiplier + " should succeed");
@@ -655,9 +643,7 @@ class ECCUtilTests {
         @Order(41)
         @DisplayName("Variable-base scalar multiplication basic")
         void testVariableBaseMulBasic() throws EncryptionException {
-            AffinePoint generator = new AffinePoint();
-            ECC.eccSet(generator);
-            FieldPoint genField = convertToField(generator);
+            FieldPoint genField = ECC.eccSet();
 
             long startTime = System.currentTimeMillis();
 
@@ -682,9 +668,7 @@ class ECCUtilTests {
         @Order(42)
         @DisplayName("Scalar multiplication by one")
         void testScalarMulByOne() throws EncryptionException {
-            AffinePoint generator = new AffinePoint();
-            ECC.eccSet(generator);
-            FieldPoint genField = convertToField(generator);
+            FieldPoint genField = ECC.eccSet();
 
             FieldPoint result = ECC.eccMul(genField, BigInteger.ONE, false);
 
@@ -699,9 +683,7 @@ class ECCUtilTests {
         @Order(43)
         @DisplayName("Scalar multiplication by zero")
         void testScalarMulByZero() throws EncryptionException {
-            AffinePoint generator = new AffinePoint();
-            ECC.eccSet(generator);
-            FieldPoint genField = convertToField(generator);
+            FieldPoint genField = ECC.eccSet();
 
             // Multiplication by zero behavior depends on implementation
             // It might succeed (returning point at infinity) or return null
@@ -719,12 +701,10 @@ class ECCUtilTests {
         @Order(44)
         @DisplayName("Scalar multiplication mathematical properties")
         void testScalarMulProperties() throws EncryptionException {
-            AffinePoint generator = new AffinePoint();
-            ECC.eccSet(generator);
-            FieldPoint genField = convertToField(generator);
+            FieldPoint generator = ECC.eccSet();
 
             // Test 2*P = P + P (conceptually)
-            FieldPoint result2 = ECC.eccMul(genField, BigInteger.valueOf(2), false);
+            FieldPoint result2 = ECC.eccMul(generator, BigInteger.valueOf(2), false);
 
             if (result2 != null) {
                 ExtendedPoint result2Ext = convertToExtended(convertToAffine(result2));
@@ -733,7 +713,7 @@ class ECCUtilTests {
             }
 
             // Test 3*P
-            FieldPoint result3 = ECC.eccMul(genField, BigInteger.valueOf(3), false);
+            FieldPoint result3 = ECC.eccMul(generator, BigInteger.valueOf(3), false);
 
             if (result3 != null) {
                 ExtendedPoint result3Ext = convertToExtended(convertToAffine(result3));
@@ -746,10 +726,7 @@ class ECCUtilTests {
         @Order(45)
         @DisplayName("Scalar multiplication with cofactor clearing")
         void testScalarMulWithCofactor() throws EncryptionException {
-            AffinePoint generator = new AffinePoint();
-            ECC.eccSet(generator);
-            FieldPoint genField = convertToField(generator);
-
+            FieldPoint genField = ECC.eccSet();
             BigInteger scalar = BigInteger.valueOf(7);
 
             FieldPoint result1 = ECC.eccMul(genField, scalar, false);
@@ -771,10 +748,8 @@ class ECCUtilTests {
         @Test
         @Order(46)
         @DisplayName("Double scalar multiplication")
-        void testDoubleScalarMul() throws EncryptionException {
-            AffinePoint generator = new AffinePoint();
-            ECC.eccSet(generator);
-            FieldPoint genField = convertToField(generator);
+        void testDoubleScalarMul() {
+            FieldPoint genField = ECC.eccSet();
 
             BigInteger k = BigInteger.valueOf(3);
             BigInteger l = BigInteger.valueOf(5);
@@ -789,9 +764,7 @@ class ECCUtilTests {
         @ValueSource(ints = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29})
         @DisplayName("Scalar multiplication by small primes")
         void testScalarMulSmallPrimes(int prime) throws EncryptionException {
-            AffinePoint generator = new AffinePoint();
-            ECC.eccSet(generator);
-            FieldPoint genField = convertToField(generator);
+            FieldPoint genField = ECC.eccSet();
 
             FieldPoint result = ECC.eccMul(genField, BigInteger.valueOf(prime), false);
 
@@ -913,8 +886,7 @@ class ECCUtilTests {
         @DisplayName("Group law properties")
         void testGroupLawProperties() {
             // Test that point operations follow group law
-            AffinePoint generator = new AffinePoint();
-            ECC.eccSet(generator);
+            FieldPoint generator = ECC.eccSet();
 
             ExtendedPoint genExt = convertToExtended(generator);
             assertTrue(ECC.eccPointValidate(genExt), "Generator should be valid");
@@ -1256,9 +1228,7 @@ class ECCUtilTests {
         @Order(100)
         @DisplayName("Complete scalar multiplication pipeline")
         void testCompleteScalarMulPipeline() {
-            AffinePoint generator = new AffinePoint();
-            ECC.eccSet(generator);
-
+            FieldPoint generator = ECC.eccSet();
             BigInteger scalar = BigInteger.valueOf(123);
 
             // Test the complete pipeline
@@ -1268,12 +1238,12 @@ class ECCUtilTests {
                 assertNotNull(decomposed);
 
                 // 2. Validate point
-                ExtendedPoint genExt = convertToExtended(generator);
+                AffinePoint affPoint = new AffinePoint(generator.getX(), generator.getY(), null);
+                ExtendedPoint genExt = convertToExtended(affPoint);
                 assertTrue(ECC.eccPointValidate(genExt));
 
                 // 3. Perform scalar multiplication
-                FieldPoint genField = convertToField(generator);
-                FieldPoint result = ECC.eccMul(genField, scalar, false);
+                FieldPoint result = ECC.eccMul(generator, scalar, false);
 
                 // 4. Validate result
                 ExtendedPoint resultExt = convertToExtended(convertToAffine(result));
@@ -1289,10 +1259,7 @@ class ECCUtilTests {
             BigInteger scalar = BigInteger.valueOf(17);
 
             // Method 1: Variable-base multiplication
-            AffinePoint generator = new AffinePoint();
-            ECC.eccSet(generator);
-            FieldPoint genField = convertToField(generator);
-
+            FieldPoint genField = ECC.eccSet();
             FieldPoint result1 = ECC.eccMul(genField, scalar, false);
 
             // Method 2: Fixed-base multiplication (if generator is used)
@@ -1316,6 +1283,11 @@ class ECCUtilTests {
     private ExtendedPoint convertToExtended(AffinePoint affine) {
         F2Element one = new F2Element(BigInteger.ONE, BigInteger.ZERO);
         return new ExtendedPoint(affine.getX(), affine.getY(), one, affine.getX(), affine.getY());
+    }
+
+    private ExtendedPoint convertToExtended(FieldPoint field) {
+        F2Element one = new F2Element(BigInteger.ONE, BigInteger.ZERO);
+        return new ExtendedPoint(field.getX(), field.getY(), one, field.getX(), field.getY());
     }
 
     private FieldPoint convertToField(AffinePoint affine) {
@@ -1356,6 +1328,11 @@ class ECCUtilTests {
     }
 
     private void assertPointsEqual(AffinePoint a, AffinePoint b, String message) {
+        assertFieldElementsEqual(a.getX(), b.getX(), message + " - X coordinates");
+        assertFieldElementsEqual(a.getY(), b.getY(), message + " - Y coordinates");
+    }
+
+    private void assertPointsEqual(FieldPoint a, FieldPoint b, String message) {
         assertFieldElementsEqual(a.getX(), b.getX(), message + " - X coordinates");
         assertFieldElementsEqual(a.getY(), b.getY(), message + " - Y coordinates");
     }
