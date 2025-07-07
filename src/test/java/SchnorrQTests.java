@@ -112,12 +112,6 @@ public class SchnorrQTests {
         assertFalse(result);  // Likely fails if signature isn't valid for this message
     }
 
-
-    private static BigInteger getValidSecretKey() {
-        return new BigInteger("11223344556677889900aabbccddeeff00112233445566778899aabbccddeeff", 16)
-                .mod(Params.CURVE_ORDER);
-    }
-
     private static byte[] getRandomMessage() {
         byte[] msg = new byte[32];
         new Random().nextBytes(msg);
@@ -126,7 +120,7 @@ public class SchnorrQTests {
 
     @Test
     void testValidSignatureRoundTrip() throws Exception {
-        BigInteger sk = getValidSecretKey();
+        BigInteger sk = VALID_PRIVATE_KEY;
         BigInteger pk = SchnorrQ.schnorrQKeyGeneration(sk);
         byte[] msg = "SchnorrQ test message".getBytes(StandardCharsets.UTF_8);
 
@@ -136,7 +130,7 @@ public class SchnorrQTests {
 
     @Test
     void testSignatureChangesWithMessage() throws Exception {
-        BigInteger sk = getValidSecretKey();
+        BigInteger sk = VALID_PRIVATE_KEY;
         BigInteger pk = SchnorrQ.schnorrQKeyGeneration(sk);
 
         byte[] msg1 = "Message1".getBytes();
@@ -150,7 +144,7 @@ public class SchnorrQTests {
 
     @Test
     void testTamperedMessageFailsVerification() throws Exception {
-        BigInteger sk = getValidSecretKey();
+        BigInteger sk = VALID_PRIVATE_KEY;
         BigInteger pk = SchnorrQ.schnorrQKeyGeneration(sk);
         byte[] msg = "Original".getBytes();
 
@@ -182,7 +176,7 @@ public class SchnorrQTests {
 
     @Test
     void testSignatureIsExactly64Bytes() throws Exception {
-        BigInteger sk = getValidSecretKey();
+        BigInteger sk = VALID_PRIVATE_KEY;
         BigInteger pk = SchnorrQ.schnorrQKeyGeneration(sk);
         byte[] msg = getRandomMessage();
 
@@ -193,7 +187,7 @@ public class SchnorrQTests {
 
     @Test
     void testLongMessage() throws Exception {
-        BigInteger sk = getValidSecretKey();
+        BigInteger sk = VALID_PRIVATE_KEY;
         BigInteger pk = SchnorrQ.schnorrQKeyGeneration(sk);
 
         byte[] longMsg = new byte[10_000_000];

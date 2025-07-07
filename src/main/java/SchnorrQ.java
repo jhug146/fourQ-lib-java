@@ -16,7 +16,6 @@ public class SchnorrQ {
     public static BigInteger schnorrQKeyGeneration(BigInteger secretKey) throws EncryptionException {
         BigInteger hash = HashFunction.computeHash(secretKey);
         final FieldPoint point = ECC.eccMulFixed(hash);
-        System.out.println(point);
         return CryptoUtil.encode(point);
     }
 
