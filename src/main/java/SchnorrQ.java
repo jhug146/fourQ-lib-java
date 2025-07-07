@@ -60,7 +60,9 @@ public class SchnorrQ {
     }
 
     public static boolean schnorrQVerify(BigInteger publicKey, BigInteger signature, byte[] message) throws EncryptionException {
-        if(signature == null) { throw new InvalidArgumentException("Signiture is Null"); }
+        if (signature == null) {
+            throw new InvalidArgumentException("Signature is Null");
+        }
         if (!publicKey.testBit(Key.TEST_BIT) || !signature.testBit(Key.TEST_BIT)) {
             throw new InvalidArgumentException(String.format(
                     "Invalid argument: Bit %d is not set to zero in both the public key and signature.",

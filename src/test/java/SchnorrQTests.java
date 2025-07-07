@@ -215,9 +215,6 @@ public class SchnorrQTests {
     @Test
     void testPublicKeyGeneration() throws EncryptionException {
         BigInteger publicKey = SchnorrQ.schnorrQKeyGeneration(VALID_PRIVATE_KEY);
-        System.out.println("0x" + VALID_PRIVATE_KEY.toString(16));
-        System.out.println("0x" + publicKey.toString(16));
-        System.out.println("0x" + VALID_PUBLIC_KEY.toString(16));
         assertEquals(publicKey, VALID_PUBLIC_KEY);
     }
 
