@@ -50,6 +50,7 @@ public class CryptoUtil {
         return FP.montgomeryMultiplyModOrder(key, BigInteger.ONE);
     }
 
+    /*
     public static BigInteger encode(FieldPoint point) {
         BigInteger y = point.getY().real.add(point.getY().im.shiftLeft(128));
         boolean ySignBit = point.getY().real.compareTo(BigInteger.ZERO) <= 0;
@@ -57,6 +58,21 @@ public class CryptoUtil {
             y = y.setBit(255);
         }
         return y;
+    }*/
+
+    public static BigInteger encode(FieldPoint P) {
+        byte temp1 = (byte) (P.getX().im.testBit(125) ? 1 : 0);
+        byte temp2 = (byte) (P.getX().real.testBit(125) ? 0x80 : 0x00);
+
+        byte[] result = new byte[32];
+        System.arraycopy(HashFunction.reverseByteArray(P.getY().real.toByteArray()), 0, result, 0, 16);
+        System.arraycopy(HashFunction.reverseByteArray(P.getY().im.toByteArray()), 0, result, 16, 16);
+        if (P.getX().real.equals(BigInteger.ZERO) && P.getX().im.equals(BigInteger.ZERO)) {
+            result[31] |= temp1;
+        } else {
+            result[31] |= temp2;
+        }
+        return new BigInteger(1, result);
     }
 
     public static FieldPoint decode(BigInteger encoded) throws EncryptionException {

@@ -25,8 +25,8 @@ public class ECC {
 
     @NotNull
     public static FieldPoint eccMulFixed(BigInteger val) throws EncryptionException {
-        BigInteger temp = FP.moduloOrder(val);
-        temp = FP.conversionToOdd(temp);
+        return ECC.eccMul(ECC.eccSet(), val,false);
+        /*temp = FP.conversionToOdd(temp);
         int[] digits = Curve.mLSBSetRecode(temp, new int[270]);  // TODO: No idea how this works
         int digit = digits[Params.W_FIXEDBASE * Params.D_FIXEDBASE - 1];
         int startI = (Params.W_FIXEDBASE - 1) * Params.D_FIXEDBASE - 1;
@@ -77,10 +77,10 @@ public class ECC {
                 exPoint = eccMixedAdd(affPoint, exPoint);
             }
         }
-        return eccNorm(exPoint);
+        return eccNorm(exPoint);*/
     }
 
-    public static FieldPoint  eccMul(
+    public static FieldPoint eccMul(
             FieldPoint p,
             BigInteger k,
             boolean clearCofactor

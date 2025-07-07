@@ -4,13 +4,15 @@ import types.data.Pair;
 import constants.Params;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 
 public class FP {
     public static BigInteger montgomeryMultiplyModOrder(BigInteger ma, BigInteger mb) {
-        BigInteger product = ma.multiply(mb);
-        BigInteger q = product.multiply(Params.MONTGOMERY_r_PRIME)
-                .remainder(BigInteger.ONE.shiftLeft(256)); // mod 2^256
-        BigInteger temp = q.multiply(Params.CURVE_ORDER);
+        BigInteger rma = round256(ma);
+        BigInteger rmb = round256(mb);
+        BigInteger product = rma.multiply(rmb);
+        BigInteger q = round256(product).multiply(round256(Params.MONTGOMERY_r_PRIME));
+        BigInteger temp = round256(q).multiply(round256(Params.CURVE_ORDER));
         BigInteger result = product.add(temp).shiftRight(256); // divide by 2^256
 
         if (result.compareTo(Params.CURVE_ORDER) >= 0) {
@@ -19,9 +21,12 @@ public class FP {
         return result;
     }
 
+
+
     public static BigInteger moduloOrder(BigInteger key) {
+        BigInteger res = montgomeryMultiplyModOrder(key, Params.MONTGOMERY_R_PRIME);
         return montgomeryMultiplyModOrder(
-                montgomeryMultiplyModOrder(key, Params.MONTGOMERY_R_PRIME),
+                res,
                 BigInteger.ONE
         );
     }
@@ -196,5 +201,9 @@ public class FP {
             BigInteger dividend = a.testBit(0) ? a.add(Params.PRIME_1271) : a;
             return Mersenne.mersenneReduce127Fast(dividend.shiftRight(1));
         }
+    }
+
+    private static BigInteger round256(BigInteger val) {
+        return val.mod(BigInteger.ONE.shiftLeft(256));
     }
 }
