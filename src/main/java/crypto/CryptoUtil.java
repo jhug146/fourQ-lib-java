@@ -1,5 +1,6 @@
 package crypto;
 
+import constants.Key;
 import constants.Params;
 import crypto.core.Curve;
 import crypto.core.ECC;
@@ -14,9 +15,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 public class CryptoUtil {
-    private static final BigInteger POW_32 = BigInteger.ONE.shiftLeft(32);
     private static final SecureRandom secureRandom = new SecureRandom();
-    private static final F2Element ONE = new F2Element(BigInteger.ONE, BigInteger.ZERO);
 
     public static BigInteger randomBytes(int size) {
         byte[] bytes = new byte[size];
@@ -42,13 +41,14 @@ public class CryptoUtil {
     }
 
     public static FieldPoint decode(BigInteger encoded) throws EncryptionException {
-        final var y = Params.convertBigIntegerToF2Element(encoded.mod(POW_32));  // TODO: Potential endian problem here
+        final var y = Params.convertBigIntegerToF2Element(encoded.mod(Key.POW_32));  // TODO: Potential endian problem here
         int signBit = (encoded.compareTo(BigInteger.ZERO) <= 0) ? 1 : 0;
+        // int signBit = encoded.testBit(255) ? 1 : 0; TODO maybe this is better?
 
         F2Element u = FP2.fp2Sqr1271(y);
         F2Element v = FP2.fp2Mul1271(u, Params.PARAMETER_d);
-        u = FP2.fp2Sub1271(u, ONE);
-        v = FP2.fp2Add1271(v, ONE);
+        u = FP2.fp2Sub1271(u, F2Element.ONE);
+        v = FP2.fp2Add1271(v, F2Element.ONE);
 
         BigInteger t0 = FP.PUtil.fpSqr1271(v.real);
         BigInteger t1 = FP.PUtil.fpSqr1271(v.im);         // t1 = v1^2
@@ -76,7 +76,7 @@ public class CryptoUtil {
         t3 = FP.PUtil.fpMul1271(t, t3);                 // t3 = t3*t
         BigInteger r = FP.PUtil.fpExp1251(t3);          // r = t3^(2^125-1)
         t3 = FP.PUtil.fpMul1271(t0, r);                 // t3 = t0*r
-        BigInteger x0 = FP.PUtil.fpMul1271(t, t3);      // x0 = t*t3
+        BigInteger x0 = FP.PUtil.fpMul1271(t, t3);      // x0 = t*t3 //TODO in C this is coming from some pointer P->x0
         t1 = FP.PUtil.fpSqr1271(x0);
         t1 = FP.PUtil.fpMul1271(t0, t1);                // t1 = t0*x0^2
         x0 = FP.PUtil.fpDiv1271(x0);                    // x0 = x0/2
@@ -94,6 +94,14 @@ public class CryptoUtil {
         } else {
             signDec = ((digit_t*)&P->x[0])[NWORDS_FIELD-1] >> (sizeof(digit_t)*8 - 2);
         } */    // TODO: Convert this to Java somehow
+//        int signDec;
+//        if (x.real.equals(BigInteger.ZERO) && x.im.equals(BigInteger.ZERO)) {
+//            // Entire x coordinate is zero, extract sign from imaginary part
+//            signDec = x.im.shiftRight(125).intValue() & 0x3;  // Extract top 2 bits for 127-bit field
+//        } else {
+//            // x coordinate is non-zero, extract sign from real part
+//            signDec = x.real.shiftRight(125).intValue() & 0x3;  // Extract top 2 bits for 127-bit field
+//        }
         int signDec = 0;
 
         if (signBit != signDec) {           // If sign of x-coordinate decoded != input sign bit, then negate x-coordinate
