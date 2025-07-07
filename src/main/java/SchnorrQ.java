@@ -25,9 +25,14 @@ public class SchnorrQ {
         return new Pair<>(secretKey, publicKey);
     }
 
-    public static BigInteger schnorrQSign(BigInteger secretKey, BigInteger publicKey, byte[] message) throws EncryptionException {
+    public static BigInteger schnorrQSign(
+            BigInteger secretKey,
+            BigInteger publicKey,
+            byte[] message
+    ) throws EncryptionException {
         final BigInteger kHash = HashFunction.computeHash(secretKey);
         final byte[] bytes = new byte[message.length + 2 * Key.KEY_SIZE];
+
         System.arraycopy(kHash.toByteArray(), 0, bytes, Key.KEY_SIZE, Key.KEY_SIZE);
         System.arraycopy(message, 0, bytes, 2 * Key.KEY_SIZE, message.length);
 
@@ -35,8 +40,9 @@ public class SchnorrQ {
         final FieldPoint rPoint = ECC.eccMulFixed(rHash);
         final BigInteger sigStart = CryptoUtil.encode(rPoint);
 
+        byte[] publicKeyBytes = CryptoUtil.bigIntegerToByte(publicKey, Key.KEY_SIZE, false);
         System.arraycopy(sigStart.toByteArray(), 0, bytes, 0, Key.KEY_SIZE);
-        System.arraycopy(publicKey.toByteArray(), 0, bytes, Key.KEY_SIZE, Key.KEY_SIZE);
+        System.arraycopy(publicKeyBytes, 0, bytes, Key.KEY_SIZE, Key.KEY_SIZE);
 
         HashFunction.computeHash(bytes);    // Checks whether hashing works on bytes
         rHash = FP.moduloOrder(rHash);
