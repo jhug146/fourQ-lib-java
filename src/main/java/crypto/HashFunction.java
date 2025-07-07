@@ -10,6 +10,7 @@ import java.security.NoSuchAlgorithmException;
 public class HashFunction {
     private static final String ENCRYPTION_STANDARD = "SHA-512";
     public static BigInteger computeHash(BigInteger input) throws EncryptionException {
+        if(input == null) { throw new EncryptionException("Hash input is null"); }
         return computeHash(input.toByteArray());
     }
 
