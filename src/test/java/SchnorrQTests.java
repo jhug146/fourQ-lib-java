@@ -7,6 +7,11 @@ import types.data.Pair;
 import static org.junit.jupiter.api.Assertions.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
@@ -18,6 +23,8 @@ public class SchnorrQTests {
     private final BigInteger VALID_PRIVATE_KEY = new BigInteger("c3168b85d5d5261c294a3c6a6e3812c3eab49fe527f861db2ce4e4f6a93b11b8", HEX_RADIX);
     private final BigInteger VALID_SIGNATURE = new BigInteger("987654321098765432109876543210987654321");
     private final byte[] VALID_MESSAGE = "The quick brown fox".getBytes(UTF_8);
+
+    private final String FILES_PATH = System.getProperty("user.dir") + "/src/test/java/files";
 
     @Test
     void testValidSignature() throws EncryptionException {
@@ -230,5 +237,24 @@ public class SchnorrQTests {
     @Test
     void testVerify() throws EncryptionException {
 
+    }
+
+    @Test
+    void testManyKeyGens() throws EncryptionException, IOException {
+        FileReader input = new FileReader(FILES_PATH + "/key_gen_tests.txt");
+        BufferedReader bufRead = new BufferedReader(input);
+        String myLine = null;
+
+        while ( (myLine = bufRead.readLine()) != null)
+        {
+            BigInteger correctPublicKey = new BigInteger(myLine.substring(14, 78), 16);
+            myLine = bufRead.readLine();
+            if (myLine == null) {
+                break;
+            }
+            BigInteger secretKey = new BigInteger(myLine.substring(14, 78), 16);
+            BigInteger testPublicKey = SchnorrQ.schnorrQKeyGeneration(secretKey);
+            assertEquals(correctPublicKey, testPublicKey);
+        }
     }
 }
