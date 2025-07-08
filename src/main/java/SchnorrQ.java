@@ -36,7 +36,13 @@ public class SchnorrQ {
         final BigInteger kHash = HashFunction.computeHash(secretKey);
         byte[] bytes = new byte[message.length + 2 * Key.KEY_SIZE];
 
-        System.arraycopy(CryptoUtil.bigIntegerToByte(kHash, 2 * Key.KEY_SIZE, false), 0, bytes, Key.KEY_SIZE+message.length, Key.KEY_SIZE);
+        System.arraycopy(
+                CryptoUtil.bigIntegerToByte(kHash, 2 * Key.KEY_SIZE, false),
+                0,
+                bytes,
+                Key.KEY_SIZE+message.length,
+                Key.KEY_SIZE
+        );
         System.arraycopy(message, 0, bytes, Key.KEY_SIZE, message.length);
 
         BigInteger rHash = HashFunction.computeHashReversed(Arrays.copyOfRange(bytes, Key.KEY_SIZE, bytes.length));
@@ -45,7 +51,13 @@ public class SchnorrQ {
 
         byte[] publicKeyBytes = CryptoUtil.bigIntegerToByte(publicKey, Key.KEY_SIZE, false);
         byte[] revBytes = reverseByteArray(bytes, true);
-        System.arraycopy(CryptoUtil.bigIntegerToByte(sigStart, Key.KEY_SIZE, false), 0, revBytes, 0, Key.KEY_SIZE);
+        System.arraycopy(
+                CryptoUtil.bigIntegerToByte(sigStart, Key.KEY_SIZE, false),
+                0,
+                revBytes,
+                0,
+                Key.KEY_SIZE
+        );
         System.arraycopy(publicKeyBytes, 0, revBytes, Key.KEY_SIZE, Key.KEY_SIZE);
         bytes = revBytes.clone();
 
