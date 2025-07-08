@@ -7,6 +7,11 @@ import types.data.Pair;
 import static org.junit.jupiter.api.Assertions.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
@@ -18,6 +23,8 @@ public class SchnorrQTests {
     private final BigInteger VALID_PRIVATE_KEY = new BigInteger("04ba23f508755f08869609c4aa784ad278cddfe94f101b09ed83ffd71511ee8e", HEX_RADIX);
     private final BigInteger VALID_SIGNATURE = new BigInteger("5f69d09df6e3bbe7ead33300d20b171fa7000c40e5a78fdc3daa8bad663d020bf34428735ede3bee44b4ca2d9f05c3c21fb3babcec613777cfb5d9fdffa32800", 16);
     private final byte[] VALID_MESSAGE = "a".getBytes(UTF_8);
+
+    private final String FILES_PATH = System.getProperty("user.dir") + "/src/test/java/files";
 
     @Test
     void testValidSignature() throws EncryptionException {
@@ -214,6 +221,13 @@ public class SchnorrQTests {
     }
 
     @Test
+    void testManyPairGeneration() throws EncryptionException {
+        for (int i = 0; i < 10_000; i++) {
+            testPairGeneration();
+        }
+    }
+
+    @Test
     void testSign() throws EncryptionException {
         BigInteger signature = SchnorrQ.schnorrQSign(VALID_PRIVATE_KEY, VALID_PUBLIC_KEY, VALID_MESSAGE);
         assertEquals(signature, VALID_SIGNATURE);
@@ -222,5 +236,24 @@ public class SchnorrQTests {
     @Test
     void testVerify() throws EncryptionException {
 
+    }
+
+    @Test
+    void testManyKeyGens() throws EncryptionException, IOException {
+        FileReader input = new FileReader(FILES_PATH + "/key_gen_tests.txt");
+        BufferedReader bufRead = new BufferedReader(input);
+        String myLine = null;
+
+        while ( (myLine = bufRead.readLine()) != null)
+        {
+            BigInteger correctPublicKey = new BigInteger(myLine.substring(14, 78), 16);
+            myLine = bufRead.readLine();
+            if (myLine == null) {
+                break;
+            }
+            BigInteger secretKey = new BigInteger(myLine.substring(14, 78), 16);
+            BigInteger testPublicKey = SchnorrQ.schnorrQKeyGeneration(secretKey);
+            assertEquals(correctPublicKey, testPublicKey);
+        }
     }
 }
