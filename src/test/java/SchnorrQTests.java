@@ -229,6 +229,13 @@ public class SchnorrQTests {
     }
 
     @Test
+    void testManyPairGeneration() throws EncryptionException {
+        for (int i = 0; i < 10_000; i++) {
+            testPairGeneration();
+        }
+    }
+
+    @Test
     void testSign() throws EncryptionException {
         BigInteger signature = SchnorrQ.schnorrQSign(VALID_PRIVATE_KEY, VALID_PUBLIC_KEY, VALID_MESSAGE);
         assertEquals(signature, VALID_SIGNATURE);
