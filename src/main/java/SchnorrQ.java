@@ -53,7 +53,6 @@ public class SchnorrQ {
         BigInteger hHash2 = HashFunction.computeHash(bytes);
         hHash2 = FP.moduloOrder(hHash2);
 
-        //Good to here
         BigInteger sigEnd = CryptoUtil.toMontgomery(kHash);
         hHash2 = CryptoUtil.toMontgomery(hHash2);
         sigEnd = FP.montgomeryMultiplyModOrder(sigEnd, hHash2);
@@ -84,6 +83,7 @@ public class SchnorrQ {
         if (signature == null) {
             throw new InvalidArgumentException("Signature is Null");
         }
+
         if (!publicKey.testBit(Key.TEST_BIT) || !signature.testBit(Key.TEST_BIT)) {
             throw new InvalidArgumentException(String.format(
                     "Invalid argument: Bit %d is not set to zero in both the public key and signature.",

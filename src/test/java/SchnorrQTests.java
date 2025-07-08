@@ -235,14 +235,14 @@ public class SchnorrQTests {
 
     @Test
     void testVerify() throws EncryptionException {
-
+        assertTrue(SchnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, VALID_SIGNATURE, VALID_MESSAGE));
     }
 
     @Test
     void testManyKeyGens() throws EncryptionException, IOException {
         FileReader input = new FileReader(FILES_PATH + "/key_gen_tests.txt");
         BufferedReader bufRead = new BufferedReader(input);
-        String myLine = null;
+        String myLine;
 
         while ( (myLine = bufRead.readLine()) != null)
         {
