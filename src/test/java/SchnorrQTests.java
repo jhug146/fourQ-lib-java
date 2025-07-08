@@ -14,10 +14,10 @@ import java.util.Random;
 
 public class SchnorrQTests {
     private final int HEX_RADIX = 16;
-    private final BigInteger VALID_PUBLIC_KEY = new BigInteger("e916e4605e86c7250485c2ffddfdcf17635686b26917645f1db86cf33e2fe450", HEX_RADIX);
-    private final BigInteger VALID_PRIVATE_KEY = new BigInteger("c3168b85d5d5261c294a3c6a6e3812c3eab49fe527f861db2ce4e4f6a93b11b8", HEX_RADIX);
-    private final BigInteger VALID_SIGNATURE = new BigInteger("987654321098765432109876543210987654321");
-    private final byte[] VALID_MESSAGE = "The quick brown fox".getBytes(UTF_8);
+    private final BigInteger VALID_PUBLIC_KEY = new BigInteger("dac0dedd92a1aa4da1342c4e2184686456a12a6ec8fdd8c594dc181353760c81", HEX_RADIX);
+    private final BigInteger VALID_PRIVATE_KEY = new BigInteger("04ba23f508755f08869609c4aa784ad278cddfe94f101b09ed83ffd71511ee8e", HEX_RADIX);
+    private final BigInteger VALID_SIGNATURE = new BigInteger("5f69d09df6e3bbe7ead33300d20b171fa7000c40e5a78fdc3daa8bad663d020bf34428735ede3bee44b4ca2d9f05c3c21fb3babcec613777cfb5d9fdffa32800", 16);
+    private final byte[] VALID_MESSAGE = "a".getBytes(UTF_8);
 
     @Test
     void testValidSignature() throws EncryptionException {
@@ -196,14 +196,6 @@ public class SchnorrQTests {
         BigInteger sig = SchnorrQ.schnorrQSign(sk, pk, longMsg);
         assertTrue(SchnorrQ.schnorrQVerify(pk, sig, longMsg));
     }
-
-
-
-
-
-
-
-
 
     // Extra important tests comparing results to the C code
     @Test

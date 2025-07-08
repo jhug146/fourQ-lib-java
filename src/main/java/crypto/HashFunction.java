@@ -19,7 +19,19 @@ public class HashFunction {
     public static BigInteger computeHash(byte[] bytes) throws EncryptionException {
         try {
             MessageDigest digest = MessageDigest.getInstance(ENCRYPTION_STANDARD);
-            return new BigInteger(1, reverseByteArray(digest.digest(bytes)));
+            return new BigInteger(1, reverseByteArray(digest.digest(bytes), false));
+        } catch (NoSuchAlgorithmException e) {
+            throw new EncryptionException(String.format(
+                    "No such encryption algorithm: %s\n",
+                    ENCRYPTION_STANDARD
+            ));
+        }
+    }
+
+    public static BigInteger computeHashReversed(byte[] bytes) throws EncryptionException {
+        try {
+            MessageDigest digest = MessageDigest.getInstance(ENCRYPTION_STANDARD);
+            return new BigInteger(1, reverseByteArray(digest.digest(reverseByteArray(bytes, false)), false));
         } catch (NoSuchAlgorithmException e) {
             throw new EncryptionException(String.format(
                     "No such encryption algorithm: %s\n",
@@ -36,14 +48,39 @@ public class HashFunction {
         return sb.toString();
     }
 
-    public static byte[] reverseByteArray(byte[] _array) {
-        byte[] array = new byte[_array.length];
-        for (int i = 0; i < _array.length; i++) {
-            array[i] = _array[_array.length - i - 1];
+    public static byte[] reverseByteArray(byte[] src, boolean keepPadding) {
+        if (src == null) {
+            throw new IllegalArgumentException("Source array is null");
         }
-        if (array[0] == 0) {
-            array = Arrays.copyOfRange(array, 1, array.length);
+        if (src.length == 0) {
+            return new byte[0];
         }
-        return array;
+
+        int n = src.length;
+        byte[] rev = new byte[n];
+        for (int i = 0; i < n; i++) {
+            rev[i] = src[n - 1 - i];
+        }
+
+        if (rev[0] == 0) {
+            rev = Arrays.copyOfRange(rev, 1, rev.length);
+        }
+
+        int leadingZeros = leadingZeroes(src);
+        if (keepPadding && leadingZeros > 0) {
+            byte[] padded = new byte[rev.length];
+            System.arraycopy(rev, 0, padded, leadingZeros, rev.length - leadingZeros);
+            rev = padded;
+        }
+
+        return rev;
+    }
+
+    private static int leadingZeroes(byte[] a) {
+        int i = 0;
+        while (i < a.length && a[i] == 0) {
+            i++;
+        }
+        return i;
     }
 }

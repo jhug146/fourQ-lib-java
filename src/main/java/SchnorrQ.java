@@ -1,4 +1,5 @@
 import java.math.BigInteger;
+import java.security.Signature;
 import java.util.Arrays;
 
 import constants.Key;
@@ -10,6 +11,8 @@ import exceptions.InvalidArgumentException;
 import field.operations.FP;
 import types.data.Pair;
 import types.point.FieldPoint;
+
+import static crypto.HashFunction.reverseByteArray;
 
 
 public class SchnorrQ {
@@ -31,31 +34,50 @@ public class SchnorrQ {
             byte[] message
     ) throws EncryptionException {
         final BigInteger kHash = HashFunction.computeHash(secretKey);
-        final byte[] bytes = new byte[message.length + 2 * Key.KEY_SIZE];
+        byte[] bytes = new byte[message.length + 2 * Key.KEY_SIZE];
 
-        System.arraycopy(kHash.toByteArray(), 0, bytes, Key.KEY_SIZE, Key.KEY_SIZE);
-        System.arraycopy(message, 0, bytes, 2 * Key.KEY_SIZE, message.length);
+        System.arraycopy(CryptoUtil.bigIntegerToByte(kHash, 2 * Key.KEY_SIZE, false), 0, bytes, Key.KEY_SIZE+message.length, Key.KEY_SIZE);
+        System.arraycopy(message, 0, bytes, Key.KEY_SIZE, message.length);
 
-        BigInteger rHash = HashFunction.computeHash(Arrays.copyOfRange(bytes, Key.KEY_SIZE, bytes.length));
+        BigInteger rHash = HashFunction.computeHashReversed(Arrays.copyOfRange(bytes, Key.KEY_SIZE, bytes.length));
         final FieldPoint rPoint = ECC.eccMulFixed(rHash);
         final BigInteger sigStart = CryptoUtil.encode(rPoint);
 
         byte[] publicKeyBytes = CryptoUtil.bigIntegerToByte(publicKey, Key.KEY_SIZE, false);
-        System.arraycopy(sigStart.toByteArray(), 0, bytes, 0, Key.KEY_SIZE);
-        System.arraycopy(publicKeyBytes, 0, bytes, Key.KEY_SIZE, Key.KEY_SIZE);
+        byte[] revBytes = reverseByteArray(bytes, true);
+        System.arraycopy(CryptoUtil.bigIntegerToByte(sigStart, Key.KEY_SIZE, false), 0, revBytes, 0, Key.KEY_SIZE);
+        System.arraycopy(publicKeyBytes, 0, revBytes, Key.KEY_SIZE, Key.KEY_SIZE);
+        bytes = revBytes.clone();
 
-        HashFunction.computeHash(bytes);    // Checks whether hashing works on bytes
         rHash = FP.moduloOrder(rHash);
-        BigInteger hHash2 = BigInteger.ONE;
+        BigInteger hHash2 = HashFunction.computeHash(bytes);
         hHash2 = FP.moduloOrder(hHash2);
 
+        //Good to here
         BigInteger sigEnd = CryptoUtil.toMontgomery(kHash);
         hHash2 = CryptoUtil.toMontgomery(hHash2);
         sigEnd = FP.montgomeryMultiplyModOrder(sigEnd, hHash2);
         sigEnd = CryptoUtil.fromMontgomery(sigEnd);
 
         sigEnd = FP.subtractModOrder(rHash, sigEnd);
-        return sigStart.add(sigEnd.shiftLeft(Key.KEY_SIZE));
+
+        byte[] sigStartBytes = CryptoUtil.bigIntegerToByte(sigStart, Key.KEY_SIZE, false);
+        byte[] sigEndBytes   = reverseByteArray(CryptoUtil.bigIntegerToByte(sigEnd,   Key.KEY_SIZE, false), false);
+        return new BigInteger(1, concat(sigStartBytes, sigEndBytes));
+    }
+
+    private static byte[] concat(byte[] a, byte[] b) {
+        if (a == null || a.length == 0) {
+            return b == null ? new byte[0] : b.clone();
+        }
+        if (b == null || b.length == 0) {
+            return a.clone();
+        }
+
+        byte[] out = new byte[a.length + b.length];
+        System.arraycopy(a, 0, out, 0, a.length);
+        System.arraycopy(b, 0, out, a.length, b.length);
+        return out;
     }
 
     public static boolean schnorrQVerify(BigInteger publicKey, BigInteger signature, byte[] message) throws EncryptionException {
