@@ -1,5 +1,6 @@
 package crypto;
 
+import constants.ArrayUtils;
 import constants.Key;
 import constants.Params;
 import crypto.core.Curve;
@@ -55,8 +56,8 @@ public class CryptoUtil {
         byte temp2 = (byte) (P.getX().real.testBit(125) ? 0x80 : 0x00);
 
         byte[] result = new byte[32];
-        System.arraycopy(HashFunction.reverseByteArray(P.getY().real.toByteArray(), false), 0, result, 0, 16);
-        System.arraycopy(HashFunction.reverseByteArray(P.getY().im.toByteArray(), false), 0, result, 16, 16);
+        System.arraycopy(ArrayUtils.reverseByteArray(P.getY().real.toByteArray(), false), 0, result, 0, 16);
+        System.arraycopy(ArrayUtils.reverseByteArray(P.getY().im.toByteArray(), false), 0, result, 16, 16);
         if (P.getX().real.equals(BigInteger.ZERO) && P.getX().im.equals(BigInteger.ZERO)) {
             result[31] |= temp1;
         } else {

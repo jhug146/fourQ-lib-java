@@ -1,7 +1,7 @@
 import java.math.BigInteger;
-import java.security.Signature;
 import java.util.Arrays;
 
+import constants.ArrayUtils;
 import constants.Key;
 import crypto.CryptoUtil;
 import crypto.core.ECC;
@@ -12,7 +12,7 @@ import field.operations.FP;
 import types.data.Pair;
 import types.point.FieldPoint;
 
-import static crypto.HashFunction.reverseByteArray;
+import static constants.ArrayUtils.reverseByteArray;
 
 
 public class SchnorrQ {
@@ -62,21 +62,7 @@ public class SchnorrQ {
 
         byte[] sigStartBytes = CryptoUtil.bigIntegerToByte(sigStart, Key.KEY_SIZE, false);
         byte[] sigEndBytes   = reverseByteArray(CryptoUtil.bigIntegerToByte(sigEnd,   Key.KEY_SIZE, false), false);
-        return new BigInteger(1, concat(sigStartBytes, sigEndBytes));
-    }
-
-    private static byte[] concat(byte[] a, byte[] b) {
-        if (a == null || a.length == 0) {
-            return b == null ? new byte[0] : b.clone();
-        }
-        if (b == null || b.length == 0) {
-            return a.clone();
-        }
-
-        byte[] out = new byte[a.length + b.length];
-        System.arraycopy(a, 0, out, 0, a.length);
-        System.arraycopy(b, 0, out, a.length, b.length);
-        return out;
+        return new BigInteger(1, ArrayUtils.concat(sigStartBytes, sigEndBytes));
     }
 
     public static boolean schnorrQVerify(BigInteger publicKey, BigInteger signature, byte[] message) throws EncryptionException {
