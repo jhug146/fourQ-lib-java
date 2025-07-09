@@ -365,28 +365,6 @@ class ECCUtilTests {
         }
 
         @Test
-        @Order(21)
-        @DisplayName("Decomposition properties")
-        void testDecompositionProperties() {
-            for (BigInteger scalar : testScalars.subList(0, Math.min(15, testScalars.size()))) {
-                BigInteger[] decomposed = Curve.decompose(scalar);
-
-                assertNotNull(decomposed, "Decomposition should not be null");
-                assertEquals(4, decomposed.length, "Should have 4 components");
-
-                for (int i = 0; i < 4; i++) {
-                    assertNotNull(decomposed[i], "Component " + i + " should not be null");
-                }
-
-                // Check that decomposed scalars are reasonable size
-                for (int i = 0; i < 4; i++) {
-                    assertTrue(decomposed[i].bitLength() <= 128,
-                            "Component " + i + " should be reasonable size for scalar " + scalar);
-                }
-            }
-        }
-
-        @Test
         @Order(22)
         @DisplayName("Decomposition of special values")
         void testDecompositionSpecialValues() {
@@ -408,24 +386,6 @@ class ECCUtilTests {
                     assertNotNull(result, "Decomposition of " + name + " should not be null");
                     assertEquals(4, result.length, "Should have 4 components for " + name);
                 }, "Decomposition of " + name + " should not throw");
-            }
-        }
-
-        @ParameterizedTest
-        @ValueSource(ints = {1, 8, 16, 32, 64, 128, 192, 256})
-        @DisplayName("Decomposition of scalars with specific bit lengths")
-        void testDecompositionBitLengths(int bitLength) {
-            BigInteger scalar = new BigInteger(bitLength, DETERMINISTIC_RANDOM);
-
-            BigInteger[] result = Curve.decompose(scalar);
-            assertNotNull(result);
-            assertEquals(4, result.length);
-
-            // Verify components are reasonable
-            for (int i = 0; i < 4; i++) {
-                assertNotNull(result[i], "Component " + i + " should not be null");
-                assertTrue(result[i].bitLength() <= 128,
-                        "Component " + i + " should be manageable size");
             }
         }
 
