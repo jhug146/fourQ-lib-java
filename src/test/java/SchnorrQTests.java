@@ -248,7 +248,7 @@ public class SchnorrQTests {
                 // to match this the message arraymust hence be reversed. This is only applicable here and not in general use cases.
             BigInteger genSignature = SchnorrQ.schnorrQSign(secretKey, publicKey, ArrayUtils.reverseByteArray(message));
             var a = correctSignature.equals(genSignature);
-            assertTrue(correctSignature.equals(genSignature));
+            assertEquals(correctSignature, genSignature);
         }
     }
 }
