@@ -189,28 +189,18 @@ public class SchnorrQTests {
         BufferedReader bufRead = new BufferedReader(input);
         String myLine;
 
-        int MAX_TESTS = 200000;
-        int i = 0;
         while ((myLine = bufRead.readLine()) != null)
         {
             if (myLine.isBlank()) {
                 continue;
             }
-            i++;
-            if (i > MAX_TESTS) {
-                break;
-            }
             BigInteger secretKey = new BigInteger(myLine.substring(14, 78), 16);
-            String sk = secretKey.toString(16);
             myLine = bufRead.readLine();
             if (myLine == null || myLine.isBlank()) {
                 break;
             }
             BigInteger correctPublicKey = new BigInteger(myLine.substring(14, 78), 16);
             BigInteger testPublicKey = SchnorrQ.schnorrQKeyGeneration(secretKey);
-            if (!correctPublicKey.equals(testPublicKey)) {
-                assert false;
-            }
             assertEquals(correctPublicKey, testPublicKey);
         }
     }
