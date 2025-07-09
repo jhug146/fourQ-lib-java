@@ -12,7 +12,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.util.HexFormat;
 import java.util.Random;
 
@@ -213,7 +212,7 @@ public class SchnorrQTests {
     }
 
     @Test
-    void testBrokenSigniture() throws EncryptionException {
+    void testBrokenSignature() throws EncryptionException {
         BigInteger pubKey = new BigInteger("e4a87eef77e983ff7b974b3b29f4b141efa2e12de6a17d3a21dac77164788ddf", 16);
         BigInteger secretKey = new BigInteger("e1669de6854996e05c23d5e95e51022e61df5134957a1fecc939e3517ca95604", 16);
         BigInteger correctSignature = new BigInteger("132bf1f7a96c8e5a94202ceeb289ff5c47690bd27a95a5bb7bec35c0c9fcaba8e58c77c6792513d64eb93b42575752b6633e1db6ad86b62e0a53831bd40d0900", 16);
@@ -221,7 +220,7 @@ public class SchnorrQTests {
 
         BigInteger genSignature = SchnorrQ.schnorrQSign(secretKey, pubKey, ArrayUtils.reverseByteArray(message));
         System.out.println(correctSignature.equals(genSignature));
-        assertTrue(correctSignature.equals(genSignature));
+        assertEquals(correctSignature, genSignature);
     }
 
 
