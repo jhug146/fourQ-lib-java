@@ -13,7 +13,7 @@ import java.security.NoSuchAlgorithmException;
 public class HashFunction {
     private static final String ENCRYPTION_STANDARD = "SHA-512";
     public static BigInteger computeHash(@NotNull BigInteger input, boolean reverse) throws EncryptionException {
-        return computeHash(CryptoUtil.bigIntegerToByte(input, Key.KEY_SIZE,false), reverse);
+        return computeHash(ArrayUtils.bigIntegerToByte(input, Key.KEY_SIZE,false), reverse);
     }
 
     public static BigInteger computeHash(byte[] bytes, boolean reverse) throws EncryptionException {

@@ -1,7 +1,5 @@
 package crypto;
 
-import constants.ArrayUtils;
-import constants.Key;
 import constants.Params;
 import crypto.core.Curve;
 import crypto.core.ECC;
@@ -14,28 +12,9 @@ import types.point.FieldPoint;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.Arrays;
 
 public class CryptoUtil {
     private static final SecureRandom secureRandom = new SecureRandom();
-
-    public static byte[] bigIntegerToByte(
-            BigInteger publicKey,
-            int keySize,
-            boolean removePadZeros
-    ) {
-        byte[] raw = publicKey.toByteArray();
-        if (removePadZeros) { return raw; }
-        if (raw.length == keySize) { return raw; }
-
-        if (raw.length < keySize) {
-            byte[] padded = new byte[keySize];
-            System.arraycopy(raw, 0, padded, keySize - raw.length, raw.length);
-            return padded;
-        }
-
-        return Arrays.copyOfRange(raw, raw.length - keySize, raw.length);
-    }
 
     public static BigInteger randomBytes(int size) {
         byte[] bytes = new byte[size];
@@ -55,18 +34,28 @@ public class CryptoUtil {
         byte temp1 = (byte) (P.getX().im.testBit(126) ? 0x80 : 0x00);
         byte temp2 = (byte) (P.getX().real.testBit(126) ? 0x80 : 0x00);
 
+        byte[] realPart = P.getY().real.toByteArray();
+        byte[] imPart = P.getY().im.toByteArray();
         byte[] result = new byte[32];
-        byte[] paddedReal = ArrayUtils.concat(new byte[16 - P.getY().real.toByteArray().length], P.getY().real.toByteArray());
-        byte[] paddedIm = ArrayUtils.concat(new byte[16 - P.getY().im.toByteArray().length], P.getY().im.toByteArray());
-        byte[] reverseReal = ArrayUtils.reverseByteArray(paddedReal, false);
-        byte[] reverseIm = ArrayUtils.reverseByteArray(paddedIm, false);
-        System.arraycopy(reverseReal, 0, result, 16 - reverseReal.length, reverseReal.length);
-        System.arraycopy(reverseIm, 0, result, 32 - reverseIm.length, reverseIm.length);
+
+        // Copy real bytes in reverse order to positions 0-15
+        int realLen = Math.min(realPart.length, 16);
+        for (int i = 0; i < realLen; i++) {
+            result[i] = realPart[realLen - 1 - i];
+        }
+
+        // Copy im bytes in reverse order to positions 16-31
+        int imLen = Math.min(imPart.length, 16);
+        for (int i = 0; i < imLen; i++) {
+            result[16 + i] = imPart[imLen - 1 - i];
+        }
+
         if (P.getX().isZero()) {
             result[31] |= temp1;
         } else {
             result[31] |= temp2;
         }
+
         return new BigInteger(1, result);
     }
 

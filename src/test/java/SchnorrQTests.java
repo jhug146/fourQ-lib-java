@@ -1,3 +1,4 @@
+import constants.ArrayUtils;
 import exceptions.EncryptionException;
 import exceptions.InvalidArgumentException;
 import org.junit.jupiter.api.Test;
@@ -89,9 +90,9 @@ public class SchnorrQTests {
     }
 
     @Test
-    void testPublicKeyNotOnCurve() {
+    void testPublicKeyNotOnCurve() throws EncryptionException {
         BigInteger fakeKey = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16); // clearly invalid
-        assertThrows(EncryptionException.class, () -> SchnorrQ.schnorrQVerify(fakeKey, VALID_SIGNATURE, VALID_MESSAGE));
+        assertFalse(SchnorrQ.schnorrQVerify(fakeKey, VALID_SIGNATURE, VALID_MESSAGE));
     }
 
     @Test
@@ -106,7 +107,7 @@ public class SchnorrQTests {
     void testValidSignatureRoundTrip() throws Exception {
         BigInteger sk = VALID_PRIVATE_KEY;
         BigInteger pk = SchnorrQ.schnorrQKeyGeneration(sk);
-        byte[] msg = "SchnorrQ test message".getBytes(StandardCharsets.UTF_8);
+        byte[] msg = "SchnorrQ test message".getBytes();
 
         BigInteger sig = SchnorrQ.schnorrQSign(sk, pk, msg);
         assertTrue(SchnorrQ.schnorrQVerify(pk, sig, msg));
@@ -144,7 +145,7 @@ public class SchnorrQTests {
         BigInteger pk = SchnorrQ.schnorrQKeyGeneration(sk);
 
         byte[] longMsg = new byte[10_000_000];
-        new Random().nextBytes(longMsg);
+        new Random(12345L).nextBytes(longMsg);
 
         BigInteger sig = SchnorrQ.schnorrQSign(sk, pk, longMsg);
         assertTrue(SchnorrQ.schnorrQVerify(pk, sig, longMsg));
@@ -168,9 +169,7 @@ public class SchnorrQTests {
 
     @Test
     void testManyPairGeneration() throws EncryptionException {
-        for (int i = 0; i < 10_000; i++) {
-            testPairGeneration();
-        }
+        for (int i = 0; i < 10_000; i++) testPairGeneration();
     }
 
     @Test

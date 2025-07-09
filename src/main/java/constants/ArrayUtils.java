@@ -1,20 +1,18 @@
 package constants;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.math.BigInteger;
 import java.util.Arrays;
 
 public class ArrayUtils {
-
-    public static byte[] reverseByteArray(byte[] src, boolean keepPadding) {
-        if (src == null) {
-            throw new IllegalArgumentException("Source array is null");
-        }
-        if (src.length == 0) {
-            return new byte[0];
-        }
+    public static byte[] reverseByteArray(byte @NotNull [] src) {
+        if (src.length == 0) return new byte[0];
+        if (src.length == 1) return new byte[] {src[0]};
 
         int n = src.length;
         byte[] rev = new byte[n];
+
         for (int i = 0; i < n; i++) {
             rev[i] = src[n - 1 - i];
         }
@@ -23,7 +21,13 @@ public class ArrayUtils {
             rev = Arrays.copyOfRange(rev, 1, rev.length);
         }
 
-        int leadingZeros = leadingZeroes(src);
+        return rev;
+    }
+
+    public static byte[] reverseByteArray(byte[] src, boolean keepPadding) {
+        byte[] rev = reverseByteArray(src);
+        final int leadingZeros = leadingZeroes(src);
+
         if (keepPadding && leadingZeros > 0) {
             byte[] padded = new byte[rev.length];
             System.arraycopy(rev, 0, padded, leadingZeros, rev.length - leadingZeros);
