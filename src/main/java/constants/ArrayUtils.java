@@ -7,10 +7,12 @@ import java.util.Arrays;
 
 public class ArrayUtils {
     public static byte[] reverseByteArray(byte @NotNull [] src) {
-        if (src.length == 1) { return new byte[] {src[0]}; }
+        if (src.length == 0) return new byte[0];
+        if (src.length == 1) return new byte[] {src[0]};
 
         int n = src.length;
         byte[] rev = new byte[n];
+
         for (int i = 0; i < n; i++) {
             rev[i] = src[n - 1 - i];
         }

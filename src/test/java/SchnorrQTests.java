@@ -144,7 +144,7 @@ public class SchnorrQTests {
         BigInteger pk = SchnorrQ.schnorrQKeyGeneration(sk);
 
         byte[] longMsg = new byte[10_000_000];
-        new Random().nextBytes(longMsg);
+        new Random(12345L).nextBytes(longMsg);
 
         BigInteger sig = SchnorrQ.schnorrQSign(sk, pk, longMsg);
         assertTrue(SchnorrQ.schnorrQVerify(pk, sig, longMsg));
@@ -168,9 +168,7 @@ public class SchnorrQTests {
 
     @Test
     void testManyPairGeneration() throws EncryptionException {
-        for (int i = 0; i < 10_000; i++) {
-            testPairGeneration();
-        }
+        for (int i = 0; i < 10_000; i++) testPairGeneration();
     }
 
     @Test
@@ -190,16 +188,11 @@ public class SchnorrQTests {
         BufferedReader bufRead = new BufferedReader(input);
         String myLine;
 
-        while ((myLine = bufRead.readLine()) != null)
-        {
-            if (myLine.isBlank()) {
-                continue;
-            }
+        while ((myLine = bufRead.readLine()) != null) {
+            if (myLine.isBlank()) continue;
             BigInteger secretKey = new BigInteger(myLine.substring(14, 78), 16);
             myLine = bufRead.readLine();
-            if (myLine == null || myLine.isBlank()) {
-                break;
-            }
+            if (myLine == null || myLine.isBlank()) break;
             BigInteger correctPublicKey = new BigInteger(myLine.substring(14, 78), 16);
             BigInteger testPublicKey = SchnorrQ.schnorrQKeyGeneration(secretKey);
             assertEquals(correctPublicKey, testPublicKey);
