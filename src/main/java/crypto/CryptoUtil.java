@@ -52,13 +52,15 @@ public class CryptoUtil {
     }
 
     public static BigInteger encode(FieldPoint P) {
-        byte temp1 = (byte) (P.getX().im.testBit(125) ? 1 : 0);
-        byte temp2 = (byte) (P.getX().real.testBit(125) ? 0x80 : 0x00);
+        byte temp1 = (byte) (P.getX().im.testBit(126) ? 1 : 0);
+        byte temp2 = (byte) (P.getX().real.testBit(126) ? 0x80 : 0x00);
 
         byte[] result = new byte[32];
-        System.arraycopy(ArrayUtils.reverseByteArray(P.getY().real.toByteArray(), false), 0, result, 0, 16);
-        System.arraycopy(ArrayUtils.reverseByteArray(P.getY().im.toByteArray(), false), 0, result, 16, 16);
-        if (P.getX().real.equals(BigInteger.ZERO) && P.getX().im.equals(BigInteger.ZERO)) {
+        byte[] reverseReal = ArrayUtils.reverseByteArray(P.getY().real.toByteArray(), false);
+        byte[] reverseIm = ArrayUtils.reverseByteArray(P.getY().im.toByteArray(), false);
+        System.arraycopy(reverseReal, 0, result, 0, Math.min(reverseReal.length, 16));
+        System.arraycopy(reverseIm, 0, result, 16, Math.min(reverseIm.length, 16));
+        if (P.isZero()) {
             result[31] |= temp1;
         } else {
             result[31] |= temp2;
@@ -67,9 +69,9 @@ public class CryptoUtil {
     }
 
     public static FieldPoint decode(BigInteger encoded) throws EncryptionException {
-        final var y = Params.convertBigIntegerToF2Element(encoded.mod(Key.POW_32));  // TODO: Potential endian problem here
-        int signBit = (encoded.compareTo(BigInteger.ZERO) <= 0) ? 1 : 0;
-        // int signBit = encoded.testBit(255) ? 1 : 0; TODO maybe this is better?
+        F2Element y = Params.convertBigIntegerToF2Element(encoded);  // TODO: Potential endian problem here
+        int signBit = encoded.testBit(7) ? 1 : 0;
+        y.im = y.im.clearBit(127);
 
         F2Element u = FP2.fp2Sqr1271(y);
         F2Element v = FP2.fp2Mul1271(u, Params.PARAMETER_d);
@@ -115,20 +117,15 @@ public class CryptoUtil {
         }
         F2Element x = new F2Element(x0, x1);
 
-        /* if (is_zero_ct((digit_t*)P->x, NWORDS_FIELD) == true) {
-            signDec = ((digit_t*)&P->x[1])[NWORDS_FIELD-1] >> (sizeof(digit_t)*8 - 2);
+
+        int signDec;
+        if (x.isZero()) {
+            // Entire x coordinate is zero, extract sign from imaginary part
+            signDec = x.im.shiftRight(125).intValue() & 0x3;  // Extract top 2 bits for 127-bit field
         } else {
-            signDec = ((digit_t*)&P->x[0])[NWORDS_FIELD-1] >> (sizeof(digit_t)*8 - 2);
-        } */    // TODO: Convert this to Java somehow
-//        int signDec;
-//        if (x.real.equals(BigInteger.ZERO) && x.im.equals(BigInteger.ZERO)) {
-//            // Entire x coordinate is zero, extract sign from imaginary part
-//            signDec = x.im.shiftRight(125).intValue() & 0x3;  // Extract top 2 bits for 127-bit field
-//        } else {
-//            // x coordinate is non-zero, extract sign from real part
-//            signDec = x.real.shiftRight(125).intValue() & 0x3;  // Extract top 2 bits for 127-bit field
-//        }
-        int signDec = 0;
+            // x coordinate is non-zero, extract sign from real part
+            signDec = x.real.shiftRight(125).intValue() & 0x3;  // Extract top 2 bits for 127-bit field
+        }
 
         if (signBit != signDec) {           // If sign of x-coordinate decoded != input sign bit, then negate x-coordinate
             x = FP2.fp2Neg1271(x);

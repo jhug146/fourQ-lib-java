@@ -12,14 +12,18 @@ import java.security.NoSuchAlgorithmException;
 
 public class HashFunction {
     private static final String ENCRYPTION_STANDARD = "SHA-512";
-    public static BigInteger computeHash(@NotNull BigInteger input) throws EncryptionException {
-        return computeHash(CryptoUtil.bigIntegerToByte(input, Key.KEY_SIZE,false));
+    public static BigInteger computeHash(@NotNull BigInteger input, boolean reverse) throws EncryptionException {
+        return computeHash(CryptoUtil.bigIntegerToByte(input, Key.KEY_SIZE,false), reverse);
     }
 
-    public static BigInteger computeHash(byte[] bytes) throws EncryptionException {
+    public static BigInteger computeHash(byte[] bytes, boolean reverse) throws EncryptionException {
         try {
             MessageDigest digest = MessageDigest.getInstance(ENCRYPTION_STANDARD);
-            return new BigInteger(1, ArrayUtils.reverseByteArray(digest.digest(bytes), false));
+            if (reverse) {
+                return new BigInteger(1, ArrayUtils.reverseByteArray(digest.digest(bytes), false));
+            } else {
+                return new BigInteger(1, digest.digest(bytes));
+            }
         } catch (NoSuchAlgorithmException e) {
             throw new EncryptionException(String.format(
                     "No such encryption algorithm: %s\n",
