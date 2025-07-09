@@ -244,6 +244,8 @@ public class SchnorrQTests {
             BigInteger publicKey = new BigInteger(bufRead.readLine().substring(14), 16);
             byte[] message = HexFormat.of().parseHex(bufRead.readLine().substring(11));
             BigInteger correctSignature = new BigInteger(bufRead.readLine().substring(13), 16);
+            // In the following, the message byte array must be reversed since the generated signiture assumes the message array was in little endian,
+                // to match this the message arraymust hence be reversed. This is only applicable here and not in general use cases.
             BigInteger genSignature = SchnorrQ.schnorrQSign(secretKey, publicKey, ArrayUtils.reverseByteArray(message));
             var a = correctSignature.equals(genSignature);
             assertTrue(correctSignature.equals(genSignature));
