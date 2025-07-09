@@ -213,6 +213,19 @@ public class SchnorrQTests {
     }
 
     @Test
+    void testBrokenSigniture() throws EncryptionException {
+        BigInteger pubKey = new BigInteger("e4a87eef77e983ff7b974b3b29f4b141efa2e12de6a17d3a21dac77164788ddf", 16);
+        BigInteger secretKey = new BigInteger("e1669de6854996e05c23d5e95e51022e61df5134957a1fecc939e3517ca95604", 16);
+        BigInteger correctSignature = new BigInteger("132bf1f7a96c8e5a94202ceeb289ff5c47690bd27a95a5bb7bec35c0c9fcaba8e58c77c6792513d64eb93b42575752b6633e1db6ad86b62e0a53831bd40d0900", 16);
+        byte[] message = HexFormat.of().parseHex("f9817e");
+
+        BigInteger genSignature = SchnorrQ.schnorrQSign(secretKey, pubKey, ArrayUtils.reverseByteArray(message));
+        System.out.println(correctSignature.equals(genSignature));
+        assertTrue(correctSignature.equals(genSignature));
+    }
+
+
+    @Test
     void testManySignatures() throws EncryptionException, IOException {
         FileReader input = new FileReader(FILES_PATH + "/sig_tests.txt");
         BufferedReader bufRead = new BufferedReader(input);
@@ -231,8 +244,9 @@ public class SchnorrQTests {
             BigInteger publicKey = new BigInteger(bufRead.readLine().substring(14), 16);
             byte[] message = HexFormat.of().parseHex(bufRead.readLine().substring(11));
             BigInteger correctSignature = new BigInteger(bufRead.readLine().substring(13), 16);
-            BigInteger genSignature = SchnorrQ.schnorrQSign(secretKey, publicKey, message);
-            assertEquals(correctSignature, genSignature);
+            BigInteger genSignature = SchnorrQ.schnorrQSign(secretKey, publicKey, ArrayUtils.reverseByteArray(message));
+            var a = correctSignature.equals(genSignature);
+            assertTrue(correctSignature.equals(genSignature));
         }
     }
 }
