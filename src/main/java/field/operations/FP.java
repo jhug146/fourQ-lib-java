@@ -4,7 +4,6 @@ import types.data.Pair;
 import constants.Params;
 
 import java.math.BigInteger;
-import java.util.Arrays;
 
 public class FP {
     public static BigInteger montgomeryMultiplyModOrder(BigInteger ma, BigInteger mb) {

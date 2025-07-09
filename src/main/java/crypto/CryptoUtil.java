@@ -52,15 +52,17 @@ public class CryptoUtil {
     }
 
     public static BigInteger encode(FieldPoint P) {
-        byte temp1 = (byte) (P.getX().im.testBit(126) ? 1 : 0);
+        byte temp1 = (byte) (P.getX().im.testBit(126) ? 0x80 : 0x00);
         byte temp2 = (byte) (P.getX().real.testBit(126) ? 0x80 : 0x00);
 
         byte[] result = new byte[32];
-        byte[] reverseReal = ArrayUtils.reverseByteArray(P.getY().real.toByteArray(), false);
-        byte[] reverseIm = ArrayUtils.reverseByteArray(P.getY().im.toByteArray(), false);
-        System.arraycopy(reverseReal, 0, result, 0, Math.min(reverseReal.length, 16));
-        System.arraycopy(reverseIm, 0, result, 16, Math.min(reverseIm.length, 16));
-        if (P.isZero()) {
+        byte[] paddedReal = ArrayUtils.concat(new byte[16 - P.getY().real.toByteArray().length], P.getY().real.toByteArray());
+        byte[] paddedIm = ArrayUtils.concat(new byte[16 - P.getY().im.toByteArray().length], P.getY().im.toByteArray());
+        byte[] reverseReal = ArrayUtils.reverseByteArray(paddedReal, false);
+        byte[] reverseIm = ArrayUtils.reverseByteArray(paddedIm, false);
+        System.arraycopy(reverseReal, 0, result, 16 - reverseReal.length, reverseReal.length);
+        System.arraycopy(reverseIm, 0, result, 32 - reverseIm.length, reverseIm.length);
+        if (P.getX().isZero()) {
             result[31] |= temp1;
         } else {
             result[31] |= temp2;

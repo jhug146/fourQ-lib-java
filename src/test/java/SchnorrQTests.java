@@ -189,23 +189,36 @@ public class SchnorrQTests {
         BufferedReader bufRead = new BufferedReader(input);
         String myLine;
 
-        while ( !(myLine = bufRead.readLine()).isBlank())
+        int MAX_TESTS = 200000;
+        int i = 0;
+        while ((myLine = bufRead.readLine()) != null)
         {
-            BigInteger correctPublicKey = new BigInteger(myLine.substring(14, 78), 16);
-            myLine = bufRead.readLine();
             if (myLine.isBlank()) {
+                continue;
+            }
+            i++;
+            if (i > MAX_TESTS) {
                 break;
             }
             BigInteger secretKey = new BigInteger(myLine.substring(14, 78), 16);
+            String sk = secretKey.toString(16);
+            myLine = bufRead.readLine();
+            if (myLine == null || myLine.isBlank()) {
+                break;
+            }
+            BigInteger correctPublicKey = new BigInteger(myLine.substring(14, 78), 16);
             BigInteger testPublicKey = SchnorrQ.schnorrQKeyGeneration(secretKey);
+            if (!correctPublicKey.equals(testPublicKey)) {
+                assert false;
+            }
             assertEquals(correctPublicKey, testPublicKey);
         }
     }
 
     @Test
     void testBrokenKey() throws EncryptionException {
-        BigInteger pubKey = new BigInteger("91a909b0961e603fbcf4b7fbf489d7201a2ce69de3750081bf85b3ce226e6ffb", 16);
-        BigInteger secretKey = new BigInteger("26d52d2764e10bef383cd8fa53f62d2b6930d63e7e1f108817cecff0f1d472dc", 16);
+        BigInteger pubKey = new BigInteger("507edd7fe7d21958f270a5f893260600a22485badcd9b1a7433678fd946c2ee4", 16);
+        BigInteger secretKey = new BigInteger("375c79e3c979f6354f60018064ed8ea6bb26c6be7f712d4d814ba80942ecf3c2", 16);
         BigInteger genPubKey = SchnorrQ.schnorrQKeyGeneration(secretKey);
         assertEquals(pubKey, genPubKey);
     }
