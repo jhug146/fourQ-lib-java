@@ -34,35 +34,35 @@ public class SchnorrQ {
             byte[] message
     ) throws EncryptionException {
         final BigInteger kHash = HashFunction.computeHash(secretKey);
-        byte[] signBuilder = new byte[message.length + 2 * Key.KEY_SIZE];
+        byte[] bytes = new byte[message.length + 2 * Key.KEY_SIZE];
 
         System.arraycopy(
-                ArrayUtils.bigIntegerToByte(kHash, 2 * Key.KEY_SIZE, false),
+                CryptoUtil.bigIntegerToByte(kHash, 2 * Key.KEY_SIZE, false),
                 0,
-                signBuilder,
+                bytes,
                 Key.KEY_SIZE+message.length,
                 Key.KEY_SIZE
         );
-        System.arraycopy(message, 0, signBuilder, Key.KEY_SIZE, message.length);
+        System.arraycopy(message, 0, bytes, Key.KEY_SIZE, message.length);
 
-        BigInteger rHash = HashFunction.computeHashReversed(Arrays.copyOfRange(signBuilder, Key.KEY_SIZE, signBuilder.length));
+        BigInteger rHash = HashFunction.computeHashReversed(Arrays.copyOfRange(bytes, Key.KEY_SIZE, bytes.length));
         final FieldPoint rPoint = ECC.eccMulFixed(rHash);
         final BigInteger sigStart = CryptoUtil.encode(rPoint);
 
-        byte[] publicKeyBytes = ArrayUtils.bigIntegerToByte(publicKey, Key.KEY_SIZE, false);
-        byte[] revBytes = reverseByteArray(signBuilder, true);
+        byte[] publicKeyBytes = CryptoUtil.bigIntegerToByte(publicKey, Key.KEY_SIZE, false);
+        byte[] revBytes = reverseByteArray(bytes, true);
         System.arraycopy(
-                ArrayUtils.bigIntegerToByte(sigStart, Key.KEY_SIZE, false),
+                CryptoUtil.bigIntegerToByte(sigStart, Key.KEY_SIZE, false),
                 0,
                 revBytes,
                 0,
                 Key.KEY_SIZE
         );
         System.arraycopy(publicKeyBytes, 0, revBytes, Key.KEY_SIZE, Key.KEY_SIZE);
-        signBuilder = revBytes.clone();
+        bytes = revBytes.clone();
 
         rHash = FP.moduloOrder(rHash);
-        BigInteger hHash2 = HashFunction.computeHash(signBuilder);
+        BigInteger hHash2 = HashFunction.computeHash(bytes);
         hHash2 = FP.moduloOrder(hHash2);
 
         BigInteger sigEnd = CryptoUtil.toMontgomery(kHash);
@@ -72,8 +72,8 @@ public class SchnorrQ {
 
         sigEnd = FP.subtractModOrder(rHash, sigEnd);
 
-        byte[] sigStartBytes = ArrayUtils.bigIntegerToByte(sigStart, Key.KEY_SIZE, false);
-        byte[] sigEndBytes   = reverseByteArray(ArrayUtils.bigIntegerToByte(sigEnd,   Key.KEY_SIZE, false), false);
+        byte[] sigStartBytes = CryptoUtil.bigIntegerToByte(sigStart, Key.KEY_SIZE, false);
+        byte[] sigEndBytes   = reverseByteArray(CryptoUtil.bigIntegerToByte(sigEnd,   Key.KEY_SIZE, false), false);
         return new BigInteger(1, ArrayUtils.concat(sigStartBytes, sigEndBytes));
     }
 
@@ -82,14 +82,14 @@ public class SchnorrQ {
             throw new InvalidArgumentException("Signature is Null");
         }
 
-        if (publicKey.testBit(Key.TEST_BIT) || signature.testBit(Key.TEST_BIT)) {
+        if (!publicKey.testBit(Key.TEST_BIT) || !signature.testBit(Key.TEST_BIT)) {
             throw new InvalidArgumentException(String.format(
                     "Invalid argument: Bit %d is not set to zero in both the public key and signature.",
                     Key.TEST_BIT
             ));
         }
 
-        if (signature.and(BigInteger.ONE.shiftLeft(256).subtract(BigInteger.ONE)).compareTo(BigInteger.ONE.shiftLeft(246)) < 0){
+        if (signature.compareTo(Key.MAX_SIG_VERIFY) >= 0) {
             throw new InvalidArgumentException(String.format(
                     "Invalid argument: Signature must be less than 2^%d.",
                     Key.MAX_SIG_LENGTH
@@ -98,14 +98,12 @@ public class SchnorrQ {
 
         final byte[] bytes = new byte[message.length + 2 * Key.KEY_SIZE];
         System.arraycopy(signature.toByteArray(), 0, bytes, 0, Key.KEY_SIZE);
-        System.arraycopy(ArrayUtils.bigIntegerToByte(publicKey, Key.KEY_SIZE, true), 0, bytes, Key.KEY_SIZE, Key.KEY_SIZE);
+        System.arraycopy(publicKey.toByteArray(), 0, bytes, Key.KEY_SIZE, Key.KEY_SIZE);
         System.arraycopy(message, 0, bytes, 2 * Key.KEY_SIZE, message.length);
-
-        var a = CryptoUtil.decode(publicKey); // Implicitly checks that public key lies on the curve
 
         FieldPoint affPoint = ECC.eccMulDouble(
                 new BigInteger(Arrays.copyOfRange(bytes, Key.KEY_SIZE, bytes.length - 1)),
-                a,
+                CryptoUtil.decode(publicKey),       // Implicitly checks that public key lies on the curve
                 HashFunction.computeHash(bytes)
         );
 

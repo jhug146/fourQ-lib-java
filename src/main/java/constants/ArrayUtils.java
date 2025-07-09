@@ -41,6 +41,10 @@ public class ArrayUtils {
         return rev;
     }
 
+    public static BigInteger reverseBigInteger(BigInteger val) {
+        return new BigInteger(1, reverseByteArray(val.toByteArray(), true));
+    }
+
     private static int leadingZeroes(byte[] a) {
         int i = 0;
         while (i < a.length && a[i] == 0) {
