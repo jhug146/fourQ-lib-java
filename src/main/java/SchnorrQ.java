@@ -38,7 +38,7 @@ public class SchnorrQ {
         byte[] bytes = new byte[message.length + 2 * Key.KEY_SIZE];
 
         System.arraycopy(
-                CryptoUtil.bigIntegerToByte(kHash, 2 * Key.KEY_SIZE, false),
+                ArrayUtils.bigIntegerToByte(kHash, 2 * Key.KEY_SIZE, false),
                 0,
                 bytes,
                 Key.KEY_SIZE+message.length,
@@ -50,10 +50,10 @@ public class SchnorrQ {
         final FieldPoint rPoint = ECC.eccMulFixed(rHash);
         final BigInteger sigStart = CryptoUtil.encode(rPoint);
 
-        byte[] publicKeyBytes = CryptoUtil.bigIntegerToByte(publicKey, Key.KEY_SIZE, false);
+        byte[] publicKeyBytes = ArrayUtils.bigIntegerToByte(publicKey, Key.KEY_SIZE, false);
         byte[] revBytes = reverseByteArray(bytes, true);
         System.arraycopy(
-                CryptoUtil.bigIntegerToByte(sigStart, Key.KEY_SIZE, false),
+                ArrayUtils.bigIntegerToByte(sigStart, Key.KEY_SIZE, false),
                 0,
                 revBytes,
                 0,
@@ -73,8 +73,8 @@ public class SchnorrQ {
 
         sigEnd = FP.subtractModOrder(rHash, sigEnd);
 
-        byte[] sigStartBytes = CryptoUtil.bigIntegerToByte(sigStart, Key.KEY_SIZE, false);
-        byte[] sigEndBytes   = reverseByteArray(CryptoUtil.bigIntegerToByte(sigEnd,   Key.KEY_SIZE, false), false);
+        byte[] sigStartBytes = ArrayUtils.bigIntegerToByte(sigStart, Key.KEY_SIZE, false);
+        byte[] sigEndBytes   = reverseByteArray(ArrayUtils.bigIntegerToByte(sigEnd,   Key.KEY_SIZE, false));
         return new BigInteger(1, ArrayUtils.concat(sigStartBytes, sigEndBytes));
     }
 

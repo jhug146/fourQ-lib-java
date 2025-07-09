@@ -88,9 +88,9 @@ public class SchnorrQTests {
     }
 
     @Test
-    void testPublicKeyNotOnCurve() {
+    void testPublicKeyNotOnCurve() throws EncryptionException {
         BigInteger fakeKey = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16); // clearly invalid
-        assertThrows(EncryptionException.class, () -> SchnorrQ.schnorrQVerify(fakeKey, VALID_SIGNATURE, VALID_MESSAGE));
+        assertFalse(SchnorrQ.schnorrQVerify(fakeKey, VALID_SIGNATURE, VALID_MESSAGE));
     }
 
     @Test

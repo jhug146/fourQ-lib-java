@@ -1,7 +1,5 @@
 package crypto;
 
-import constants.ArrayUtils;
-import constants.Key;
 import constants.Params;
 import crypto.core.Curve;
 import crypto.core.ECC;
@@ -14,28 +12,9 @@ import types.point.FieldPoint;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.Arrays;
 
 public class CryptoUtil {
     private static final SecureRandom secureRandom = new SecureRandom();
-
-    public static byte[] bigIntegerToByte(
-            BigInteger publicKey,
-            int keySize,
-            boolean removePadZeros
-    ) {
-        byte[] raw = publicKey.toByteArray();
-        if (removePadZeros) { return raw; }
-        if (raw.length == keySize) { return raw; }
-
-        if (raw.length < keySize) {
-            byte[] padded = new byte[keySize];
-            System.arraycopy(raw, 0, padded, keySize - raw.length, raw.length);
-            return padded;
-        }
-
-        return Arrays.copyOfRange(raw, raw.length - keySize, raw.length);
-    }
 
     public static BigInteger randomBytes(int size) {
         byte[] bytes = new byte[size];
