@@ -93,7 +93,7 @@ public class SchnorrQ {
         }
         final byte[] bytes = new byte[message.length + 2 * Key.KEY_SIZE];
         System.arraycopy(signature.toByteArray(), 0, bytes, 0, Key.KEY_SIZE);
-        System.arraycopy(ArrayUtils.bigIntegerToByte(publicKey, Key.KEY_SIZE, true), 0, bytes, Key.KEY_SIZE, Key.KEY_SIZE);
+        System.arraycopy(ArrayUtils.bigIntegerToByte(publicKey, Key.KEY_SIZE, false), 0, bytes, Key.KEY_SIZE, Key.KEY_SIZE);
         System.arraycopy(message, 0, bytes, 2 * Key.KEY_SIZE, message.length);
 
         final BigInteger sig32 = signature.mod(Key.POW_256);
