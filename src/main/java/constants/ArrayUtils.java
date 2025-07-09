@@ -4,15 +4,6 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 public class ArrayUtils {
-
-    public static String bytesToHex(byte[] bytes) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
-    }
-
     public static byte[] reverseByteArray(byte[] src, boolean keepPadding) {
         if (src == null) {
             throw new IllegalArgumentException("Source array is null");

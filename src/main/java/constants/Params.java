@@ -58,28 +58,11 @@ public class Params {
             new BigInteger("6E1C4AF8630E024249A7C344844C8B5C", HEX_RADIX)
     );
 
-//    public static F2Element convertBigIntegerToF2Element(BigInteger toConvert) {
-//        if (toConvert == null) {
-//            return new F2Element(BigInteger.ZERO, BigInteger.ZERO);
-//        }
-//
-//        // Extract real part (lower 127 bits)
-//        BigInteger realPart = toConvert.and(MASK_127);
-//        BigInteger fieldElementReal = realPart.mod(PRIME_1271);
-//
-//        // Extract imaginary part (upper bits, shifted down)
-//        BigInteger imagPart = toConvert.shiftRight(127).and(MASK_127);
-//        BigInteger fieldElementIm = imagPart.mod(PRIME_1271);
-//
-//        return new F2Element(fieldElementReal, fieldElementIm);
-//    }
-
     public static F2Element convertBigIntegerToF2Element(@NotNull BigInteger val) {
         BigInteger realPart = ArrayUtils.reverseBigInteger(val.divide(Key.POW_128));
         BigInteger imagPart = ArrayUtils.reverseBigInteger(val.mod(Key.POW_128));
         return new F2Element(realPart, imagPart);
     }
-
 
     // Fixed integer constants for the decomposition
     // Close "offset" vector

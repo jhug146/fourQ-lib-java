@@ -101,12 +101,6 @@ public class SchnorrQTests {
         assertFalse(result);  // Likely fails if signature isn't valid for this message
     }
 
-    private static byte[] getRandomMessage() {
-        byte[] msg = new byte[32];
-        new Random().nextBytes(msg);
-        return msg;
-    }
-
     @Test
     void testValidSignatureRoundTrip() throws Exception {
         BigInteger sk = VALID_PRIVATE_KEY;
@@ -197,7 +191,6 @@ public class SchnorrQTests {
 
         while ( !(myLine = bufRead.readLine()).isBlank())
         {
-            String tempLine = myLine;
             BigInteger correctPublicKey = new BigInteger(myLine.substring(14, 78), 16);
             myLine = bufRead.readLine();
             if (myLine.isBlank()) {
