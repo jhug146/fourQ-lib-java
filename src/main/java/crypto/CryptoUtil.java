@@ -73,6 +73,9 @@ public class CryptoUtil {
             t3 = FP.PUtil.fpSqr1271(t3);
         }
 
+        //Check t0, t1, t2, t3, u, v
+        System.out.println();
+
         BigInteger t = FP.PUtil.fpAdd1271(t1, t3);      // t = t1+t3
         if (t.equals(BigInteger.ZERO)) {
             t = FP.PUtil.fpSub1271(t1, t3);             // t = t1-t3
@@ -89,6 +92,8 @@ public class CryptoUtil {
         x0 = FP.PUtil.fpDiv1271(x0);                    // x0 = x0/2
         BigInteger x1 = FP.PUtil.fpMul1271(t2, t3);     // x1 = t3*t2
 
+        //Check t0, t1, t2, t3, t, x0, x1
+
         if (!t.equals(t1)) {        // If t != t1 then swap x0 and x1
             t0 = x0;
             x0 = x1;
@@ -101,14 +106,6 @@ public class CryptoUtil {
         } else {
             signDec = ((digit_t*)&P->x[0])[NWORDS_FIELD-1] >> (sizeof(digit_t)*8 - 2);
         } */    // TODO: Convert this to Java somehow
-//        int signDec;
-//        if (x.real.equals(BigInteger.ZERO) && x.im.equals(BigInteger.ZERO)) {
-//            // Entire x coordinate is zero, extract sign from imaginary part
-//            signDec = x.im.shiftRight(125).intValue() & 0x3;  // Extract top 2 bits for 127-bit field
-//        } else {
-//            // x coordinate is non-zero, extract sign from real part
-//            signDec = x.real.shiftRight(125).intValue() & 0x3;  // Extract top 2 bits for 127-bit field
-//        }
         int signDec = 0;
 
         if (signBit != signDec) {           // If sign of x-coordinate decoded != input sign bit, then negate x-coordinate
@@ -127,5 +124,4 @@ public class CryptoUtil {
 
         return point;
     }
-
 }
