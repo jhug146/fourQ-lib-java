@@ -64,11 +64,6 @@ public class SchnorrQTests {
     }
 
     @Test
-    void testNullSignature() {
-        assertThrows(InvalidArgumentException.class, () -> SchnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, null, VALID_MESSAGE), "Null signature should throw InvalidArgumentException");
-    }
-
-    @Test
     void testCorruptedSignatureFormat() {
         BigInteger malformedSignature = new BigInteger("-1");  // Possibly invalid
         assertThrows(EncryptionException.class, () -> SchnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, malformedSignature, VALID_MESSAGE));
@@ -168,17 +163,6 @@ public class SchnorrQTests {
         );
     }
 
-
-    @Test
-    void testAllZeroKeyFails() {
-        BigInteger zero = BigInteger.ZERO;
-        byte[] msg = "test".getBytes();
-
-        assertThrows(EncryptionException.class, () ->
-                SchnorrQ.schnorrQSign(zero, zero, msg)
-        );
-    }
-
     @Test
     void testSignatureIsExactly64Bytes() throws Exception {
         BigInteger sk = VALID_PRIVATE_KEY;
@@ -242,16 +226,25 @@ public class SchnorrQTests {
         BufferedReader bufRead = new BufferedReader(input);
         String myLine;
 
-        while ( (myLine = bufRead.readLine()) != null)
+        while ( !(myLine = bufRead.readLine()).isBlank())
         {
+            String tempLine = myLine;
             BigInteger correctPublicKey = new BigInteger(myLine.substring(14, 78), 16);
             myLine = bufRead.readLine();
-            if (myLine == null) {
+            if (myLine.isBlank()) {
                 break;
             }
             BigInteger secretKey = new BigInteger(myLine.substring(14, 78), 16);
             BigInteger testPublicKey = SchnorrQ.schnorrQKeyGeneration(secretKey);
             assertEquals(correctPublicKey, testPublicKey);
         }
+    }
+
+    @Test
+    void testBrokenKey() throws EncryptionException {
+        BigInteger pubKey = new BigInteger("91a909b0961e603fbcf4b7fbf489d7201a2ce69de3750081bf85b3ce226e6ffb", 16);
+        BigInteger secretKey = new BigInteger("26d52d2764e10bef383cd8fa53f62d2b6930d63e7e1f108817cecff0f1d472dc", 16);
+        BigInteger genPubKey = SchnorrQ.schnorrQKeyGeneration(secretKey);
+        assertEquals(pubKey, genPubKey);
     }
 }

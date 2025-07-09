@@ -52,8 +52,8 @@ public class CryptoUtil {
     }
 
     public static BigInteger encode(FieldPoint P) {
-        byte temp1 = (byte) (P.getX().im.testBit(125) ? 1 : 0);
-        byte temp2 = (byte) (P.getX().real.testBit(125) ? 0x80 : 0x00);
+        byte temp1 = (byte) (P.getX().im.testBit(126) ? 1 : 0);
+        byte temp2 = (byte) (P.getX().real.testBit(126) ? 0x80 : 0x00);
 
         byte[] result = new byte[32];
         byte[] reverseReal = ArrayUtils.reverseByteArray(P.getY().real.toByteArray(), false);
