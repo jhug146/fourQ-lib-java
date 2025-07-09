@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 public class ArrayUtils {
+
     public static byte[] reverseByteArray(byte[] src, boolean keepPadding) {
         if (src == null) {
             throw new IllegalArgumentException("Source array is null");

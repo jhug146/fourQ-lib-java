@@ -12,6 +12,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.util.HexFormat;
 import java.util.Random;
 
 
@@ -187,19 +188,18 @@ public class SchnorrQTests {
     void testManyKeyGens() throws EncryptionException, IOException {
         FileReader input = new FileReader(FILES_PATH + "/key_gen_tests.txt");
         BufferedReader bufRead = new BufferedReader(input);
-        String myLine;
+        String line;
 
-        while ((myLine = bufRead.readLine()) != null)
-        {
-            if (myLine.isBlank()) {
+        while ((line = bufRead.readLine()) != null) {
+            if (line.isBlank()) {
                 continue;
             }
-            BigInteger secretKey = new BigInteger(myLine.substring(14, 78), 16);
-            myLine = bufRead.readLine();
-            if (myLine == null || myLine.isBlank()) {
+            BigInteger secretKey = new BigInteger(line.substring(14), 16);
+            line = bufRead.readLine();
+            if (line == null || line.isBlank()) {
                 break;
             }
-            BigInteger correctPublicKey = new BigInteger(myLine.substring(14, 78), 16);
+            BigInteger correctPublicKey = new BigInteger(line.substring(14), 16);
             BigInteger testPublicKey = SchnorrQ.schnorrQKeyGeneration(secretKey);
             assertEquals(correctPublicKey, testPublicKey);
         }
@@ -211,5 +211,29 @@ public class SchnorrQTests {
         BigInteger secretKey = new BigInteger("375c79e3c979f6354f60018064ed8ea6bb26c6be7f712d4d814ba80942ecf3c2", 16);
         BigInteger genPubKey = SchnorrQ.schnorrQKeyGeneration(secretKey);
         assertEquals(pubKey, genPubKey);
+    }
+
+    @Test
+    void testManySignatures() throws EncryptionException, IOException {
+        FileReader input = new FileReader(FILES_PATH + "/sig_tests.txt");
+        BufferedReader bufRead = new BufferedReader(input);
+        String line;
+
+        int i = 0;
+        while ((line = bufRead.readLine()) != null) {
+            i++;
+            if (i > 100) {
+                break;
+            }
+            if (line.isBlank()) {
+                continue;
+            }
+            BigInteger secretKey = new BigInteger(line.substring(14), 16);
+            BigInteger publicKey = new BigInteger(bufRead.readLine().substring(14), 16);
+            byte[] message = HexFormat.of().parseHex(bufRead.readLine().substring(11));
+            BigInteger correctSignature = new BigInteger(bufRead.readLine().substring(13), 16);
+            BigInteger genSignature = SchnorrQ.schnorrQSign(secretKey, publicKey, message);
+            assertEquals(correctSignature, genSignature);
+        }
     }
 }
