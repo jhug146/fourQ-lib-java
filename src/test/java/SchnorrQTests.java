@@ -1,4 +1,3 @@
-import constants.Params;
 import exceptions.EncryptionException;
 import exceptions.InvalidArgumentException;
 import org.junit.jupiter.api.Test;
@@ -9,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;

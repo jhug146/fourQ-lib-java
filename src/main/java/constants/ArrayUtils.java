@@ -1,5 +1,6 @@
 package constants;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 
 public class ArrayUtils {
@@ -40,6 +41,10 @@ public class ArrayUtils {
         return rev;
     }
 
+    public static BigInteger reverseBigInteger(BigInteger val) {
+        return new BigInteger(1, reverseByteArray(val.toByteArray(), true));
+    }
+
     private static int leadingZeroes(byte[] a) {
         int i = 0;
         while (i < a.length && a[i] == 0) {
@@ -60,5 +65,30 @@ public class ArrayUtils {
         System.arraycopy(a, 0, out, 0, a.length);
         System.arraycopy(b, 0, out, a.length, b.length);
         return out;
+    }
+
+    public static byte[] bigIntegerToByte(
+            BigInteger publicKey,
+            int keySize,
+            boolean removePadZeros
+    ) {
+        byte[] raw = publicKey.toByteArray();
+        if (removePadZeros) {
+            if (raw[0] == 0) {
+                raw = Arrays.copyOfRange(raw, 1, raw.length);
+            }
+            return raw;
+        }
+        if (raw.length == keySize) {
+            return raw;
+        }
+
+        if (raw.length < keySize) {
+            byte[] padded = new byte[keySize];
+            System.arraycopy(raw, 0, padded, keySize - raw.length, raw.length);
+            return padded;
+        }
+
+        return Arrays.copyOfRange(raw, raw.length - keySize, raw.length);
     }
 }

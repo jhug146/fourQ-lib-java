@@ -1,5 +1,6 @@
 package constants;
 
+import org.jetbrains.annotations.NotNull;
 import types.data.F2Element;
 
 import java.math.BigInteger;
@@ -73,16 +74,9 @@ public class Params {
 //        return new F2Element(fieldElementReal, fieldElementIm);
 //    }
 
-    public static F2Element convertBigIntegerToF2Element(BigInteger toConvert) {
-        if (toConvert == null) {
-            return new F2Element(BigInteger.ZERO, BigInteger.ZERO);
-        }
-
-        // Treat the 64-bit value as a single field element
-        // This is likely the real part, with imaginary part = 0
-        BigInteger realPart = toConvert.mod(PRIME_1271);
-        BigInteger imagPart = BigInteger.ZERO;
-
+    public static F2Element convertBigIntegerToF2Element(@NotNull BigInteger val) {
+        BigInteger realPart = ArrayUtils.reverseBigInteger(val.divide(Key.POW_128));
+        BigInteger imagPart = ArrayUtils.reverseBigInteger(val.mod(Key.POW_128));
         return new F2Element(realPart, imagPart);
     }
 

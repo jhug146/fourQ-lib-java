@@ -11,6 +11,10 @@ public class FieldPoint implements Point {
         this.y = y;
     }
 
+    public boolean isZero() {
+        return x.isZero() && y.isZero();
+    }
+
     @Override
     public F2Element getX() { return x; }
 
