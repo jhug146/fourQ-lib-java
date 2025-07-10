@@ -12,18 +12,17 @@ import java.security.NoSuchAlgorithmException;
 
 public class HashFunction {
     private static final String ENCRYPTION_STANDARD = "SHA-512";
-    public static BigInteger computeHash(@NotNull BigInteger input, boolean reverse) throws EncryptionException {
+    public static byte[] computeHash(@NotNull BigInteger input, boolean reverse) throws EncryptionException {
         return computeHash(ArrayUtils.bigIntegerToByte(input, Key.KEY_SIZE,false), reverse);
     }
 
-    public static BigInteger computeHash(byte[] bytes, boolean reverse) throws EncryptionException {
+    public static byte[] computeHash(byte[] bytes, boolean reverse) throws EncryptionException {
         try {
             MessageDigest digest = MessageDigest.getInstance(ENCRYPTION_STANDARD);
             if (reverse) {
-                return new BigInteger(1, ArrayUtils.reverseByteArray(digest.digest(bytes), false));
-            } else {
-                return new BigInteger(1, digest.digest(bytes));
+                return ArrayUtils.reverseByteArray(digest.digest(bytes), false);
             }
+            return digest.digest(bytes);
         } catch (NoSuchAlgorithmException e) {
             throw new EncryptionException(String.format(
                     "No such encryption algorithm: %s\n",
@@ -32,11 +31,11 @@ public class HashFunction {
         }
     }
 
-    public static BigInteger computeHashReversed(byte[] bytes, int target) throws EncryptionException {
+    public static byte[] computeHashReversed(byte[] bytes, int target) throws EncryptionException {
         try {
             MessageDigest digest = MessageDigest.getInstance(ENCRYPTION_STANDARD);
             byte [] padded = ArrayUtils.concat(new byte[target - ArrayUtils.reverseByteArray(bytes, false).length], ArrayUtils.reverseByteArray(bytes, false));
-            return new BigInteger(1, ArrayUtils.reverseByteArray(digest.digest(padded), false));
+            return ArrayUtils.reverseByteArray(digest.digest(padded), false);
         } catch (NoSuchAlgorithmException e) {
             throw new EncryptionException(String.format(
                     "No such encryption algorithm: %s\n",

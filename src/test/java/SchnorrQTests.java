@@ -213,12 +213,12 @@ public class SchnorrQTests {
 
     @Test
     void testBrokenSignature() throws EncryptionException {
-        BigInteger secretKey = new BigInteger("b38e773b492b10cc01e8e69522fc7726fffb61172bf2cec092853000618200a7", 16);
-        BigInteger pubKey = new BigInteger("c3b4478a779e7d48335f9c4d0776af72bc200c5e21070179d1c4a5b6eeef49e1", 16);
-        BigInteger correctSignature = new BigInteger("f0e275abe8d041ef96ed38706f7a433dbce1ddb65f5c68c869cbb16b96f7533d2c7a79b3ea427c6c54c793f047980ce78925db9be9494cf35a239a90812a0200", 16);
-        byte[] message = ArrayUtils.reverseByteArray(HexFormat.of().parseHex("c56fa643fd9fef1e236fe88459c4d2097c00d03ca891a8b9e417da7b161925db88cb1f856a0ea48d7d8c12d750e4e0cce4b0088c41b04626c720a1dd39c7b9c192d847fde6eb8a64779c3bc8811b9465cb9df20d4d38331558d4f2929bab532e839a2b6a85b5cefd5209c5d3245938eff62afc44622f59bb044b4d9ff7a0cd7a3bf8e4c0aeb2bd00bb82d3dfdc0bcfd236cb1698fb6f53ffbba09eb2416c2c7c64113c12c3fa127f7ce55e58f12d2b27f941bff4b113f36cb3911ef4fd4a70625bad741fa7879e236cfc7c5d2aa78423e8441799570a050a9b23ff996e6ffbc91c6fe8c3f686e7638363c0ad0a45d0f289e78ce0f191ea8cb5e925235920ec7590d539865b20e9de83aa8b8def5b7f78420b58339d42c0522ce575850661fa9636331c92530670d6b0fc639f57e3179aee6fcd8bb18ddddd73526279b45d0fea902b7ce431edbae1e91e80400197daef06a87bb8355895a8abf8215f553049e55cc6c98db3846f9ca2efdca387b7928d5f0d459466db3d11d35e70288fb90deb7fd778325be7cefdd7aba05e6232ebc1403155a60c92b7dff1270780e0146b60ebe39246cb6143a20ce300"));
+        BigInteger secretKey = new BigInteger("e1669de6854996e05c23d5e95e51022e61df5134957a1fecc939e3517ca95604", 16);
+        BigInteger pubKey = new BigInteger("e4a87eef77e983ff7b974b3b29f4b141efa2e12de6a17d3a21dac77164788ddf", 16);
+        BigInteger correctSignature = new BigInteger("132bf1f7a96c8e5a94202ceeb289ff5c47690bd27a95a5bb7bec35c0c9fcaba8e58c77c6792513d64eb93b42575752b6633e1db6ad86b62e0a53831bd40d0900", 16);
+        byte[] message = HexFormat.of().parseHex("f9817e");
 
-        BigInteger genSignature = SchnorrQ.schnorrQSign(secretKey, pubKey, (message));
+        BigInteger genSignature = SchnorrQ.schnorrQSign(secretKey, pubKey, message);
         var a = correctSignature.equals(genSignature);
         if (!a) {
             System.out.println();
@@ -240,25 +240,24 @@ public class SchnorrQTests {
             if (line.isBlank()) {
                 continue;
             }
-            System.out.println(i);
             BigInteger secretKey = new BigInteger(line.substring(14), 16);
             BigInteger publicKey = new BigInteger(bufRead.readLine().substring(14), 16);
             byte[] message = HexFormat.of().parseHex(bufRead.readLine().substring(11));
             BigInteger correctSignature = new BigInteger(bufRead.readLine().substring(13), 16);
             // In the following, the message byte array must be reversed since the generated signature assumes the message array was in little endian,
                 // to match, the message array must hence be reversed. This is only applicable here and not in general use cases.
-            BigInteger genSignature = SchnorrQ.schnorrQSign(secretKey, publicKey, ArrayUtils.reverseByteArray(message));
+            BigInteger genSignature = SchnorrQ.schnorrQSign(secretKey, publicKey, message);
             var a = correctSignature.equals(genSignature);
             if (!a) {
-                System.out.println();
+                System.out.println(i);
                 System.out.printf("Expected: %s\n", correctSignature.toString(16));
                 System.out.printf("Actual: %s\n", genSignature.toString(16));
                 System.out.printf("Public Key: %s\n", publicKey.toString(16));
                 System.out.printf("Secret Key: %s\n", secretKey.toString(16));
-                System.out.printf("Message: %s\n", ArrayUtils.reverseByteArray(message));
-                System.out.printf("Correct Sig: %s\n", correctSignature.toString(16));
+                //System.out.printf("Message: %s\n", ArrayUtils.reverseByteArray(message));
             }
             assertEquals(correctSignature, genSignature);
         }
+        System.out.println(i);
     }
 }

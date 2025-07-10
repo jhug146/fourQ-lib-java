@@ -6,6 +6,13 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 public class ArrayUtils {
+    public static String byteArrayToString(byte[] bytes) {
+        StringBuilder sb = new StringBuilder("0x");
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
+    }
     public static byte[] reverseByteArray(byte @NotNull [] src) {
         if (src.length == 0) return new byte[0];
         if (src.length == 1) return new byte[] {src[0]};

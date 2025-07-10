@@ -19,7 +19,7 @@ import static constants.ArrayUtils.reverseByteArrayKeepLeadingZero;
 
 public class SchnorrQ {
     public static BigInteger schnorrQKeyGeneration(@NotNull BigInteger secretKey) throws EncryptionException {
-        BigInteger hash = HashFunction.computeHash(secretKey, true);
+        BigInteger hash = new BigInteger(1, HashFunction.computeHash(secretKey, true));
         final FieldPoint point = ECC.eccMulFixed(hash);
         return CryptoUtil.encode(point);
     }
@@ -35,48 +35,61 @@ public class SchnorrQ {
             @NotNull BigInteger publicKey,
             byte[] message
     ) throws EncryptionException {
-        final BigInteger kHash = HashFunction.computeHash(secretKey, true);
+        final byte[] kHash = HashFunction.computeHash(secretKey, false);
         byte[] bytes = new byte[message.length + 2 * Key.KEY_SIZE];
-
         System.arraycopy(
-                ArrayUtils.bigIntegerToByte(kHash, 2 * Key.KEY_SIZE, false),
-                0,
+                kHash,
+                Key.KEY_SIZE,
                 bytes,
-                Key.KEY_SIZE+message.length,
+                Key.KEY_SIZE,
                 Key.KEY_SIZE
         );
-        System.arraycopy(message, 0, bytes, Key.KEY_SIZE, message.length);
+        System.arraycopy(
+                message,
+                0,
+                bytes,
+                Key.KEY_SIZE * 2,
+                message.length
+        );
 
-        BigInteger rHash = HashFunction.computeHashReversed(Arrays.copyOfRange(bytes, Key.KEY_SIZE, bytes.length), bytes.length - Key.KEY_SIZE);
+        BigInteger rHash = new BigInteger(
+                1,
+                HashFunction.computeHash(
+                        Arrays.copyOfRange(bytes, Key.KEY_SIZE, bytes.length),
+                        true
+                )
+        );
         final FieldPoint rPoint = ECC.eccMulFixed(rHash);
         final BigInteger sigStart = CryptoUtil.encode(rPoint);
 
         byte[] publicKeyBytes = ArrayUtils.bigIntegerToByte(publicKey, Key.KEY_SIZE, false);
-        byte[] revBytes = reverseByteArray(bytes, true);
-        revBytes = ArrayUtils.concat(new byte[bytes.length - revBytes.length], revBytes);
         System.arraycopy(
                 ArrayUtils.bigIntegerToByte(sigStart, Key.KEY_SIZE, false),
                 0,
-                revBytes,
+                bytes,
                 0,
                 Key.KEY_SIZE
         );
-        System.arraycopy(publicKeyBytes, 0, revBytes, Key.KEY_SIZE, Key.KEY_SIZE);
-        bytes = revBytes.clone();
+        System.arraycopy(
+                publicKeyBytes,
+                0,
+                bytes,
+                Key.KEY_SIZE,
+                Key.KEY_SIZE
+        );
 
+        BigInteger hHash2 = new BigInteger(1, HashFunction.computeHash(bytes, true));
         rHash = FP.moduloOrder(rHash);
-        BigInteger hHash2 = HashFunction.computeHash(bytes, true);
         hHash2 = FP.moduloOrder(hHash2);
 
-        BigInteger sigEnd = CryptoUtil.toMontgomery(kHash);
+        BigInteger sigEnd = CryptoUtil.toMontgomery(new BigInteger(1, ArrayUtils.reverseByteArray(kHash)));
         hHash2 = CryptoUtil.toMontgomery(hHash2);
         sigEnd = FP.montgomeryMultiplyModOrder(sigEnd, hHash2);
         sigEnd = CryptoUtil.fromMontgomery(sigEnd);
-
         sigEnd = FP.subtractModOrder(rHash, sigEnd);
 
         byte[] sigStartBytes = ArrayUtils.bigIntegerToByte(sigStart, Key.KEY_SIZE, false);
-        byte[] sigEndBytes   = reverseByteArrayKeepLeadingZero(ArrayUtils.bigIntegerToByte(sigEnd,   Key.KEY_SIZE, false));
+        byte[] sigEndBytes   = reverseByteArrayKeepLeadingZero(ArrayUtils.bigIntegerToByte(sigEnd, Key.KEY_SIZE, false));
         return new BigInteger(1, ArrayUtils.concat(sigStartBytes, sigEndBytes));
     }
 
@@ -102,7 +115,7 @@ public class SchnorrQ {
         FieldPoint affPoint = ECC.eccMulDouble(
                 ArrayUtils.reverseBigInteger(sig32),
                 CryptoUtil.decode(publicKey),       // Implicitly checks that public key lies on the curve
-                HashFunction.computeHash(bytes, true)
+                new BigInteger(1, HashFunction.computeHash(bytes, true))
         );
 
         final BigInteger encoded = CryptoUtil.encode(affPoint);
