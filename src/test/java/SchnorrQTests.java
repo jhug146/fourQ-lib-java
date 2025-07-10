@@ -1,4 +1,3 @@
-import constants.ArrayUtils;
 import exceptions.EncryptionException;
 import exceptions.InvalidArgumentException;
 import org.junit.jupiter.api.Test;
@@ -9,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -182,6 +182,8 @@ public class SchnorrQTests {
         assertTrue(SchnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, VALID_SIGNATURE, VALID_MESSAGE));
     }
 
+    // Takes 3-5 minutes to run sometimes beware
+    // Runs 100,000 key generation pair tests in the key_gen_tests.txt file
     @Test
     void testManyKeyGens() throws EncryptionException, IOException {
         FileReader input = new FileReader(FILES_PATH + "/key_gen_tests.txt");
@@ -228,15 +230,13 @@ public class SchnorrQTests {
         assertEquals(correctSignature, genSignature);
     }
 
+    // Runs 20,000 signature generation tests in the sig_tests.txt file
     @Test
     void testManySignatures() throws EncryptionException, IOException {
         FileReader input = new FileReader(FILES_PATH + "/sig_tests.txt");
         BufferedReader bufRead = new BufferedReader(input);
         String line;
-
-        int i = 0;
         while ((line = bufRead.readLine()) != null) {
-            i++;
             if (line.isBlank()) {
                 continue;
             }
@@ -244,20 +244,41 @@ public class SchnorrQTests {
             BigInteger publicKey = new BigInteger(bufRead.readLine().substring(14), 16);
             byte[] message = HexFormat.of().parseHex(bufRead.readLine().substring(11));
             BigInteger correctSignature = new BigInteger(bufRead.readLine().substring(13), 16);
-            // In the following, the message byte array must be reversed since the generated signature assumes the message array was in little endian,
-                // to match, the message array must hence be reversed. This is only applicable here and not in general use cases.
             BigInteger genSignature = SchnorrQ.schnorrQSign(secretKey, publicKey, message);
-            var a = correctSignature.equals(genSignature);
-            if (!a) {
-                System.out.println(i);
-                System.out.printf("Expected: %s\n", correctSignature.toString(16));
-                System.out.printf("Actual: %s\n", genSignature.toString(16));
-                System.out.printf("Public Key: %s\n", publicKey.toString(16));
-                System.out.printf("Secret Key: %s\n", secretKey.toString(16));
-                //System.out.printf("Message: %s\n", ArrayUtils.reverseByteArray(message));
-            }
             assertEquals(correctSignature, genSignature);
         }
-        System.out.println(i);
+    }
+
+    // Runs 20,000 signature verification tests where the signature, message and public key are correct
+    @Test
+    void testManyTrueVerifications() throws IOException, EncryptionException {
+        FileReader input = new FileReader(FILES_PATH + "/sig_tests.txt");
+        BufferedReader bufRead = new BufferedReader(input);
+        String line;
+        while ((line = bufRead.readLine()) != null) {
+            if (line.isBlank()) {
+                continue;
+            }
+            BigInteger publicKey = new BigInteger(bufRead.readLine().substring(14), 16);
+            byte[] message = HexFormat.of().parseHex(bufRead.readLine().substring(11));
+            BigInteger signature = new BigInteger(bufRead.readLine().substring(13), 16);
+            assertTrue(SchnorrQ.schnorrQVerify(publicKey, signature, message));
+        }
+    }
+
+    @Test
+    void testManyFalseSignatureVerifications() throws IOException, EncryptionException {
+        FileReader input = new FileReader(FILES_PATH + "/sig_tests.txt");
+        BufferedReader bufRead = new BufferedReader(input);
+        String line;
+        while ((line = bufRead.readLine()) != null) {
+            if (line.isBlank()) {
+                continue;
+            }
+            BigInteger publicKey = new BigInteger(bufRead.readLine().substring(14), 16);
+            byte[] message = HexFormat.of().parseHex(bufRead.readLine().substring(11));
+            BigInteger signature = new BigInteger(bufRead.readLine().substring(13), 16);
+            assertFalse(SchnorrQ.schnorrQVerify(publicKey, signature, message));
+        }
     }
 }
