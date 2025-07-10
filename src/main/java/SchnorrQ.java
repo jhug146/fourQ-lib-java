@@ -14,6 +14,7 @@ import types.data.Pair;
 import types.point.FieldPoint;
 
 import static constants.ArrayUtils.reverseByteArray;
+import static constants.ArrayUtils.reverseByteArrayKeepLeadingZero;
 
 
 public class SchnorrQ {
@@ -46,12 +47,13 @@ public class SchnorrQ {
         );
         System.arraycopy(message, 0, bytes, Key.KEY_SIZE, message.length);
 
-        BigInteger rHash = HashFunction.computeHashReversed(Arrays.copyOfRange(bytes, Key.KEY_SIZE, bytes.length));
+        BigInteger rHash = HashFunction.computeHashReversed(Arrays.copyOfRange(bytes, Key.KEY_SIZE, bytes.length), bytes.length - Key.KEY_SIZE);
         final FieldPoint rPoint = ECC.eccMulFixed(rHash);
         final BigInteger sigStart = CryptoUtil.encode(rPoint);
 
         byte[] publicKeyBytes = ArrayUtils.bigIntegerToByte(publicKey, Key.KEY_SIZE, false);
         byte[] revBytes = reverseByteArray(bytes, true);
+        revBytes = ArrayUtils.concat(new byte[bytes.length - revBytes.length], revBytes);
         System.arraycopy(
                 ArrayUtils.bigIntegerToByte(sigStart, Key.KEY_SIZE, false),
                 0,
@@ -74,7 +76,7 @@ public class SchnorrQ {
         sigEnd = FP.subtractModOrder(rHash, sigEnd);
 
         byte[] sigStartBytes = ArrayUtils.bigIntegerToByte(sigStart, Key.KEY_SIZE, false);
-        byte[] sigEndBytes   = reverseByteArray(ArrayUtils.bigIntegerToByte(sigEnd,   Key.KEY_SIZE, false));
+        byte[] sigEndBytes   = reverseByteArrayKeepLeadingZero(ArrayUtils.bigIntegerToByte(sigEnd,   Key.KEY_SIZE, false));
         return new BigInteger(1, ArrayUtils.concat(sigStartBytes, sigEndBytes));
     }
 

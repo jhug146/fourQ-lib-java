@@ -37,6 +37,19 @@ public class ArrayUtils {
         return rev;
     }
 
+    public static byte[] reverseByteArrayKeepLeadingZero(byte[] src) {
+        if (src.length == 0) return new byte[0];
+        if (src.length == 1) return new byte[] {src[0]};
+
+        int n = src.length;
+        byte[] rev = new byte[n];
+
+        for (int i = 0; i < n; i++) {
+            rev[i] = src[n - 1 - i];
+        }
+        return rev;
+    }
+
     public static BigInteger reverseBigInteger(BigInteger val) {
         return new BigInteger(1, reverseByteArray(val.toByteArray(), true));
     }
@@ -86,5 +99,13 @@ public class ArrayUtils {
         }
 
         return Arrays.copyOfRange(raw, raw.length - keySize, raw.length);
+    }
+
+    public static byte[] safeToByteArray(BigInteger a, int target) {
+        byte[] raw = a.toByteArray();
+        if(raw.length == target) return raw;
+        byte[] paddedRaw = new byte[target];
+        System.arraycopy(raw, 0, paddedRaw, target-raw.length, raw.length);
+        return paddedRaw;
     }
 }

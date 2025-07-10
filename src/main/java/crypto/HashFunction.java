@@ -32,10 +32,11 @@ public class HashFunction {
         }
     }
 
-    public static BigInteger computeHashReversed(byte[] bytes) throws EncryptionException {
+    public static BigInteger computeHashReversed(byte[] bytes, int target) throws EncryptionException {
         try {
             MessageDigest digest = MessageDigest.getInstance(ENCRYPTION_STANDARD);
-            return new BigInteger(1, ArrayUtils.reverseByteArray(digest.digest(ArrayUtils.reverseByteArray(bytes, false)), false));
+            byte [] padded = ArrayUtils.concat(new byte[target - ArrayUtils.reverseByteArray(bytes, false).length], ArrayUtils.reverseByteArray(bytes, false));
+            return new BigInteger(1, ArrayUtils.reverseByteArray(digest.digest(padded), false));
         } catch (NoSuchAlgorithmException e) {
             throw new EncryptionException(String.format(
                     "No such encryption algorithm: %s\n",
