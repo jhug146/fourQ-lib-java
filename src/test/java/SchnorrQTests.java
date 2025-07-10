@@ -268,7 +268,39 @@ public class SchnorrQTests {
 
     @Test
     void testManyFalseSignatureVerifications() throws IOException, EncryptionException {
-        FileReader input = new FileReader(FILES_PATH + "/sig_tests.txt");
+        FileReader input = new FileReader(FILES_PATH + "/false_sig_tests.txt");
+        BufferedReader bufRead = new BufferedReader(input);
+        String line;
+        while ((line = bufRead.readLine()) != null) {
+            if (line.isBlank()) {
+                continue;
+            }
+            BigInteger publicKey = new BigInteger(bufRead.readLine().substring(14), 16);
+            byte[] message = HexFormat.of().parseHex(bufRead.readLine().substring(11));
+            BigInteger signature = new BigInteger(bufRead.readLine().substring(13), 16);
+            assertFalse(SchnorrQ.schnorrQVerify(publicKey, signature, message));
+        }
+    }
+
+    @Test
+    void testManyFalsePubKeyVerifications() throws IOException, EncryptionException {
+        FileReader input = new FileReader(FILES_PATH + "/false_pub_key_tests.txt");
+        BufferedReader bufRead = new BufferedReader(input);
+        String line;
+        while ((line = bufRead.readLine()) != null) {
+            if (line.isBlank()) {
+                continue;
+            }
+            BigInteger publicKey = new BigInteger(bufRead.readLine().substring(14), 16);
+            byte[] message = HexFormat.of().parseHex(bufRead.readLine().substring(11));
+            BigInteger signature = new BigInteger(bufRead.readLine().substring(13), 16);
+            assertFalse(SchnorrQ.schnorrQVerify(publicKey, signature, message));
+        }
+    }
+
+    @Test
+    void testManyFalseMessageVerifications() throws IOException, EncryptionException {
+        FileReader input = new FileReader(FILES_PATH + "/false_message_tests.txt");
         BufferedReader bufRead = new BufferedReader(input);
         String line;
         while ((line = bufRead.readLine()) != null) {
