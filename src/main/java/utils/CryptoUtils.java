@@ -28,7 +28,7 @@ import java.security.SecureRandom;
  * @author Naman Malhotra, James Hughff
  * @since 1.0
  */
-public class CryptoUtil {
+public class CryptoUtils {
     private static final SecureRandom secureRandom = new SecureRandom();
 
     /**
@@ -126,7 +126,7 @@ public class CryptoUtil {
      * @throws EncryptionException if decoding fails or point is invalid
      */
     public static FieldPoint decode(BigInteger encoded) throws EncryptionException {
-        F2Element y = BigIntegerExtension.convertBigIntegerToF2Element(encoded);  // TODO: Potential endian problem here
+        F2Element y = BigIntegerUtils.convertBigIntegerToF2Element(encoded);  // TODO: Potential endian problem here
         int signBit = encoded.testBit(7) ? 1 : 0;
         y.im = y.im.clearBit(127);
 

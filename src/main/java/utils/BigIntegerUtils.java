@@ -9,7 +9,7 @@ import java.util.Arrays;
 
 import static utils.ByteArrayReverseMode.KEEP_LEADING_ZERO;
 
-public class BigIntegerExtension {
+public class BigIntegerUtils {
     public static F2Element convertBigIntegerToF2Element(@NotNull BigInteger val) {
         BigInteger realPart = reverseBigInteger(val.divide(Key.POW_128));
         BigInteger imagPart = reverseBigInteger(val.mod(Key.POW_128));
