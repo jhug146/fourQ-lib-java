@@ -1,3 +1,4 @@
+import api.SchnorrQ;
 import exceptions.EncryptionException;
 
 import java.math.BigInteger;

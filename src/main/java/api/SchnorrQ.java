@@ -1,3 +1,5 @@
+package api;
+
 import java.math.BigInteger;
 import java.util.Arrays;
 
@@ -19,7 +21,7 @@ import static utils.ByteArrayUtils.reverseByteArray;
 
 
 /**
- * Implementation of SchnorrQ digital signature scheme over the FourQ elliptic curve.
+ * Implementation of api.SchnorrQ digital signature scheme over the FourQ elliptic curve.
  * 
  * FourQ is a high-security, high-performance elliptic curve that targets the 128-bit 
  * security level. It operates over the finite field GF((2^127-1)^2) and uses a 
@@ -28,10 +30,10 @@ import static utils.ByteArrayUtils.reverseByteArray;
  * 
  * - Public key generation from private keys
  * - Complete key pair generation  
- * - Message signing using SchnorrQ scheme
+ * - Message signing using api.SchnorrQ scheme
  * - Signature verification
  * 
- * The SchnorrQ signature scheme provides strong security guarantees including
+ * The api.SchnorrQ signature scheme provides strong security guarantees including
  * existential unforgeability under chosen message attacks (EUF-CMA) in the
  * random oracle model.
  * 
@@ -75,9 +77,9 @@ public class SchnorrQ {
     }
 
     /**
-     * Creates a SchnorrQ digital signature for the given message.
+     * Creates a api.SchnorrQ digital signature for the given message.
      * 
-     * The signing process follows the SchnorrQ protocol:
+     * The signing process follows the api.SchnorrQ protocol:
      * 1. Derive a deterministic nonce from the secret key
      * 2. Compute the commitment R = r*G where r is the nonce
      * 3. Compute the challenge hash H(R || publicKey || message)
@@ -160,9 +162,9 @@ public class SchnorrQ {
     }
 
     /**
-     * Verifies a SchnorrQ digital signature against a message and public key.
+     * Verifies a api.SchnorrQ digital signature against a message and public key.
      * 
-     * The verification process follows the SchnorrQ protocol:
+     * The verification process follows the api.SchnorrQ protocol:
      * 1. Parse signature into commitment R and response s
      * 2. Compute challenge hash H(R || publicKey || message)
      * 3. Verify equation: s*G + H*publicKey = R

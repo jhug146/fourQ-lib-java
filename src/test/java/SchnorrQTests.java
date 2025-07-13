@@ -1,4 +1,4 @@
-import utils.ByteArrayReverseMode;
+import api.SchnorrQ;
 import utils.ByteArrayUtils;
 import exceptions.EncryptionException;
 import exceptions.InvalidArgumentException;
@@ -8,7 +8,6 @@ import types.data.Pair;
 import static org.junit.jupiter.api.Assertions.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static utils.ByteArrayReverseMode.KEEP_LEADING_ZERO;
 import static utils.ByteArrayReverseMode.REMOVE_LEADING_ZERO;
 
 import java.io.BufferedReader;
@@ -109,7 +108,7 @@ public class SchnorrQTests {
     void testValidSignatureRoundTrip() throws Exception {
         BigInteger sk = VALID_PRIVATE_KEY;
         BigInteger pk = SchnorrQ.schnorrQKeyGeneration(sk);
-        byte[] msg = ByteArrayUtils.reverseByteArray("SchnorrQ test message".getBytes(), REMOVE_LEADING_ZERO);
+        byte[] msg = ByteArrayUtils.reverseByteArray("api.SchnorrQ test message".getBytes(), REMOVE_LEADING_ZERO);
 
         BigInteger sig = SchnorrQ.schnorrQSign(sk, pk, msg);
         assertTrue(SchnorrQ.schnorrQVerify(pk, sig, msg));
