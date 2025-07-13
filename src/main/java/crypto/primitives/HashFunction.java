@@ -1,4 +1,4 @@
-package crypto;
+package crypto.primitives;
 
 import utils.BigIntegerExtension;
 import utils.ByteArrayUtils;

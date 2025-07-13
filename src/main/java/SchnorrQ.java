@@ -6,7 +6,7 @@ import utils.ByteArrayUtils;
 import constants.Key;
 import utils.CryptoUtil;
 import crypto.core.ECC;
-import crypto.HashFunction;
+import crypto.primitives.HashFunction;
 import exceptions.EncryptionException;
 import exceptions.InvalidArgumentException;
 import field.operations.FP;

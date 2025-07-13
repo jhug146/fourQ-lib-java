@@ -1,6 +1,5 @@
-package crypto;
+package crypto.primitives;
 
-import java.math.BigInteger;
 import java.util.Arrays;
 
 import constants.PregeneratedTables;

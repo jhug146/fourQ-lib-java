@@ -1,7 +1,7 @@
 package crypto.core;
 
 import constants.Params;
-import crypto.Table;
+import crypto.primitives.Table;
 import exceptions.EncryptionException;
 import field.operations.FP;
 import org.jetbrains.annotations.NotNull;
