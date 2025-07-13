@@ -3,6 +3,7 @@ package types.data;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -19,6 +20,7 @@ import java.util.Objects;
  * @since 1.0
  */
 public class Pair<T, S> implements Serializable, Cloneable {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     public T first;
