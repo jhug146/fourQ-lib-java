@@ -1,11 +1,6 @@
-import constants.Key;
-import crypto.CryptoUtil;
-import crypto.core.ECC;
 import exceptions.EncryptionException;
-import types.point.FieldPoint;
 
 import java.math.BigInteger;
-import java.util.Arrays;
 
 public class Experiment {
     public static void main(String[] args) throws EncryptionException {

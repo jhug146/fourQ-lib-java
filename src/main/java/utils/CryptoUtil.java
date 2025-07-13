@@ -1,4 +1,4 @@
-package crypto;
+package utils;
 
 import constants.Params;
 import crypto.core.Curve;
@@ -13,23 +13,76 @@ import types.point.FieldPoint;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
+/**
+ * Cryptographic utility functions for FourQ operations.
+ * 
+ * This class provides essential cryptographic utilities including:
+ * - Secure random number generation
+ * - Montgomery form conversions for efficient modular arithmetic
+ * - Point encoding/decoding between curve points and byte representations
+ * - Field arithmetic optimizations
+ * 
+ * The encoding/decoding functions handle the compression and decompression
+ * of elliptic curve points for efficient storage and transmission.
+ * 
+ * @author Naman Malhotra, James Hughff
+ * @since 1.0
+ */
 public class CryptoUtil {
     private static final SecureRandom secureRandom = new SecureRandom();
 
+    /**
+     * Generates cryptographically secure random bytes.
+     * 
+     * Uses the system's SecureRandom implementation to generate high-quality
+     * random bytes suitable for cryptographic operations like key generation.
+     * 
+     * @param size the number of random bytes to generate
+     * @return a BigInteger containing the random bytes
+     */
     public static BigInteger randomBytes(int size) {
         byte[] bytes = new byte[size];
         secureRandom.nextBytes(bytes);
         return new BigInteger(bytes);
     }
 
+    /**
+     * Converts a value to Montgomery form for efficient modular arithmetic.
+     * 
+     * Montgomery form allows faster modular multiplications by avoiding
+     * expensive division operations. This is particularly useful for
+     * repeated modular operations in signature schemes.
+     * 
+     * @param key the value to convert to Montgomery form
+     * @return the value in Montgomery form
+     */
     public static BigInteger toMontgomery(BigInteger key) {
         return FP.montgomeryMultiplyModOrder(key, Params.MONTGOMERY_R_PRIME);
     }
 
+    /**
+     * Converts a value from Montgomery form back to normal representation.
+     * 
+     * This operation is the inverse of toMontgomery() and is used to
+     * convert results back to standard form after Montgomery arithmetic.
+     * 
+     * @param key the value in Montgomery form to convert back
+     * @return the value in normal form
+     */
     public static BigInteger fromMontgomery(BigInteger key) {
         return FP.montgomeryMultiplyModOrder(key, BigInteger.ONE);
     }
 
+    /**
+     * Encodes an elliptic curve point into compressed 32-byte representation.
+     * 
+     * The encoding stores the y-coordinate explicitly and encodes the x-coordinate's
+     * sign information in a single bit. This compression reduces storage requirements
+     * while maintaining all information needed to recover the full point.
+     * 
+     * @param P the curve point to encode
+     * @return the compressed point as a 32-byte BigInteger
+     */
     public static BigInteger encode(FieldPoint P) {
         byte temp1 = (byte) (P.getX().im.testBit(126) ? 0x80 : 0x00);
         byte temp2 = (byte) (P.getX().real.testBit(126) ? 0x80 : 0x00);
@@ -59,6 +112,19 @@ public class CryptoUtil {
         return new BigInteger(1, result);
     }
 
+    /**
+     * Decodes a compressed point representation back to a full curve point.
+     * 
+     * This method reverses the encoding process by:
+     * 1. Extracting the y-coordinate from the encoded data
+     * 2. Computing the x-coordinate using the curve equation
+     * 3. Determining the correct sign using the encoded bit
+     * 4. Validating the resulting point lies on the curve
+     * 
+     * @param encoded the compressed 32-byte point representation
+     * @return the decoded curve point
+     * @throws EncryptionException if decoding fails or point is invalid
+     */
     public static FieldPoint decode(BigInteger encoded) throws EncryptionException {
         F2Element y = Params.convertBigIntegerToF2Element(encoded);  // TODO: Potential endian problem here
         int signBit = encoded.testBit(7) ? 1 : 0;

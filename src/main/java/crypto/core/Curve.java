@@ -12,7 +12,34 @@ import java.math.BigInteger;
 import static constants.Params.T_VARBASE;
 import static constants.Params.W_VARBASE;
 
+/**
+ * Advanced curve operations and scalar decomposition for FourQ.
+ * 
+ * This class implements sophisticated algorithms for efficient scalar
+ * multiplication including:\n * - 4-dimensional GLV scalar decomposition
+ * - Fixed-window recoding for variable-base multiplication
+ * - mLSB-set recoding for fixed-base multiplication
+ * - Cofactor clearing operations
+ * 
+ * The GLV decomposition breaks down large scalars into smaller components
+ * that can be processed in parallel, significantly accelerating elliptic
+ * curve operations.
+ * 
+ * @author Naman Malhotra, James Hughff
+ * @since 1.0
+ */
 public class Curve {
+    /**
+     * Recodes a scalar using the fixed-window method for variable-base scalar multiplication.
+     * 
+     * This method transforms a scalar into a sequence of signed digits that allows
+     * for efficient computation using precomputed odd multiples. The technique
+     * reduces the number of point additions required during scalar multiplication.
+     * 
+     * @param scalar the scalar to recode
+     * @param signMasks output array for sign information
+     * @return array of recoded digits
+     */
     static int[] fixedWindowRecode(BigInteger scalar, int[] signMasks) {
         int[] digits = new int[T_VARBASE + 1];
         BigInteger val1 = BigInteger.ONE.shiftLeft(W_VARBASE.intValue()).subtract(BigInteger.ONE);
@@ -41,6 +68,16 @@ public class Curve {
         digits[pos] = ((signMasks[pos] & tempXorNeg) ^ negTempInt) >>> 1;
     }
 
+    /**
+     * Converts an affine point to extended projective coordinates.
+     * 
+     * Extended coordinates (X:Y:Z:T) where T = X*Y/Z provide faster
+     * addition formulas for twisted Edwards curves. This method initializes
+     * Z = 1 and sets up the auxiliary coordinates.
+     * 
+     * @param point the affine point (x,y) to convert
+     * @return the point in extended projective coordinates
+     */
     public static ExtendedPoint pointSetup(FieldPoint point) {
         return new ExtendedPoint(
                 point.getX(),
@@ -97,9 +134,17 @@ public class Curve {
     }
 
     /**
-     * Scalar decomposition for variable-base scalar multiplication using 4-dimensional GLV
-     * @param k - scalar in the range [0, 2^256-1]
-     * @return 4 sub-scalars for efficient scalar multiplication
+     * Decomposes a scalar using 4-dimensional GLV for parallel computation.
+     * 
+     * The Gallant-Lambert-Vanstone (GLV) method decomposes a large scalar k
+     * into four smaller scalars k1, k2, k3, k4 such that:
+     * k*P = k1*P + k2*φ(P) + k3*ψ(P) + k4*φ(ψ(P))
+     * 
+     * This allows parallel computation of four smaller scalar multiplications,
+     * significantly reducing the total computation time.
+     * 
+     * @param k the scalar to decompose (range [0, 2^256-1])
+     * @return array of 4 sub-scalars for efficient multiplication
      */
     public static BigInteger[] decompose(BigInteger k) {
         // Phase 1: Compute initial coefficients using truncated multiplication

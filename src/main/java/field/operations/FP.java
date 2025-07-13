@@ -5,7 +5,34 @@ import constants.Params;
 
 import java.math.BigInteger;
 
+/**
+ * Finite field arithmetic operations for FourQ over GF(2^127-1).
+ * 
+ * This class implements arithmetic in the base field GF(p) where p = 2^127-1
+ * is a Mersenne prime. The implementation includes:
+ * - Montgomery arithmetic for efficient modular operations
+ * - Modular addition, subtraction, and multiplication
+ * - Scalar reduction and conversion utilities
+ * - Optimized operations for the Mersenne prime structure
+ * 
+ * The PUtil nested interface provides low-level field operations optimized
+ * for the specific prime p = 2^127-1.
+ * 
+ * @author Naman Malhotra, James Hughff
+ * @since 1.0
+ */
 public class FP {
+    /**
+     * Performs Montgomery multiplication modulo the curve order.
+     * 
+     * Montgomery multiplication allows efficient modular arithmetic by
+     * avoiding expensive division operations. This method is essential
+     * for scalar arithmetic in signature operations.
+     * 
+     * @param ma first operand in Montgomery form
+     * @param mb second operand in Montgomery form
+     * @return the product ma * mb in Montgomery form, reduced modulo curve order
+     */
     public static BigInteger montgomeryMultiplyModOrder(BigInteger ma, BigInteger mb) {
         BigInteger rma = round256(ma);
         BigInteger rmb = round256(mb);
@@ -22,6 +49,15 @@ public class FP {
 
 
 
+    /**
+     * Reduces a value modulo the curve order using Montgomery arithmetic.
+     * 
+     * This method efficiently computes key mod order by using Montgomery
+     * multiplication operations, which is faster than standard modular reduction.
+     * 
+     * @param key the value to reduce modulo the curve order
+     * @return key mod order
+     */
     public static BigInteger moduloOrder(BigInteger key) {
         BigInteger res = montgomeryMultiplyModOrder(key, Params.MONTGOMERY_R_PRIME);
         return montgomeryMultiplyModOrder(
@@ -40,7 +76,16 @@ public class FP {
         return a.add(b).mod(Params.CURVE_ORDER);
     }
 
-    // Convert scalar to odd if even using the prime subgroup order r
+    /**
+     * Converts an even scalar to odd by adding the curve order if necessary.
+     * 
+     * Many ECC algorithms require odd scalars for efficiency. Since the curve
+     * order is odd, adding it to an even scalar makes it odd without changing
+     * the result of scalar multiplication.
+     * 
+     * @param scalar the scalar to convert
+     * @return an odd scalar equivalent to the input modulo the curve order
+     */
     public static BigInteger conversionToOdd(BigInteger scalar) {
         if (scalar.testBit(0)) {
             return scalar;  // Already odd
@@ -95,7 +140,13 @@ public class FP {
         return new Pair<>(wrappedResult, 1);
     }
 
-    // namespace for prime-based utility functions.
+    /**
+     * Low-level field arithmetic operations for GF(2^127-1).
+     * 
+     * This interface provides optimized implementations for arithmetic
+     * in the Mersenne prime field p = 2^127-1, taking advantage of
+     * the special structure of Mersenne primes for faster reductions.
+     */
     public interface PUtil {
         // Modular correction, output = a mod (2^127-1)
         static BigInteger mod1271(BigInteger a) {

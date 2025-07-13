@@ -2,9 +2,9 @@ package constants;
 
 import org.jetbrains.annotations.NotNull;
 import types.data.F2Element;
+import utils.ByteArrayUtils;
 
 import java.math.BigInteger;
-import java.util.Arrays;
 
 public class Params {
     public static final int W_FIXEDBASE = 5;
@@ -59,8 +59,8 @@ public class Params {
     );
 
     public static F2Element convertBigIntegerToF2Element(@NotNull BigInteger val) {
-        BigInteger realPart = ArrayUtils.reverseBigInteger(val.divide(Key.POW_128));
-        BigInteger imagPart = ArrayUtils.reverseBigInteger(val.mod(Key.POW_128));
+        BigInteger realPart = ByteArrayUtils.reverseBigInteger(val.divide(Key.POW_128));
+        BigInteger imagPart = ByteArrayUtils.reverseBigInteger(val.mod(Key.POW_128));
         return new F2Element(realPart, imagPart);
     }
 

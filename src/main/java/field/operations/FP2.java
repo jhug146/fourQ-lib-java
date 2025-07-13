@@ -4,8 +4,29 @@ import types.data.F2Element;
 
 import java.math.BigInteger;
 
+/**
+ * Quadratic extension field arithmetic for GF((2^127-1)^2).
+ * 
+ * This class implements arithmetic in the quadratic extension field
+ * GF(p^2) where p = 2^127-1. Elements are represented as a + bi where
+ * a and b are elements of the base field GF(p) and i^2 = -1.
+ * 
+ * The FourQ curve is defined over this quadratic extension field,
+ * allowing for more efficient curve operations compared to curves
+ * over prime fields of similar security levels.
+ * 
+ * @author Naman Malhotra, James Hughff
+ * @since 1.0
+ */
 public class FP2 {
-    // Copy of a GF(p^2) element, output = a
+    /**
+     * Creates a copy of a GF(p^2) element.
+     * 
+     * Since BigInteger objects are immutable, this simply returns the input.
+     * 
+     * @param a the element to copy
+     * @return a copy of the input element
+     */
     public static F2Element fp2Copy1271(F2Element a) {
         return a;  // BigInteger is immutable, so copy is not needed
     }
@@ -15,7 +36,16 @@ public class FP2 {
         return new F2Element(FP.PUtil.fpNeg1271(a.real), FP.PUtil.fpNeg1271(a.im));
     }
 
-    // GF(p^2) squaring, c = a^2 in GF((2^127-1)^2)
+    /**
+     * Squares an element in GF(p^2) using optimized formulas.
+     * 
+     * For element a = a0 + a1*i, computes a^2 using the identity:
+     * a^2 = (a0 + a1)(a0 - a1) + 2*a0*a1*i
+     * This saves one multiplication compared to general multiplication.
+     * 
+     * @param a the element to square
+     * @return a^2 in GF(p^2)
+     */
     public static F2Element fp2Sqr1271(F2Element a) {
         BigInteger t3 = FP.PUtil.fpMul1271(a.real, a.im);
         return new F2Element(
@@ -27,7 +57,16 @@ public class FP2 {
         );
     }
 
-    // GF(p^2) multiplication, c = a*b in GF((2^127-1)^2)
+    /**
+     * Multiplies two elements in GF(p^2) using the relation i^2 = -1.
+     * 
+     * For elements a = a0 + a1*i and b = b0 + b1*i, computes:
+     * c = a*b = (a0*b0 - a1*b1) + (a0*b1 + a1*b0)*i
+     * 
+     * @param a first multiplicand
+     * @param b second multiplicand
+     * @return the product a*b in GF(p^2)
+     */
     public static F2Element fp2Mul1271(F2Element a, F2Element b) {
         BigInteger t1 = FP.PUtil.fpMul1271(a.real, b.real);     // t1 = a0*b0
         BigInteger t2 = FP.PUtil.fpMul1271(a.im, b.im);         // t2 = a1*b1
@@ -65,7 +104,16 @@ public class FP2 {
         return fp2Sub1271(a, b);
     }
 
-    // GF(p^2) inversion, a = (a0-i*a1)/(a0^2+a1^2)
+    /**
+     * Computes the multiplicative inverse of an element in GF(p^2).
+     * 
+     * For element a = a0 + a1*i, computes a^(-1) using the formula:
+     * a^(-1) = (a0 - a1*i) / (a0^2 + a1^2)
+     * where the division is performed in the base field GF(p).
+     * 
+     * @param a the element to invert (must be non-zero)
+     * @return the multiplicative inverse a^(-1)
+     */
     public static F2Element fp2Inv1271(F2Element a) {
         F2Element t1 = new F2Element(
                 FP.PUtil.fpSqr1271(a.real),                 // t1.first = a0^2
