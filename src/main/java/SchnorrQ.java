@@ -1,6 +1,7 @@
 import java.math.BigInteger;
 import java.util.Arrays;
 
+import utils.BigIntegerExtension;
 import utils.ByteArrayUtils;
 import constants.Key;
 import utils.CryptoUtil;
@@ -125,9 +126,9 @@ public class SchnorrQ {
         final BigInteger sigStart = CryptoUtil.encode(rPoint);
 
         // Prepare challenge hash input: R || publicKey || message
-        byte[] publicKeyBytes = ByteArrayUtils.bigIntegerToByte(publicKey, Key.KEY_SIZE, false);
+        byte[] publicKeyBytes = BigIntegerExtension.bigIntegerToByte(publicKey, Key.KEY_SIZE, false);
         System.arraycopy(
-                ByteArrayUtils.bigIntegerToByte(sigStart, Key.KEY_SIZE, false),
+                BigIntegerExtension.bigIntegerToByte(sigStart, Key.KEY_SIZE, false),
                 0,
                 bytes,
                 0,
@@ -153,8 +154,8 @@ public class SchnorrQ {
         // Compute s = r - H * secretKey (mod order)
         sigEnd = FP.subtractModOrder(rHash, sigEnd);
 
-        byte[] sigStartBytes = ByteArrayUtils.bigIntegerToByte(sigStart, Key.KEY_SIZE, false);
-        byte[] sigEndBytes   = reverseByteArray(ByteArrayUtils.bigIntegerToByte(sigEnd, Key.KEY_SIZE, false), KEEP_LEADING_ZERO);
+        byte[] sigStartBytes = BigIntegerExtension.bigIntegerToByte(sigStart, Key.KEY_SIZE, false);
+        byte[] sigEndBytes   = reverseByteArray(BigIntegerExtension.bigIntegerToByte(sigEnd, Key.KEY_SIZE, false), KEEP_LEADING_ZERO);
         return new BigInteger(1, ByteArrayUtils.concat(sigStartBytes, sigEndBytes));
     }
 
@@ -196,13 +197,13 @@ public class SchnorrQ {
         }
         final byte[] bytes = new byte[message.length + 2 * Key.KEY_SIZE];
         System.arraycopy(signature.toByteArray(), 0, bytes, 0, Key.KEY_SIZE);
-        System.arraycopy(ByteArrayUtils.bigIntegerToByte(publicKey, Key.KEY_SIZE, false), 0, bytes, Key.KEY_SIZE, Key.KEY_SIZE);
+        System.arraycopy(BigIntegerExtension.bigIntegerToByte(publicKey, Key.KEY_SIZE, false), 0, bytes, Key.KEY_SIZE, Key.KEY_SIZE);
         System.arraycopy(message, 0, bytes, 2 * Key.KEY_SIZE, message.length);
 
         final BigInteger sig32 = signature.mod(Key.POW_256);
         // Compute s*G + H*publicKey using double scalar multiplication
         FieldPoint affPoint = ECC.eccMulDouble(
-                ByteArrayUtils.reverseBigInteger(sig32),
+                BigIntegerExtension.reverseBigInteger(sig32),
                 CryptoUtil.decode(publicKey),       // Implicitly checks that public key lies on the curve
                 new BigInteger(1, HashFunction.computeHash(bytes, true))
         );

@@ -7,11 +7,12 @@ import types.data.F2Element;
 
 import java.math.BigInteger;
 
-public class PreComputedExtendedPoint implements TablePoint{
+public class PreComputedExtendedPoint implements TablePoint {
     public F2Element xy;
     public F2Element yx;
     public F2Element z;
     public F2Element t;
+
     public PreComputedExtendedPoint(F2Element _xy, F2Element _yx, F2Element _z, F2Element _t) {
         xy = _xy;
         yx = _yx;
@@ -32,12 +33,7 @@ public class PreComputedExtendedPoint implements TablePoint{
     }
 
     public PreComputedExtendedPoint dup() {
-        return new PreComputedExtendedPoint(
-                this.xy,
-                this.yx,
-                this.z,
-                this.t
-        );
+        return new PreComputedExtendedPoint(this.xy, this.yx, this.z, this.t);
     }
 
     @Override
@@ -45,7 +41,7 @@ public class PreComputedExtendedPoint implements TablePoint{
         F2Element xy_f2 = xy;
         F2Element yx_f2 = yx;
 
-        // TODO: Assuming z = 1, we can directly compute affine coordinates
+        // Assuming z = 1, we can directly compute affine coordinates
         F2Element two = new F2Element(BigInteger.valueOf(2), BigInteger.ZERO);
         F2Element twoInverse = FP2.fp2Inv1271(two);
 
@@ -65,20 +61,6 @@ public class PreComputedExtendedPoint implements TablePoint{
     }
 
     @Override
-    public void filterMaskForEach(
-            @NotNull TablePoint tempPoint,
-            @NotNull BigInteger mask,
-            boolean modZ
-    ) {
-        xy = xy.applyMasks(tempPoint.getX(), mask);
-        yx = yx.applyMasks(tempPoint.getY(), mask);
-        t = t.applyMasks(tempPoint.getT(), mask);
-        if (modZ) {
-            z = z.applyMasks(tempPoint.getZ(), mask);
-        }
-    }
-
-    @Override
     public PreComputedExtendedPoint toPreComputedExtendedPoint() {
         return this;
     }
@@ -89,23 +71,13 @@ public class PreComputedExtendedPoint implements TablePoint{
     }
 
     @Override
-    public F2Element getY() {
-        return yx;
-    }
-
-    @Override
-    public F2Element getT() {
-        return t;
-    }
-
-    @Override
-    public F2Element getZ() {
-        return z;
-    }
-
-    @Override
     public void setX(F2Element x) {
         this.xy = x;
+    }
+
+    @Override
+    public F2Element getY() {
+        return yx;
     }
 
     @Override
@@ -114,12 +86,24 @@ public class PreComputedExtendedPoint implements TablePoint{
     }
 
     @Override
+    public F2Element getT() {
+        return t;
+    }
+
+    @Override
     public void setT(F2Element t) {
         this.t = t;
     }
 
     @Override
-    public void setZ(F2Element z) { this.z = z; }
+    public F2Element getZ() {
+        return z;
+    }
+
+    @Override
+    public void setZ(F2Element z) {
+        this.z = z;
+    }
 
     @Override
     public String toString() {

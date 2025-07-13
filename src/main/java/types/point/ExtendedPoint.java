@@ -9,6 +9,7 @@ public class ExtendedPoint implements Point {
     private F2Element z;
     private F2Element ta;
     private F2Element tb;
+
     public ExtendedPoint(F2Element _x, F2Element _y, F2Element _z, F2Element _ta, F2Element _tb) {
         x = _x;
         y = _y;
@@ -18,37 +19,51 @@ public class ExtendedPoint implements Point {
     }
 
     @Override
-    public F2Element getX() { return x; }
+    public F2Element getX() {
+        return x;
+    }
 
     @Override
-    public F2Element getY() { return y; }
-
-    public F2Element getZ() { return z; }
-
-    public F2Element getTa() { return ta; }
-
-    public F2Element getTb() { return tb; }
+    public void setX(F2Element x) {
+        this.x = x;
+    }
 
     @Override
-    public void setX(F2Element x) { this.x = x; }
+    public F2Element getY() {
+        return y;
+    }
 
     @Override
-    public void setY(F2Element y) { this.y = y; }
+    public void setY(F2Element y) {
+        this.y = y;
+    }
 
-    public void setZ(F2Element z) { this.z = z; }
+    public F2Element getZ() {
+        return z;
+    }
 
-    public void setTa(F2Element ta) { this.ta = ta; }
+    public void setZ(F2Element z) {
+        this.z = z;
+    }
 
-    public void setTb(F2Element tb) { this.tb = tb; }
+    public F2Element getTa() {
+        return ta;
+    }
+
+    public void setTa(F2Element ta) {
+        this.ta = ta;
+    }
+
+    public F2Element getTb() {
+        return tb;
+    }
+
+    public void setTb(F2Element tb) {
+        this.tb = tb;
+    }
 
     public ExtendedPoint dup() {
-        return new ExtendedPoint(
-                x.dup(),
-                y.dup(),
-                z.dup(),
-                ta.dup(),
-                tb.dup()
-        );
+        return new ExtendedPoint(x.dup(), y.dup(), z.dup(), ta.dup(), tb.dup());
     }
 
     @Override

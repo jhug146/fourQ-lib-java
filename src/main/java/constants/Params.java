@@ -1,21 +1,20 @@
 package constants;
 
-import org.jetbrains.annotations.NotNull;
 import types.data.F2Element;
-import utils.ByteArrayUtils;
 
 import java.math.BigInteger;
 
 public class Params {
-    public static final int W_FIXEDBASE = 5;
-    public static final int V_FIXEDBASE = 5;
-    public static final int D_FIXEDBASE = 54;
-    public static final int E_FIXEDBASE = 10;
+    public static final int
+            W_FIXEDBASE = 5,
+            V_FIXEDBASE = 5,
+            D_FIXEDBASE = 54,
+            E_FIXEDBASE = 10;
 
     public static final int L_FIXEDBASE = D_FIXEDBASE * W_FIXEDBASE;
     public static final int HEX_RADIX = 16;
 
-    public static final int NWORDS_ORDER = 8; // TODO
+    public static final int NWORDS_ORDER = 8;
 
     public static final int PRE_COMPUTE_TABLE_LENGTH = 8;
 
@@ -58,20 +57,11 @@ public class Params {
             new BigInteger("6E1C4AF8630E024249A7C344844C8B5C", HEX_RADIX)
     );
 
-    public static F2Element convertBigIntegerToF2Element(@NotNull BigInteger val) {
-        BigInteger realPart = ByteArrayUtils.reverseBigInteger(val.divide(Key.POW_128));
-        BigInteger imagPart = ByteArrayUtils.reverseBigInteger(val.mod(Key.POW_128));
-        return new F2Element(realPart, imagPart);
-    }
-
-    // Fixed integer constants for the decomposition
-    // Close "offset" vector
     public static final BigInteger C1 = new BigInteger("72482C5251A4559C", HEX_RADIX);
     public static final BigInteger C2 = new BigInteger("59F95B0ADD276F6C", HEX_RADIX);
     public static final BigInteger C3 = new BigInteger("7DD2D17C4625FA78", HEX_RADIX);
     public static final BigInteger C4 = new BigInteger("6BC57DEF56CE8877", HEX_RADIX);
 
-    // Optimal basis vectors
     public static final BigInteger B11 = new BigInteger("0906FF27E0A0A196", HEX_RADIX);
     public static final BigInteger B12 = new BigInteger("1363E862C22A2DA0", HEX_RADIX);
     public static final BigInteger B13 = new BigInteger("07426031ECC8030F", HEX_RADIX);
@@ -91,7 +81,6 @@ public class Params {
     public static final BigInteger B44 = new BigInteger("18D5087896DE0AEA", HEX_RADIX);
 
     // Precomputed integers for fast-Babai rounding
-    // Note: C arrays are little-endian, so we reverse the order for BigInteger
     public static final BigInteger ELL1 = new BigInteger("0700000000000000FC5BB5C5EA2BE5DFF75682ACE6A6BD66259686E09D1A7D4F", HEX_RADIX);
     public static final BigInteger ELL2 = new BigInteger("03000000000000008FD4B04CAA6C0F8A2BD235580F468D8DD1BA1D84DD627AFB", HEX_RADIX);
     public static final BigInteger ELL3 = new BigInteger("0000000000000000D038BF8D0BFFBAF6C42BD6C965DCA9029B291A33678C203C", HEX_RADIX);

@@ -2,6 +2,7 @@ package constants;
 
 import types.data.F2Element;
 import types.point.PreComputedExtendedPoint;
+import utils.BigIntegerExtension;
 
 import java.math.BigInteger;
 
@@ -99,10 +100,10 @@ public class PregeneratedTables {
             String twoDT = FIXED_BASE_TABLE[i+2];     // 2*d*t coordinate
 
             parsedArray[nextPos] = new PreComputedExtendedPoint(
-                    Params.convertBigIntegerToF2Element(new BigInteger(xPlusY, Params.HEX_RADIX)),
-                    Params.convertBigIntegerToF2Element(new BigInteger(yMinusX, Params.HEX_RADIX)),
+                    BigIntegerExtension.convertBigIntegerToF2Element(new BigInteger(xPlusY, Params.HEX_RADIX)),
+                    BigIntegerExtension.convertBigIntegerToF2Element(new BigInteger(yMinusX, Params.HEX_RADIX)),
                     new F2Element(BigInteger.ONE, BigInteger.ZERO),
-                    Params.convertBigIntegerToF2Element(new BigInteger(twoDT, Params.HEX_RADIX))
+                    BigIntegerExtension.convertBigIntegerToF2Element(new BigInteger(twoDT, Params.HEX_RADIX))
             );
         }
 

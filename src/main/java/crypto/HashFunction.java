@@ -1,6 +1,6 @@
 package crypto;
 
-import utils.ByteArrayReverseMode;
+import utils.BigIntegerExtension;
 import utils.ByteArrayUtils;
 import constants.Key;
 import exceptions.EncryptionException;
@@ -35,7 +35,7 @@ public class HashFunction {
      * @throws EncryptionException if the hash algorithm is not available
      */
     public static byte[] computeHash(@NotNull BigInteger input, boolean reverse) throws EncryptionException {
-        return computeHash(ByteArrayUtils.bigIntegerToByte(input, Key.KEY_SIZE,false), reverse);
+        return computeHash(BigIntegerExtension.bigIntegerToByte(input, Key.KEY_SIZE,false), reverse);
     }
 
     /**

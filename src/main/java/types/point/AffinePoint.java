@@ -5,7 +5,6 @@ import exceptions.TablePointCastException;
 import types.data.F2Element;
 
 import java.math.BigInteger;
-import java.util.ArrayDeque;
 import java.util.Objects;
 
 public class AffinePoint implements TablePoint {
@@ -25,25 +24,12 @@ public class AffinePoint implements TablePoint {
     }
 
     public ExtendedPoint toExtendedPoint() {
-        return new ExtendedPoint(
-                this.x,
-                this.y,
-                new F2Element(
-                        BigInteger.ONE,
-                        BigInteger.ZERO
-                ),
-                this.x,
-                this.y
-        );
+        return new ExtendedPoint(this.x, this.y, new F2Element(BigInteger.ONE, BigInteger.ZERO), this.x, this.y);
     }
 
     @Override
     public AffinePoint dup() {
-        return new AffinePoint(
-                x,
-                y,
-                t
-        );
+        return new AffinePoint(x, y, t);
     }
 
     @Override
@@ -63,17 +49,6 @@ public class AffinePoint implements TablePoint {
     }
 
     @Override
-    public void filterMaskForEach(
-            TablePoint tempPoint,
-            BigInteger mask,
-            boolean modZ
-    ) {
-        x = x.applyMasks(tempPoint.getX(), mask);
-        y = y.applyMasks(tempPoint.getY(), mask);
-        t = t.applyMasks(tempPoint.getT(), mask);
-    }
-
-    @Override
     public PreComputedExtendedPoint toPreComputedExtendedPoint() {
         throw new TablePointCastException("Trying to cast Affine to unsupported PreComputedExtendedPoint via TableLookup.");
     }
@@ -84,27 +59,42 @@ public class AffinePoint implements TablePoint {
     }
 
     @Override
-    public F2Element getX() { return x; }
+    public F2Element getX() {
+        return x;
+    }
 
     @Override
-    public F2Element getY() { return y; }
+    public void setX(F2Element x) {
+        this.x = x;
+    }
 
     @Override
-    public F2Element getT() { return t; }
+    public F2Element getY() {
+        return y;
+    }
+
+    public void setY(F2Element y) {
+        this.y = y;
+    }
 
     @Override
-    public F2Element getZ() { return null; }
+    public F2Element getT() {
+        return t;
+    }
 
     @Override
-    public void setX(F2Element x) { this.x = x; }
-
-    public void setY(F2Element y) { this.y = y; }
-
-    @Override
-    public void setT(F2Element t) { this.t = t; }
+    public void setT(F2Element t) {
+        this.t = t;
+    }
 
     @Override
-    public void setZ(F2Element z) {}
+    public F2Element getZ() {
+        return null;
+    }
+
+    @Override
+    public void setZ(F2Element z) {
+    }
 
     @Override
     public String toString() {
