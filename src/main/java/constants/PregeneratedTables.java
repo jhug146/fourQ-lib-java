@@ -91,6 +91,11 @@ public class PregeneratedTables {
 
     public static final PreComputedExtendedPoint[] FIXED_BASE_TABLE_POINTS = convertUnsignedStringArrayToPoints();
 
+    // The function below aims to convert the above unsigned String array To an array of points,
+    // following the specification outlined:
+    // The table above was generated using window width W = 5 and table parameter V = 5 (see http://eprint.iacr.org/2013/158).
+    // Number of point entries = 5 * 2^4 = 80 points, where each point (x,y) is represented using coordinates (x+y,y-x,2*d*t).
+    // Table size = 80 * 3 * 256 = 7.5KB.
     private static PreComputedExtendedPoint[] convertUnsignedStringArrayToPoints() {
         PreComputedExtendedPoint[] parsedArray = new PreComputedExtendedPoint[FIXED_BASE_TABLE.length / 3];
 
