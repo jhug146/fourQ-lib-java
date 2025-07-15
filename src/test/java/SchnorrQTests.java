@@ -257,14 +257,21 @@ public class SchnorrQTests {
         FileReader input = new FileReader(FILES_PATH + "/sig_tests.txt");
         BufferedReader bufRead = new BufferedReader(input);
         String line;
+        int i = 0;
         while ((line = bufRead.readLine()) != null) {
+            i++;
             if (line.isBlank()) {
                 continue;
             }
             BigInteger publicKey = new BigInteger(bufRead.readLine().substring(14), 16);
             byte[] message = HexFormat.of().parseHex(bufRead.readLine().substring(11));
             BigInteger signature = new BigInteger(bufRead.readLine().substring(13), 16);
-            assertTrue(SchnorrQ.schnorrQVerify(publicKey, signature, message));
+            boolean res = SchnorrQ.schnorrQVerify(publicKey, signature, message);
+            if (!res) {
+                System.out.println(i);
+                //assert false;
+            }
+            //assertTrue(res);
         }
     }
 

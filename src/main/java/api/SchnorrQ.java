@@ -184,12 +184,20 @@ public class SchnorrQ {
      */
     public static boolean schnorrQVerify(@NotNull BigInteger publicKey, @NotNull BigInteger signature, byte[] message) throws EncryptionException {
         // Security check: ensure specific bit is zero for both inputs
-        if (publicKey.testBit(Key.TEST_BIT) || signature.testBit(Key.TEST_BIT)) {
+        if (publicKey.testBit(Key.PUB_TEST_BIT)) {
             throw new InvalidArgumentException(String.format(
-                    "Invalid argument: Bit %d is not set to zero in both the public key and signature.",
-                    Key.TEST_BIT
+                    "Invalid argument: Bit %d is not set to zero in both the public key.",
+                    Key.PUB_TEST_BIT
             ));
         }
+
+        if (signature.testBit(Key.SIG_TEST_BIT)) {
+            throw new InvalidArgumentException(String.format(
+                    "Invalid argument: Bit %d is not set to zero in both the signature.",
+                    Key.SIG_TEST_BIT
+            ));
+        }
+
         // Validate signature is within acceptable range
         if (signature.and(BigInteger.ONE.shiftLeft(256).subtract(BigInteger.ONE)).compareTo(BigInteger.ONE.shiftLeft(246)) < 0){
             throw new InvalidArgumentException(String.format(
