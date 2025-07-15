@@ -260,6 +260,7 @@ public class SchnorrQTests {
         int i = 0;
         while ((line = bufRead.readLine()) != null) {
             i++;
+            System.out.println(i);
             if (line.isBlank()) {
                 continue;
             }
@@ -267,11 +268,7 @@ public class SchnorrQTests {
             byte[] message = HexFormat.of().parseHex(bufRead.readLine().substring(11));
             BigInteger signature = new BigInteger(bufRead.readLine().substring(13), 16);
             boolean res = SchnorrQ.schnorrQVerify(publicKey, signature, message);
-            if (!res) {
-                System.out.println(i);
-                //assert false;
-            }
-            //assertTrue(res);
+            assertTrue(res);
         }
     }
 

@@ -16,23 +16,24 @@ import org.jetbrains.annotations.NotNull;
 import types.data.Pair;
 import types.point.FieldPoint;
 
+import static exceptions.ValidationErrors.*;
 import static utils.ByteArrayReverseMode.*;
 import static utils.ByteArrayUtils.reverseByteArray;
 
 
 /**
  * Implementation of api.SchnorrQ digital signature scheme over the FourQ elliptic curve.
- * 
+ * <p>
  * FourQ is a high-security, high-performance elliptic curve that targets the 128-bit 
  * security level. It operates over the finite field GF((2^127-1)^2) and uses a 
  * four-dimensional Gallant-Lambert-Vanstone decomposition for efficient scalar 
  * multiplications. This implementation provides:
- * 
+ * <p>
  * - Public key generation from private keys
  * - Complete key pair generation  
  * - Message signing using api.SchnorrQ scheme
  * - Signature verification
- * 
+ * <p>
  * The api.SchnorrQ signature scheme provides strong security guarantees including
  * existential unforgeability under chosen message attacks (EUF-CMA) in the
  * random oracle model.
@@ -43,7 +44,7 @@ import static utils.ByteArrayUtils.reverseByteArray;
 public class SchnorrQ {
     /**
      * Generates a public key from the given private key using the FourQ curve.
-     * 
+     * <p>
      * The key generation process involves:
      * 1. Computing SHA-512 hash of the private key with byte reversal
      * 2. Performing scalar multiplication with the curve generator point
@@ -62,7 +63,7 @@ public class SchnorrQ {
 
     /**
      * Generates a complete public-private key pair using cryptographically secure randomness.
-     * 
+     * <p>
      * This method creates a fresh private key using a secure random number generator
      * and derives the corresponding public key. The private key is generated with
      * sufficient entropy for 128-bit security.
@@ -77,8 +78,8 @@ public class SchnorrQ {
     }
 
     /**
-     * Creates a api.SchnorrQ digital signature for the given message.
-     * 
+     * Creates an api.SchnorrQ digital signature for the given message.
+     * <p>
      * The signing process follows the api.SchnorrQ protocol:
      * 1. Derive a deterministic nonce from the secret key
      * 2. Compute the commitment R = r*G where r is the nonce
@@ -162,13 +163,13 @@ public class SchnorrQ {
     }
 
     /**
-     * Verifies a api.SchnorrQ digital signature against a message and public key.
-     * 
+     * Verifies an api.SchnorrQ digital signature against a message and public key.
+     * <p>
      * The verification process follows the api.SchnorrQ protocol:
      * 1. Parse signature into commitment R and response s
      * 2. Compute challenge hash H(R || publicKey || message)
      * 3. Verify equation: s*G + H*publicKey = R
-     * 
+     * <p>
      * This method includes several security checks:
      * - Validates that specific bits are properly set to zero
      * - Ensures signature is within valid range
@@ -197,7 +198,7 @@ public class SchnorrQ {
         final BigInteger sig32 = signature.mod(Key.POW_256);
         // Compute s*G + H*publicKey using double scalar multiplication
         FieldPoint affPoint = ECC.eccMulDouble(
-                BigIntegerUtils.reverseBigInteger(sig32),
+                BigIntegerUtils.reverseBigInteger(sig32, KEEP_LEADING_ZERO),
                 CryptoUtils.decode(publicKey),       // Implicitly checks that public key lies on the curve
                 new BigInteger(1, HashFunction.computeHash(bytes, true))
         );
@@ -205,30 +206,5 @@ public class SchnorrQ {
         final BigInteger encoded = CryptoUtils.encode(affPoint);
         // Verify that computed point equals the commitment R from signature
         return encoded.equals(signature.divide(Key.POW_256));
-    }
-
-    private static boolean checkSignatureSize(BigInteger signature) {
-        return signature.and(BigInteger.ONE.shiftLeft(256).subtract(BigInteger.ONE)).compareTo(BigInteger.ONE.shiftLeft(246)) < 0;
-    }
-
-    private static void publicKeyError() throws InvalidArgumentException {
-        throw new InvalidArgumentException(String.format(
-                "Invalid argument: Bit %d is not set to zero in both the public key.",
-                Key.PUB_TEST_BIT
-        ));
-    }
-
-    private static void signatureError() throws InvalidArgumentException {
-        throw new InvalidArgumentException(String.format(
-                "Invalid argument: Bit %d is not set to zero in both the signature.",
-                Key.SIG_TEST_BIT
-        ));
-    }
-
-    private static void signatureSizeError() throws InvalidArgumentException {
-        throw new InvalidArgumentException(String.format(
-                "Invalid argument: Signature must be less than 2^%d.",
-                Key.MAX_SIG_LENGTH
-        ));
     }
 }

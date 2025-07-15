@@ -15,13 +15,13 @@ import java.security.SecureRandom;
 
 /**
  * Cryptographic utility functions for FourQ operations.
- * 
+ * <p>
  * This class provides essential cryptographic utilities including:
  * - Secure random number generation
  * - Montgomery form conversions for efficient modular arithmetic
  * - Point encoding/decoding between curve points and byte representations
  * - Field arithmetic optimizations
- * 
+ * <p>
  * The encoding/decoding functions handle the compression and decompression
  * of elliptic curve points for efficient storage and transmission.
  * 
@@ -33,7 +33,7 @@ public class CryptoUtils {
 
     /**
      * Generates cryptographically secure random bytes.
-     * 
+     * <p>
      * Uses the system's SecureRandom implementation to generate high-quality
      * random bytes suitable for cryptographic operations like key generation.
      * 
@@ -48,7 +48,7 @@ public class CryptoUtils {
 
     /**
      * Converts a value to Montgomery form for efficient modular arithmetic.
-     * 
+     * <p>
      * Montgomery form allows faster modular multiplications by avoiding
      * expensive division operations. This is particularly useful for
      * repeated modular operations in signature schemes.
@@ -62,7 +62,7 @@ public class CryptoUtils {
 
     /**
      * Converts a value from Montgomery form back to normal representation.
-     * 
+     * <p>
      * This operation is the inverse of toMontgomery() and is used to
      * convert results back to standard form after Montgomery arithmetic.
      * 
@@ -75,7 +75,7 @@ public class CryptoUtils {
 
     /**
      * Encodes an elliptic curve point into compressed 32-byte representation.
-     * 
+     * <p>
      * The encoding stores the y-coordinate explicitly and encodes the x-coordinate's
      * sign information in a single bit. This compression reduces storage requirements
      * while maintaining all information needed to recover the full point.
@@ -114,7 +114,7 @@ public class CryptoUtils {
 
     /**
      * Decodes a compressed point representation back to a full curve point.
-     * 
+     * <p>
      * This method reverses the encoding process by:
      * 1. Extracting the y-coordinate from the encoded data
      * 2. Computing the x-coordinate using the curve equation
@@ -126,7 +126,7 @@ public class CryptoUtils {
      * @throws EncryptionException if decoding fails or point is invalid
      */
     public static FieldPoint decode(BigInteger encoded) throws EncryptionException {
-        F2Element y = BigIntegerUtils.convertBigIntegerToF2Element(encoded);  // TODO: Potential endian problem here
+        F2Element y = BigIntegerUtils.convertBigIntegerToF2Element(encoded);
         int signBit = encoded.testBit(7) ? 1 : 0;
         y.im = y.im.clearBit(127);
 
@@ -178,10 +178,10 @@ public class CryptoUtils {
         int signDec;
         if (x.isZero()) {
             // Entire x coordinate is zero, extract sign from imaginary part
-            signDec = x.im.shiftRight(125).intValue() & 0x3;  // Extract top 2 bits for 127-bit field
+            signDec = x.im.shiftRight(126).intValue() & 0x3;  // Extract top 2 bits for 127-bit field
         } else {
             // x coordinate is non-zero, extract sign from real part
-            signDec = x.real.shiftRight(125).intValue() & 0x3;  // Extract top 2 bits for 127-bit field
+            signDec = x.real.shiftRight(126).intValue() & 0x3;  // Extract top 2 bits for 127-bit field
         }
 
         if (signBit != signDec) {           // If sign of x-coordinate decoded != input sign bit, then negate x-coordinate

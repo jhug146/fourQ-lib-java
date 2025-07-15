@@ -7,21 +7,22 @@ import types.data.F2Element;
 import java.math.BigInteger;
 import java.util.Arrays;
 
+import static utils.ByteArrayReverseMode.KEEP_LEADING_PADDING;
 import static utils.ByteArrayReverseMode.KEEP_LEADING_ZERO;
 
 public class BigIntegerUtils {
     public static F2Element convertBigIntegerToF2Element(@NotNull BigInteger val) {
-        BigInteger realPart = reverseBigInteger(val.divide(Key.POW_128));
-        BigInteger imagPart = reverseBigInteger(val.mod(Key.POW_128));
+        BigInteger realPart = reverseBigInteger(val.divide(Key.POW_128), KEEP_LEADING_PADDING);
+        BigInteger imagPart = reverseBigInteger(val.mod(Key.POW_128), KEEP_LEADING_PADDING);
         return new F2Element(realPart, imagPart);
     }
 
-    public static BigInteger reverseBigInteger(BigInteger val) {
+    public static BigInteger reverseBigInteger(BigInteger val, ByteArrayReverseMode handleZero) {
         return new BigInteger(
                 1,
                 ByteArrayUtils.reverseByteArray(
                         val.toByteArray(),
-                        KEEP_LEADING_ZERO
+                        handleZero
                 )
         );
     }
