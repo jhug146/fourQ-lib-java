@@ -184,27 +184,11 @@ public class SchnorrQ {
      */
     public static boolean schnorrQVerify(@NotNull BigInteger publicKey, @NotNull BigInteger signature, byte[] message) throws EncryptionException {
         // Security check: ensure specific bit is zero for both inputs
-        if (publicKey.testBit(Key.PUB_TEST_BIT)) {
-            throw new InvalidArgumentException(String.format(
-                    "Invalid argument: Bit %d is not set to zero in both the public key.",
-                    Key.PUB_TEST_BIT
-            ));
-        }
-
-        if (signature.testBit(Key.SIG_TEST_BIT)) {
-            throw new InvalidArgumentException(String.format(
-                    "Invalid argument: Bit %d is not set to zero in both the signature.",
-                    Key.SIG_TEST_BIT
-            ));
-        }
-
+        if (publicKey.testBit(Key.PUB_TEST_BIT)) { publicKeyError(); }
+        if (signature.testBit(Key.SIG_TEST_BIT)) { signatureError(); }
         // Validate signature is within acceptable range
-        if (signature.and(BigInteger.ONE.shiftLeft(256).subtract(BigInteger.ONE)).compareTo(BigInteger.ONE.shiftLeft(246)) < 0){
-            throw new InvalidArgumentException(String.format(
-                    "Invalid argument: Signature must be less than 2^%d.",
-                    Key.MAX_SIG_LENGTH
-            ));
-        }
+        if (checkSignatureSize(signature)) { signatureSizeError(); }
+
         final byte[] bytes = new byte[message.length + 2 * Key.KEY_SIZE];
         System.arraycopy(signature.toByteArray(), 0, bytes, 0, Key.KEY_SIZE);
         System.arraycopy(BigIntegerUtils.bigIntegerToByte(publicKey, Key.KEY_SIZE, false), 0, bytes, Key.KEY_SIZE, Key.KEY_SIZE);
@@ -221,5 +205,30 @@ public class SchnorrQ {
         final BigInteger encoded = CryptoUtils.encode(affPoint);
         // Verify that computed point equals the commitment R from signature
         return encoded.equals(signature.divide(Key.POW_256));
+    }
+
+    private static boolean checkSignatureSize(BigInteger signature) {
+        return signature.and(BigInteger.ONE.shiftLeft(256).subtract(BigInteger.ONE)).compareTo(BigInteger.ONE.shiftLeft(246)) < 0;
+    }
+
+    private static void publicKeyError() throws InvalidArgumentException {
+        throw new InvalidArgumentException(String.format(
+                "Invalid argument: Bit %d is not set to zero in both the public key.",
+                Key.PUB_TEST_BIT
+        ));
+    }
+
+    private static void signatureError() throws InvalidArgumentException {
+        throw new InvalidArgumentException(String.format(
+                "Invalid argument: Bit %d is not set to zero in both the signature.",
+                Key.SIG_TEST_BIT
+        ));
+    }
+
+    private static void signatureSizeError() throws InvalidArgumentException {
+        throw new InvalidArgumentException(String.format(
+                "Invalid argument: Signature must be less than 2^%d.",
+                Key.MAX_SIG_LENGTH
+        ));
     }
 }

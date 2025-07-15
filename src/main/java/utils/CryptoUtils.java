@@ -194,7 +194,7 @@ public class CryptoUtils {
             testPoint.getX().im = FP.PUtil.fpNeg1271(testPoint.getX().im);
             point.getX().im = testPoint.getX().im;
             if (!ECC.eccPointValidate(testPoint)) {       // Final point validation
-                throw new EncryptionException("");
+                throw new EncryptionException("Error validating point in decode.");
             }
         }
 
