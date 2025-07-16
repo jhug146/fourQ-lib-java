@@ -26,7 +26,7 @@ public class SchnorrQTests {
     private final BigInteger VALID_SIGNATURE = new BigInteger("f81ec975a9e0d24c480f1456104ca73c2d2785640f45266d03de6b1ef23d9c7edbc5904c4df55027393e3f25cf6a08e889fddd074b2c50e97f5962465e551c00", 16);
     private final byte[] VALID_MESSAGE = HexFormat.of().parseHex("cb");
 
-    private final String FILES_PATH = System.getProperty("user.dir") + "/src/test/java/files";
+    private final String FILES_PATH = System.getProperty("user.dir") + "/src/test/java/testfiles";
 
     @Test
     void testValidSignature() throws EncryptionException {
