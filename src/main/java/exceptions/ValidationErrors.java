@@ -11,7 +11,7 @@ public class ValidationErrors {
                 return true;
             }
         }
-        return !signature.testBit(14) && !signature.testBit(15);
+        return signature.testBit(14) || signature.testBit(15);
    }
 
     public static void publicKeyError() throws InvalidArgumentException {
