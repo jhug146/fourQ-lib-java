@@ -32,7 +32,7 @@ public class ByteArrayUtils {
                 final int leadingZeros = leadingZeroes(src);
                 if (leadingZeros > 0) {
                     byte[] padded = new byte[rev.length];
-                    System.arraycopy(rev, 0, padded, leadingZeros, rev.length - leadingZeros);
+                    copyByteArrayToByteArray(rev, 0, padded, leadingZeros, rev.length - leadingZeros);
                     rev = padded;
                 }
             }
@@ -51,8 +51,8 @@ public class ByteArrayUtils {
         else if (b == null || b.length == 0) return a.clone();
 
         byte[] out = new byte[a.length + b.length];
-        System.arraycopy(a, 0, out, 0, a.length);
-        System.arraycopy(b, 0, out, a.length, b.length);
+        copyByteArrayToByteArray(a, 0, out, 0, a.length);
+        copyByteArrayToByteArray(b, 0, out, a.length, b.length);
         return out;
     }
 
