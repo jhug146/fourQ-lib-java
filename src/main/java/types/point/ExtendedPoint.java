@@ -1,8 +1,9 @@
 package types.point;
 
-
 import org.jetbrains.annotations.NotNull;
+
 import types.data.F2Element;
+
 
 public class ExtendedPoint implements Point {
     @NotNull private F2Element x;

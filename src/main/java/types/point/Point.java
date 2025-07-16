@@ -1,7 +1,9 @@
 package types.point;
 
 import org.jetbrains.annotations.NotNull;
+
 import types.data.F2Element;
+
 
 public interface Point {
     @NotNull

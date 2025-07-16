@@ -1,8 +1,9 @@
 package constants;
 
+import java.math.BigInteger;
+
 import types.data.F2Element;
 
-import java.math.BigInteger;
 
 public class Params {
     public static final int

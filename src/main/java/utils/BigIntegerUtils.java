@@ -1,14 +1,16 @@
 package utils;
 
-import constants.Key;
-import org.jetbrains.annotations.NotNull;
-import types.data.F2Element;
-
 import java.math.BigInteger;
 import java.util.Arrays;
 
+import org.jetbrains.annotations.NotNull;
+
+import types.data.F2Element;
+import constants.Key;
+
 import static utils.ByteArrayUtils.addLeadingZeros;
 import static utils.ByteArrayReverseMode.REMOVE_TRAILING_ZERO;
+
 
 public class BigIntegerUtils {
     @NotNull

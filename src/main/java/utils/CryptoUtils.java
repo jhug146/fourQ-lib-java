@@ -1,19 +1,22 @@
 package utils;
 
-import constants.Params;
+import java.math.BigInteger;
+import java.security.SecureRandom;
+
+import org.jetbrains.annotations.NotNull;
+
 import crypto.core.Curve;
 import crypto.core.ECC;
 import exceptions.EncryptionException;
 import exceptions.ValidationException;
 import field.operations.FP;
 import field.operations.FP2;
-import org.jetbrains.annotations.NotNull;
 import types.point.ExtendedPoint;
 import types.data.F2Element;
 import types.point.FieldPoint;
+import constants.Params;
 
-import java.math.BigInteger;
-import java.security.SecureRandom;
+
 
 /**
  * Cryptographic utility functions for FourQ operations.

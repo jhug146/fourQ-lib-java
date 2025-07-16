@@ -1,8 +1,9 @@
 package utils;
 
+import java.util.Arrays;
+
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
 
 public class ByteArrayUtils {
     public static byte[] reverseByteArray(

@@ -1,10 +1,12 @@
 package types.data;
 
-import constants.Params;
-import org.jetbrains.annotations.NotNull;
-
 import java.math.BigInteger;
 import java.util.Objects;
+
+import org.jetbrains.annotations.NotNull;
+
+import constants.Params;
+
 
 /**
  * Represents an element in the quadratic extension field GF((2^127-1)^2).

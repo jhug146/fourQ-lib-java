@@ -1,9 +1,11 @@
 package field.operations;
 
+import java.math.BigInteger;
+
 import org.jetbrains.annotations.NotNull;
+
 import types.data.F2Element;
 
-import java.math.BigInteger;
 
 /**
  * Quadratic extension field arithmetic for GF((2^127-1)^2).

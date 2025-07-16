@@ -3,19 +3,20 @@ package api;
 import java.math.BigInteger;
 import java.util.Arrays;
 
+import org.jetbrains.annotations.NotNull;
+
 import crypto.primitives.HashFunction;
-import utils.BigIntegerUtils;
-import utils.ByteArrayUtils;
-import constants.Key;
-import utils.CryptoUtils;
 import crypto.core.ECC;
 import crypto.primitives.SHA512;
+import utils.BigIntegerUtils;
+import utils.ByteArrayUtils;
+import utils.CryptoUtils;
 import exceptions.EncryptionException;
 import exceptions.InvalidArgumentException;
 import field.operations.FP;
-import org.jetbrains.annotations.NotNull;
 import types.data.Pair;
 import types.point.FieldPoint;
+import constants.Key;
 
 import static exceptions.ValidationErrors.*;
 import static utils.ByteArrayReverseMode.*;

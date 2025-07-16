@@ -1,14 +1,15 @@
 package crypto.primitives;
 
-import utils.BigIntegerUtils;
-import utils.ByteArrayUtils;
-import constants.Key;
-import exceptions.EncryptionException;
-import org.jetbrains.annotations.NotNull;
-
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import org.jetbrains.annotations.NotNull;
+
+import utils.BigIntegerUtils;
+import utils.ByteArrayUtils;
+import exceptions.EncryptionException;
+import constants.Key;
 
 import static utils.ByteArrayReverseMode.REMOVE_LEADING_ZERO;
 

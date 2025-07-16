@@ -1,13 +1,14 @@
 package crypto.core;
 
-import constants.Params;
+import java.math.BigInteger;
+
 import org.jetbrains.annotations.NotNull;
+
 import types.data.F2Element;
 import types.point.ExtendedPoint;
 import types.point.FieldPoint;
 import types.point.PreComputedExtendedPoint;
-
-import java.math.BigInteger;
+import constants.Params;
 
 import static constants.Params.T_VARBASE;
 import static constants.Params.W_VARBASE;

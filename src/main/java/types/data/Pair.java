@@ -1,11 +1,13 @@
 package types.data;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+
 
 /**
  * A robust generic pair data structure that holds two related values.

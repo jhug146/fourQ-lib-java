@@ -1,7 +1,8 @@
 package crypto.primitives;
 
-import field.operations.FP2;
 import org.jetbrains.annotations.NotNull;
+
+import field.operations.FP2;
 import types.data.F2Element;
 import types.point.TablePoint;
 

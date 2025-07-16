@@ -1,15 +1,3 @@
-import api.SchnorrQ;
-import exceptions.ValidationException;
-import utils.ByteArrayUtils;
-import exceptions.EncryptionException;
-import exceptions.InvalidArgumentException;
-import org.junit.jupiter.api.Test;
-import types.data.Pair;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static utils.ByteArrayReverseMode.REMOVE_LEADING_ZERO;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -17,6 +5,22 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.HexFormat;
 import java.util.Random;
+
+import org.junit.jupiter.api.Test;
+
+import api.SchnorrQ;
+import exceptions.ValidationException;
+import exceptions.EncryptionException;
+import exceptions.InvalidArgumentException;
+import utils.ByteArrayUtils;
+import types.data.Pair;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static utils.ByteArrayReverseMode.REMOVE_LEADING_ZERO;
+
+
 
 
 public class SchnorrQTests {

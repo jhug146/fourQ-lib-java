@@ -1,12 +1,14 @@
+
+import java.math.BigInteger;
+
+import org.junit.jupiter.api.Test;
+
 import field.operations.FP2;
 import types.data.F2Element;
 import constants.Params;
 
-import org.junit.jupiter.api.Test;
-
-import java.math.BigInteger;
-
 import static org.junit.jupiter.api.Assertions.*;
+
 
 public class FP2Tests {
 

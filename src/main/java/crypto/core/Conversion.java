@@ -1,10 +1,11 @@
 package crypto.core;
 
-import constants.Params;
 import org.jetbrains.annotations.NotNull;
+
 import types.data.F2Element;
 import types.point.ExtendedPoint;
 import types.point.PreComputedExtendedPoint;
+import constants.Params;
 
 import static field.operations.FP2.*;
 

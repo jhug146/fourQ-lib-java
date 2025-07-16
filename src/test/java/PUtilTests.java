@@ -1,10 +1,11 @@
-import constants.Params;
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigInteger;
 
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 import field.operations.FP.PUtil;
+import constants.Params;
 
 
 public class PUtilTests {

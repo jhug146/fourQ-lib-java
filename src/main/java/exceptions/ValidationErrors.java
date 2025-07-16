@@ -1,9 +1,11 @@
 package exceptions;
 
-import constants.Key;
+import java.math.BigInteger;
+
 import org.jetbrains.annotations.NotNull;
 
-import java.math.BigInteger;
+import constants.Key;
+
 
 public class ValidationErrors {
     public static boolean isSignatureSizeTooLarge(@NotNull BigInteger signature) {

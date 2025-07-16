@@ -1,16 +1,17 @@
 package crypto.core;
 
+import java.math.BigInteger;
+
+import org.jetbrains.annotations.NotNull;
+
 import constants.Params;
 import crypto.primitives.Table;
 import exceptions.EncryptionException;
 import field.operations.FP;
-import org.jetbrains.annotations.NotNull;
 import types.data.F2Element;
 import types.point.ExtendedPoint;
 import types.point.FieldPoint;
 import types.point.PreComputedExtendedPoint;
-
-import java.math.BigInteger;
 
 import static constants.Params.T_VARBASE;
 import static field.operations.FP2.*;

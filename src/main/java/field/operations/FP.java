@@ -1,11 +1,13 @@
 package field.operations;
 
-import constants.Key;
+import java.math.BigInteger;
+
 import org.jetbrains.annotations.NotNull;
+
 import types.data.Pair;
+import constants.Key;
 import constants.Params;
 
-import java.math.BigInteger;
 
 /**
  * Finite field arithmetic operations for FourQ over GF(2^127-1).

@@ -1,9 +1,11 @@
 package crypto.primitives;
 
-import exceptions.EncryptionException;
+import java.math.BigInteger;
+
 import org.jetbrains.annotations.NotNull;
 
-import java.math.BigInteger;
+import exceptions.EncryptionException;
+
 
 public interface HashFunction {
     byte[] computeHash(@NotNull BigInteger input, boolean reverse) throws EncryptionException;

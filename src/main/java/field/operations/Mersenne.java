@@ -1,11 +1,12 @@
 package field.operations;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.math.BigInteger;
+
+import org.jetbrains.annotations.NotNull;
 
 import static constants.Params.MASK_127;
 import static constants.Params.PRIME_1271;
+
 
 class Mersenne {
     // Mersenne prime reduction for p = 2^127-1

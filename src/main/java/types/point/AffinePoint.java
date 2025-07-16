@@ -1,9 +1,11 @@
 package types.point;
 
+import java.util.Objects;
+
 import org.jetbrains.annotations.NotNull;
+
 import types.data.F2Element;
 
-import java.util.Objects;
 
 public class AffinePoint implements TablePoint {
     @NotNull private F2Element x;
