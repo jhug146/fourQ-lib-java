@@ -100,7 +100,7 @@ public class SchnorrQ {
         final byte[] kHash = HashFunction.computeHash(secretKey, false);
         final byte[] bytes = schnorrCreateBuffer(message);
         
-        // Use second half of kHash as nonce seed for deterministic signing
+        // Use second half of kHash as nonce seed for, deterministic signing
         copyByteArrayToByteArray(kHash, Key.KEY_SIZE, bytes, Key.KEY_SIZE, Key.KEY_SIZE);
         copyByteArrayToByteArray(message, 0, bytes, Key.KEY_SIZE * 2, message.length);
 

@@ -44,13 +44,11 @@ public class BigIntegerUtils {
     }
 
     // Takes an initial BigInteger and a series of function operations that are applied sequentially.
+    // Note: This function leverages the immutability of the parameter.
     @SafeVarargs
     public static BigInteger buildBigInteger(BigInteger initial, Function<BigInteger, BigInteger>... operations) {
-        BigInteger result = initial;
-        for (Function<BigInteger, BigInteger> operation : operations) {
-            result = operation.apply(result);
-        }
-        return result;
+        for (Function<BigInteger, BigInteger> operation : operations) initial = operation.apply(initial);
+        return initial;
     }
 
     public static void copyBigIntegerToByteArray(BigInteger value, int size, byte[] destination, int offset) {
