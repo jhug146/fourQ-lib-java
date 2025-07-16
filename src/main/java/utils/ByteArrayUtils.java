@@ -1,20 +1,12 @@
 package utils;
 
 import org.jetbrains.annotations.NotNull;
-
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Optional;
 
 import static utils.ByteArrayReverseMode.KEEP_LEADING_ZERO;
 
 public class ByteArrayUtils {
-    public static String byteArrayToString(byte[] bytes) {
-        StringBuilder sb = new StringBuilder("0x");
-        for (byte b : bytes) sb.append(String.format("%02x", b));
-        return sb.toString();
-    }
-
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public static byte[] reverseByteArray(
             byte @NotNull [] src,
@@ -67,12 +59,5 @@ public class ByteArrayUtils {
     // Wraps System.arraycopy() calls.
     public static void copyByteArrayToByteArray(byte[] src, int srcPos, byte[] dest, int destPos, int length) {
         System.arraycopy(src, srcPos, dest, destPos, length);
-    }
-
-    public static byte[] addLeadingZeros(byte[] array, int targetLength) {
-        if (array.length == targetLength) return array;
-        byte[] padded = new byte[targetLength];
-        System.arraycopy(array, 0, padded, targetLength - array.length, array.length);
-        return padded;
     }
 }
