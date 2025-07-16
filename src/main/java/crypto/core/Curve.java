@@ -8,7 +8,6 @@ import types.data.F2Element;
 import types.point.ExtendedPoint;
 import types.point.FieldPoint;
 import types.point.PreComputedExtendedPoint;
-import constants.Params;
 
 import static constants.Params.T_VARBASE;
 import static constants.Params.W_VARBASE;
