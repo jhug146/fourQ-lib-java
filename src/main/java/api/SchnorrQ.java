@@ -3,12 +3,13 @@ package api;
 import java.math.BigInteger;
 import java.util.Arrays;
 
+import crypto.primitives.HashFunction;
 import utils.BigIntegerUtils;
 import utils.ByteArrayUtils;
 import constants.Key;
 import utils.CryptoUtils;
 import crypto.core.ECC;
-import crypto.primitives.HashFunction;
+import crypto.primitives.SHA512;
 import exceptions.EncryptionException;
 import exceptions.InvalidArgumentException;
 import field.operations.FP;
@@ -43,6 +44,7 @@ import static utils.ByteArrayUtils.reverseByteArray;
  * @since 1.0
  */
 public class SchnorrQ {
+    private static final HashFunction hashFunction = new SHA512();
     /**
      * Generates a public key from the given private key using the FourQ curve.
      * <p>
@@ -58,7 +60,7 @@ public class SchnorrQ {
      */
     @NotNull
     public static BigInteger schnorrQKeyGeneration(@NotNull BigInteger secretKey) throws EncryptionException {
-        BigInteger hash = new BigInteger(1, HashFunction.computeHash(secretKey, true));
+        BigInteger hash = new BigInteger(1, hashFunction.computeHash(secretKey, true));
         final FieldPoint point = ECC.eccMulFixed(hash);
         return CryptoUtils.encode(point);
     }
@@ -103,7 +105,7 @@ public class SchnorrQ {
             @NotNull BigInteger publicKey,
             byte[] message
     ) throws EncryptionException {
-        final byte[] kHash = HashFunction.computeHash(secretKey, false);
+        final byte[] kHash = hashFunction.computeHash(secretKey, false);
         byte[] bytes = new byte[message.length + 2 * Key.KEY_SIZE];
         // Use second half of kHash as nonce seed for deterministic signing
         System.arraycopy(
@@ -124,7 +126,7 @@ public class SchnorrQ {
         // Compute nonce r = H(nonce_seed || message)
         BigInteger rHash = new BigInteger(
                 1,
-                HashFunction.computeHash(
+                hashFunction.computeHash(
                         Arrays.copyOfRange(bytes, Key.KEY_SIZE, bytes.length),
                         true
                 )
@@ -149,7 +151,7 @@ public class SchnorrQ {
                 Key.KEY_SIZE
         );
 
-        BigInteger hHash2 = new BigInteger(1, HashFunction.computeHash(bytes, true));
+        BigInteger hHash2 = new BigInteger(1, hashFunction.computeHash(bytes, true));
         rHash = FP.moduloOrder(rHash);
         hHash2 = FP.moduloOrder(hHash2);
 
@@ -206,7 +208,7 @@ public class SchnorrQ {
         FieldPoint affPoint = ECC.eccMulDouble(
                 new BigInteger(1, ByteArrayUtils.reverseByteArray(sig32Array, REMOVE_TRAILING_ZERO)),
                 CryptoUtils.decode(publicKey),       // Implicitly checks that public key lies on the curve
-                new BigInteger(1, HashFunction.computeHash(bytes, true))
+                new BigInteger(1, hashFunction.computeHash(bytes, true))
         );
 
         final BigInteger encoded = CryptoUtils.encode(affPoint);
