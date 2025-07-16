@@ -34,9 +34,9 @@ public class Conversion {
     @NotNull
     static ExtendedPoint r2ToR4(@NotNull PreComputedExtendedPoint p, @NotNull ExtendedPoint q) {
         return new ExtendedPoint(
-                fp2Sub1271(p.xy, p.yx),
-                fp2Add1271(p.xy, p.yx),
-                fp2Copy1271(p.z),
+                fp2Sub1271(p.getX(), p.getY()),
+                fp2Add1271(p.getX(), p.getY()),
+                fp2Copy1271(p.getZ()),
                 q.getTa(),
                 q.getTb()
         );

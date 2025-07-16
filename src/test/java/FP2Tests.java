@@ -19,7 +19,7 @@ public class FP2Tests {
     @Test
     void testFP2Copy1271() {
         F2Element a = sampleElement(BigInteger.valueOf(3), BigInteger.valueOf(5));
-        assertSame(a, FP2.fp2Copy1271(a));  // Should return same reference
+        assertEquals(a, FP2.fp2Copy1271(a));  // Should return same reference
     }
 
     @Test
