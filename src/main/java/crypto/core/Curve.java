@@ -14,13 +14,13 @@ import static constants.Params.W_VARBASE;
 
 /**
  * Advanced curve operations and scalar decomposition for FourQ.
- * 
+ * <p>
  * This class implements sophisticated algorithms for efficient scalar
  * multiplication including:\n * - 4-dimensional GLV scalar decomposition
  * - Fixed-window recoding for variable-base multiplication
  * - mLSB-set recoding for fixed-base multiplication
  * - Cofactor clearing operations
- * 
+ * <p>
  * The GLV decomposition breaks down large scalars into smaller components
  * that can be processed in parallel, significantly accelerating elliptic
  * curve operations.
@@ -31,7 +31,7 @@ import static constants.Params.W_VARBASE;
 public class Curve {
     /**
      * Recodes a scalar using the fixed-window method for variable-base scalar multiplication.
-     * 
+     * <p>
      * This method transforms a scalar into a sequence of signed digits that allows
      * for efficient computation using precomputed odd multiples. The technique
      * reduces the number of point additions required during scalar multiplication.
@@ -70,7 +70,7 @@ public class Curve {
 
     /**
      * Converts an affine point to extended projective coordinates.
-     * 
+     * <p>
      * Extended coordinates (X:Y:Z:T) where T = X*Y/Z provide faster
      * addition formulas for twisted Edwards curves. This method initializes
      * Z = 1 and sets up the auxiliary coordinates.
@@ -135,11 +135,11 @@ public class Curve {
 
     /**
      * Decomposes a scalar using 4-dimensional GLV for parallel computation.
-     * 
+     * <p>
      * The Gallant-Lambert-Vanstone (GLV) method decomposes a large scalar k
      * into four smaller scalars k1, k2, k3, k4 such that:
      * k*P = k1*P + k2*φ(P) + k3*ψ(P) + k4*φ(ψ(P))
-     * 
+     * <p>
      * This allows parallel computation of four smaller scalar multiplications,
      * significantly reducing the total computation time.
      * 

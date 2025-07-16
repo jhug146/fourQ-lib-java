@@ -6,7 +6,6 @@ import exceptions.EncryptionException;
 import field.operations.FP;
 import org.jetbrains.annotations.NotNull;
 import types.data.F2Element;
-import types.point.AffinePoint;
 import types.point.ExtendedPoint;
 import types.point.FieldPoint;
 import types.point.PreComputedExtendedPoint;
@@ -18,13 +17,13 @@ import static field.operations.FP2.*;
 
 /**
  * Core elliptic curve cryptography operations for the FourQ curve.
- * 
+ * <p>
  * This class implements the fundamental ECC operations including:
  * - Point arithmetic (addition, doubling, multiplication)
  * - Fixed-base and variable-base scalar multiplication
  * - Point validation and normalization
  * - Precomputation table generation
- * 
+ * <p>
  * FourQ uses extended twisted Edwards coordinates for efficient point arithmetic
  * and employs advanced techniques like 4-dimensional GLV decomposition and
  * precomputed tables for high-performance scalar multiplications.
@@ -35,7 +34,7 @@ import static field.operations.FP2.*;
 public class ECC {
     /**
      * Returns the generator point of the FourQ elliptic curve.
-     * 
+     * <p>
      * The generator point is a fixed point of prime order that generates
      * the cryptographic subgroup used for all scalar multiplications.
      * 
@@ -47,7 +46,7 @@ public class ECC {
 
     /**
      * Performs fixed-base scalar multiplication k*G where G is the generator.
-     * 
+     * <p>
      * This method is optimized for multiplication with the fixed generator point
      * using precomputed tables and advanced windowing techniques for maximum
      * performance in key generation and signing operations.
@@ -59,63 +58,11 @@ public class ECC {
     @NotNull
     public static FieldPoint eccMulFixed(BigInteger val) throws EncryptionException {
         return ECC.eccMul(ECC.eccSet(), val,false);
-        /*temp = FP.conversionToOdd(temp);
-        int[] digits = Curve.mLSBSetRecode(temp, new int[270]);  // TODO: No idea how this works
-        int digit = digits[Params.W_FIXEDBASE * Params.D_FIXEDBASE - 1];
-        int startI = (Params.W_FIXEDBASE - 1) * Params.D_FIXEDBASE - 1;
-        for (int i = startI; i >= 2 * Params.D_FIXEDBASE - 1; i -= Params.D_FIXEDBASE) {
-            digit = 2 * digit + digits[i];
-        }
-
-        // TODO: Both instances of TABLE in this function might need updating
-        AffinePoint affPoint = new AffinePoint();
-        affPoint = Table.tableLookup(
-                (Params.V_FIXEDBASE - 1) * (1 << (Params.W_FIXEDBASE - 1)),
-                digit,
-                digits[Params.D_FIXEDBASE - 1],
-                affPoint
-        ).toAffinePoint();
-        ExtendedPoint exPoint = Conversion.r5ToR1(affPoint);
-
-        for (int j = 0; j < Params.V_FIXEDBASE - 1; j++) {
-            digit = digits[Params.W_FIXEDBASE * Params.D_FIXEDBASE - (j + 1) * Params.E_FIXEDBASE - 1];
-            final int iStart = (Params.W_FIXEDBASE - 1) * Params.D_FIXEDBASE - (j + 1) * Params.E_FIXEDBASE - 1;
-            final int iMin = 2 * Params.D_FIXEDBASE - (j + 1) * Params.E_FIXEDBASE - 1;
-            for (int i = iStart; i >= iMin; i -= Params.D_FIXEDBASE) {
-                digit = 2 * digit + digits[i];
-            }
-            // Extract point in (x+y,y-x,2dt) representation
-            final int signDigit = Params.D_FIXEDBASE - (j + 1) * Params.E_FIXEDBASE - 1;
-            final int tableStart = (Params.V_FIXEDBASE - j - 2) * (1 << (Params.W_FIXEDBASE - 1));
-            affPoint = Table
-                    .tableLookup(tableStart, digit, digits[signDigit], affPoint)
-                    .toAffinePoint();
-            exPoint = eccMixedAdd(affPoint, exPoint);
-        }
-
-        for (int i = Params.E_FIXEDBASE - 2; i >= 0; i--) {
-            exPoint = eccDouble(exPoint);
-            for (int j = 0; j < Params.V_FIXEDBASE; j++) {
-                digit = digits[Params.W_FIXEDBASE * Params.D_FIXEDBASE - j * Params.E_FIXEDBASE + i - Params.E_FIXEDBASE];
-                final int kStart = (Params.W_FIXEDBASE - 1) * Params.D_FIXEDBASE - j * Params.E_FIXEDBASE + i - Params.E_FIXEDBASE;
-                final int kMin = 2 * Params.D_FIXEDBASE - j * Params.E_FIXEDBASE + i - Params.E_FIXEDBASE;
-                for (int k = kStart; k >= kMin; k -= Params.D_FIXEDBASE) {
-                    digit = 2 * digit + digits[k];
-                }
-                final int signDigit = Params.D_FIXEDBASE - j * Params.E_FIXEDBASE + i - Params.E_FIXEDBASE;
-                final int tableStart = (Params.V_FIXEDBASE - j - 1) * (1 << (Params.W_FIXEDBASE - 1));
-                affPoint = Table
-                        .tableLookup(tableStart, digit, signDigit, affPoint)
-                        .toAffinePoint();
-                exPoint = eccMixedAdd(affPoint, exPoint);
-            }
-        }
-        return eccNorm(exPoint);*/
     }
 
     /**
      * Performs variable-base scalar multiplication k*P for arbitrary point P.
-     * 
+     * <p>
      * This method implements the sliding window method with precomputed odd multiples
      * for efficient scalar multiplication with arbitrary base points. Optionally
      * performs cofactor clearing for points that may not be in the prime subgroup.
@@ -163,33 +110,9 @@ public class ECC {
         return eccNorm(r);
     }
 
-    private static ExtendedPoint eccMixedAdd(
-            AffinePoint q,
-            ExtendedPoint p
-    ) {
-        F2Element ta = fp2Mul1271(p.getTa(), p.getTb());          // Ta = T1
-        F2Element t1 = fp2Add1271(p.getZ(), p.getZ());            // t1 = 2Z1
-        ta = fp2Mul1271(ta, q.getT());                       // Ta = 2dT1*t2
-        F2Element pz = fp2Add1271(p.getX(), p.getY());            // Z = (X1+Y1)
-        F2Element tb = fp2Sub1271(p.getY(), p.getX());            // Tb = (Y1-X1)
-        F2Element t2 = fp2Sub1271(t1, ta);              // t2 = theta
-        t1 = fp2Add1271(t1, ta);                        // t1 = alpha
-        ta = fp2Mul1271(q.getX(), pz);                       // Ta = (X1+Y1)(x2+y2)
-        F2Element x = fp2Mul1271(q.getY(), tb);              // X = (Y1-X1)(y2-x2)
-        tb = fp2Sub1271(ta, x);                         // Tbfinal = beta
-        ta = fp2Add1271(ta, x);                         // Tafinal = omega
-        return new ExtendedPoint(
-                fp2Mul1271(tb, t2),                     // Xfinal = beta*theta
-                fp2Mul1271(ta, t1),                     // Yfinal = alpha*omega
-                fp2Mul1271(t1, t2),                     // Zfinal = theta*alpha
-                ta,
-                tb
-        );
-    }
-
     /**
      * Point doubling operation: computes 2P for point P.
-     * 
+     * <p>
      * Uses the fastest known doubling formulas for twisted Edwards curves.
      * Input point P = (X₁:Y₁:Z₁:Ta:Tb) where T₁ = Ta×Tb corresponds to
      * (X₁:Y₁:Z₁:T₁) in extended twisted Edwards coordinates.
@@ -201,21 +124,21 @@ public class ECC {
         F2Element t1 = fp2Sqr1271(p.getX());                 // t1 = X1^2
         F2Element t2 = fp2Sqr1271(p.getY());                 // t2 = Y1^2
         F2Element t3 = fp2Add1271(p.getX(), p.getY());       // t3 = X1+Y1
-        F2Element tb = fp2Add1271(t1, t2);                   // Tbfinal = X1^2+Y1^2
+        F2Element tb = fp2Add1271(t1, t2);                   // TB_final = X1^2+Y1^2
         t1 = fp2Sub1271(t2, t1);                             // t1 = Y1^2-X1^2
         F2Element ta = fp2Sqr1271(t3);                       // Ta = (X1+Y1)^2
         t2 = fp2Sqr1271(p.getZ());                           // t2 = Z1^2
-        ta = fp2Sub1271(ta, tb);                             // Tafinal = 2X1*Y1 = (X1+Y1)^2-(X1^2+Y1^2)
+        ta = fp2Sub1271(ta, tb);                             // TA_final = 2X1*Y1 = (X1+Y1)^2-(X1^2+Y1^2)
         t2 = fp2AddSub1271(t2, t1);                          // t2 = 2Z1^2-(Y1^2-X1^2)
-        final F2Element y = fp2Mul1271(t1, tb);              // Yfinal = (X1^2+Y1^2)(Y1^2-X1^2)
-        final F2Element x = fp2Mul1271(t2, ta);              // Xfinal = 2X1*Y1*[2Z1^2-(Y1^2-X1^2)]
-        final F2Element z = fp2Mul1271(t1, t2);              // Zfinal = (Y1^2-X1^2)[2Z1^2-(Y1^2-X1^2)]
+        final F2Element y = fp2Mul1271(t1, tb);              // Y_final = (X1^2+Y1^2)(Y1^2-X1^2)
+        final F2Element x = fp2Mul1271(t2, ta);              // X_final = 2X1*Y1*[2Z1^2-(Y1^2-X1^2)]
+        final F2Element z = fp2Mul1271(t1, t2);              // Z_final = (Y1^2-X1^2)[2Z1^2-(Y1^2-X1^2)]
         return new ExtendedPoint(x, y, z, ta, tb);
     }
 
     /**
      * Normalizes a point from extended projective coordinates to affine coordinates.
-     * 
+     * <p>
      * Converts a point (X:Y:Z:T) in extended twisted Edwards coordinates to
      * affine coordinates (x,y) by computing x = X/Z and y = Y/Z. The resulting
      * coordinates are fully reduced modulo the field prime.
@@ -238,7 +161,7 @@ public class ECC {
 
     /**
      * Computes double scalar multiplication k*G + l*Q efficiently.
-     * 
+     * <p>
      * This method is optimized for signature verification where we need to compute
      * a linear combination of the generator G and another point Q. It's more
      * efficient than computing k*G and l*Q separately and then adding them.
@@ -338,14 +261,14 @@ public class ECC {
     /**
      * Generation of the precomputation table used by the variable-base scalar multiplication eccMul().
      * @param p = (X1,Y1,Z1,Ta,Tb), where T1 = Ta*Tb, corresponding to (X1:Y1:Z1:T1) in extended twisted Edwards coordinates.
-     * @return table T containing NPOINTS_VARBASE points: P, 3P, 5P, ... , (2*NPOINTS_VARBASE-1)P. NPOINTS_VARBASE is fixed to 8 (see FourQ.h).
+     * @return table T containing N_POINTS_VARBASE points: P, 3P, 5P, ... , (2 * N_POINTS_VARBASE - 1)P. N_POINTS_VARBASE is fixed to 8 (see FourQ.h).
      *         Precomputed points use the representation (X+Y,Y-X,2Z,2dT) corresponding to (X:Y:Z:T) in extended twisted Edwards coordinates.
      */
     @NotNull
     public static PreComputedExtendedPoint[] eccPrecomp(@NotNull ExtendedPoint p) {
         // Initialize the output table
         PreComputedExtendedPoint[] t
-                = new PreComputedExtendedPoint[Params.NPOINTS_VARBASE.intValueExact()];
+                = new PreComputedExtendedPoint[Params.N_POINTS_VARBASE.intValueExact()];
 
         PreComputedExtendedPoint p2;
         ExtendedPoint q;
@@ -356,8 +279,8 @@ public class ECC {
         q = eccDouble(q);                               // Q = 2P
         p2 = Conversion.r1ToR3(q);                      // P2 = 2P in R3 format
 
-        // Generate odd multiples: 3P, 5P, 7P, ..., (2*NPOINTS_VARBASE-1)P
-        for (int i = 1; i < Params.NPOINTS_VARBASE.intValueExact(); i++) {
+        // Generate odd multiples: 3P, 5P, 7P, ..., (2 * N_POINTS_VARBASE - 1)P
+        for (int i = 1; i < Params.N_POINTS_VARBASE.intValueExact(); i++) {
             // T[i] = 2P + T[i-1] = (2*i+1)P
             q = eccAddCore(p2, t[i-1]);                 // Add 2P to previous odd multiple
             t[i] = Conversion.r1ToR2(q);                // Convert result to R2 format

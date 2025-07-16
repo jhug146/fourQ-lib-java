@@ -1,11 +1,8 @@
 package types.point;
 
-import constants.Params;
-import field.operations.FP2;
 import org.jetbrains.annotations.NotNull;
 import types.data.F2Element;
 
-import java.math.BigInteger;
 
 public class PreComputedExtendedPoint implements TablePoint {
     public F2Element xy;
@@ -20,49 +17,9 @@ public class PreComputedExtendedPoint implements TablePoint {
         t = _t;
     }
 
-    public PreComputedExtendedPoint() {
-        this.xy = F2Element.ONE.dup();
-        this.yx = F2Element.ONE.dup();
-        this.z = F2Element.ONE.dup();
-        this.t = F2Element.ONE.dup();
-    }
-
-    @Override
-    public int getTableLength() {
-        return Params.PRE_COMPUTE_TABLE_LENGTH;
-    }
-
+    @NotNull
     public PreComputedExtendedPoint dup() {
         return new PreComputedExtendedPoint(this.xy, this.yx, this.z, this.t);
-    }
-
-    @Override
-    public AffinePoint toAffinePoint() {
-        F2Element xy_f2 = xy;
-        F2Element yx_f2 = yx;
-
-        // Assuming z = 1, we can directly compute affine coordinates
-        F2Element two = new F2Element(BigInteger.valueOf(2), BigInteger.ZERO);
-        F2Element twoInverse = FP2.fp2Inv1271(two);
-
-        // x = (xy - yx) / 2, y = (xy + yx) / 2
-        F2Element twoX = FP2.fp2Sub1271(xy_f2, yx_f2);
-        F2Element twoY = FP2.fp2Add1271(xy_f2, yx_f2);
-
-        F2Element x = FP2.fp2Mul1271(twoX, twoInverse);
-        F2Element y = FP2.fp2Mul1271(twoY, twoInverse);
-
-        AffinePoint ret = new AffinePoint();
-        ret.setX(x);
-        ret.setY(y);
-        ret.setT(new F2Element(BigInteger.ONE, BigInteger.ZERO));
-
-        return ret;
-    }
-
-    @Override
-    public PreComputedExtendedPoint toPreComputedExtendedPoint() {
-        return this;
     }
 
     @Override
@@ -93,16 +50,6 @@ public class PreComputedExtendedPoint implements TablePoint {
     @Override
     public void setT(F2Element t) {
         this.t = t;
-    }
-
-    @Override
-    public F2Element getZ() {
-        return z;
-    }
-
-    @Override
-    public void setZ(F2Element z) {
-        this.z = z;
     }
 
     @Override

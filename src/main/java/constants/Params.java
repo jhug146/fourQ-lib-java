@@ -7,27 +7,22 @@ import java.math.BigInteger;
 public class Params {
     public static final int
             W_FIXEDBASE = 5,
-            V_FIXEDBASE = 5,
-            D_FIXEDBASE = 54,
-            E_FIXEDBASE = 10;
+            D_FIXEDBASE = 54;
 
     public static final int L_FIXEDBASE = D_FIXEDBASE * W_FIXEDBASE;
     public static final int HEX_RADIX = 16;
 
     public static final int NWORDS_ORDER = 8;
 
-    public static final int PRE_COMPUTE_TABLE_LENGTH = 8;
-
     public static final BigInteger PRIME_1271
             = BigInteger.ONE.shiftLeft(127).subtract(BigInteger.ONE);
     public static final BigInteger MASK_127 = PRIME_1271;  // Same as 2^127 - 1
 
     public static final BigInteger W_VARBASE = BigInteger.valueOf(5);
-    public static final BigInteger NPOINTS_VARBASE
+    public static final BigInteger N_POINTS_VARBASE
             = BigInteger.ONE.shiftLeft(W_VARBASE.subtract(BigInteger.TWO).intValue());
-    public static final int VPOINTS_FIXEDBASE = (1 << (W_FIXEDBASE-1));
-    public static final int NBITS_ORDER_PLUS_ONE = 247;
-    public static final int T_VARBASE = (NBITS_ORDER_PLUS_ONE+W_VARBASE.intValueExact()-2)/(W_VARBASE.intValueExact()-1);
+    public static final int N_BITS_ORDER_PLUS_ONE = 247;
+    public static final int T_VARBASE = (N_BITS_ORDER_PLUS_ONE + W_VARBASE.intValueExact() - 2) / (W_VARBASE.intValueExact() - 1);
 
     public static final BigInteger MONTGOMERY_R_PRIME = new BigInteger(
             "0006A5F16AC8F9D33D01B7C72136F61C173EA5AAEA6B387DC81DB8795FF3D621",

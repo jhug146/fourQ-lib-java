@@ -5,12 +5,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 
 public class ByteArrayUtils {
-    public static String byteArrayToString(byte[] bytes) {
-        StringBuilder sb = new StringBuilder("0x");
-        for (byte b : bytes) sb.append(String.format("%02x", b));
-        return sb.toString();
-    }
-
     public static byte[] reverseByteArray(
             byte @NotNull [] src,
             ByteArrayReverseMode mode
@@ -60,4 +54,10 @@ public class ByteArrayUtils {
         return out;
     }
 
+    public static byte[] addLeadingZeros(byte[] array, int targetLength) {
+        if (array.length == targetLength) return array;
+        byte[] padded = new byte[targetLength];
+        System.arraycopy(array, 0, padded, targetLength - array.length, array.length);
+        return padded;
+    }
 }

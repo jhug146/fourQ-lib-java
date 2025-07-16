@@ -7,8 +7,7 @@ import types.data.F2Element;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-import static api.SchnorrQ.addLeadingZeros;
-import static utils.ByteArrayReverseMode.KEEP_LEADING_PADDING;
+import static utils.ByteArrayUtils.addLeadingZeros;
 import static utils.ByteArrayReverseMode.REMOVE_TRAILING_ZERO;
 
 public class BigIntegerUtils {
@@ -24,16 +23,6 @@ public class BigIntegerUtils {
         final BigInteger imag = new BigInteger(1, ByteArrayUtils.reverseByteArray(imagArray, REMOVE_TRAILING_ZERO));
 
         return new F2Element(real, imag);
-    }
-
-    public static BigInteger reverseBigInteger(BigInteger val, ByteArrayReverseMode handleZero) {
-        return new BigInteger(
-                1,
-                ByteArrayUtils.reverseByteArray(
-                        val.toByteArray(),
-                        handleZero
-                )
-        );
     }
 
     public static byte[] bigIntegerToByte(

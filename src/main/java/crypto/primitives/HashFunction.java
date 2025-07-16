@@ -15,7 +15,7 @@ import static utils.ByteArrayReverseMode.REMOVE_LEADING_ZERO;
 
 /**
  * Cryptographic hash function utilities for FourQ operations.
- * 
+ * <p>
  * This class provides SHA-512 hashing functionality with support for
  * byte order reversal, which is needed for proper endianness handling
  * in the FourQ implementation. The hash functions are used in key
@@ -40,7 +40,7 @@ public class HashFunction {
 
     /**
      * Computes SHA-512 hash of byte array input with optional byte reversal.
-     * 
+     * <p>
      * This is the core hash function used throughout the FourQ implementation.
      * The reverse option handles endianness requirements for different contexts.
      * 
@@ -56,19 +56,6 @@ public class HashFunction {
                 return ByteArrayUtils.reverseByteArray(digest.digest(bytes), REMOVE_LEADING_ZERO);
             }
             return digest.digest(bytes);
-        } catch (NoSuchAlgorithmException e) {
-            throw new EncryptionException(String.format(
-                    "No such encryption algorithm: %s\n",
-                    ENCRYPTION_STANDARD
-            ));
-        }
-    }
-
-    public static byte[] computeHashReversed(byte[] bytes, int target) throws EncryptionException {
-        try {
-            MessageDigest digest = MessageDigest.getInstance(ENCRYPTION_STANDARD);
-            byte [] padded = ByteArrayUtils.concat(new byte[target - ByteArrayUtils.reverseByteArray(bytes, REMOVE_LEADING_ZERO).length], ByteArrayUtils.reverseByteArray(bytes, REMOVE_LEADING_ZERO));
-            return ByteArrayUtils.reverseByteArray(digest.digest(padded), REMOVE_LEADING_ZERO);
         } catch (NoSuchAlgorithmException e) {
             throw new EncryptionException(String.format(
                     "No such encryption algorithm: %s\n",

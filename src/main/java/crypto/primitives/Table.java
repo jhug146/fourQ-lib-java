@@ -1,27 +1,18 @@
 package crypto.primitives;
 
-import java.util.Arrays;
-
-import constants.PregeneratedTables;
-import exceptions.TableLookupException;
 import field.operations.FP2;
+import org.jetbrains.annotations.NotNull;
 import types.data.F2Element;
-import types.point.PreComputedExtendedPoint;
 import types.point.TablePoint;
 
 
 public class Table {
+    @NotNull
     public static <T extends TablePoint> T tableLookup(
-            T[] table,
+            @NotNull T[] table,
             int digit,
             int signMask
-    ) throws TableLookupException, NullPointerException {
-        if (table[digit] == null) {
-            throw new TableLookupException("""
-                    TableLookup expected table to provide non-null value.
-                    Likely cause: generated table is faulty.
-                    """);
-        }
+    ) throws NullPointerException {
         //noinspection unchecked
         T point = (T) table[digit].dup();
         if (signMask == -1) {
@@ -32,24 +23,5 @@ public class Table {
         point.setY(tempY);
         point.setT(FP2.fp2Neg1271(point.getT()));
         return point;
-    }
-
-    public static PreComputedExtendedPoint tableLookup(
-            int tableLocation,
-            int digit,
-            int signMask,
-            TablePoint point
-    ) throws TableLookupException {
-        if (tableLocation + point.getTableLength() >= PregeneratedTables.FIXED_BASE_TABLE_POINTS.length) {
-            throw new IndexOutOfBoundsException("Table location out of bounds: " + tableLocation);
-        }
-
-        PreComputedExtendedPoint[] table = Arrays.copyOfRange(
-                PregeneratedTables.FIXED_BASE_TABLE_POINTS,
-                tableLocation,
-                tableLocation + point.getTableLength()
-        );
-
-        return tableLookup(table, digit, signMask);
     }
 }

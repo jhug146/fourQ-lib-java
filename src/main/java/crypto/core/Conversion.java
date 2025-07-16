@@ -3,20 +3,14 @@ package crypto.core;
 import constants.Params;
 import org.jetbrains.annotations.NotNull;
 import types.data.F2Element;
-import types.point.AffinePoint;
 import types.point.ExtendedPoint;
 import types.point.PreComputedExtendedPoint;
 
 import static field.operations.FP2.*;
 
 public class Conversion {
-    static ExtendedPoint r5ToR1(AffinePoint p) {
-        F2Element x = fp2Div1271(fp2Sub1271(p.getX(), p.getY()));
-        F2Element y = fp2Div1271(fp2Add1271(p.getX(), p.getY()));
-        return new ExtendedPoint(x, y, F2Element.ONE, x, y);
-    }
-
-    public static PreComputedExtendedPoint r1ToR2(ExtendedPoint point) {
+    @NotNull
+    public static PreComputedExtendedPoint r1ToR2(@NotNull ExtendedPoint point) {
         F2Element t = fp2Add1271(point.getTa(), point.getTa());
         t = fp2Mul1271(t, point.getTb());
         return new PreComputedExtendedPoint(
@@ -27,7 +21,8 @@ public class Conversion {
         );
     }
 
-    public static PreComputedExtendedPoint r1ToR3(ExtendedPoint point) {
+    @NotNull
+    public static PreComputedExtendedPoint r1ToR3(@NotNull ExtendedPoint point) {
         return new PreComputedExtendedPoint(
                 fp2Add1271(point.getX(), point.getY()),
                 fp2Sub1271(point.getY(), point.getX()),

@@ -6,11 +6,11 @@ import java.math.BigInteger;
 
 /**
  * Quadratic extension field arithmetic for GF((2^127-1)^2).
- * 
+ * <p>
  * This class implements arithmetic in the quadratic extension field
  * GF(p^2) where p = 2^127-1. Elements are represented as a + bi where
  * a and b are elements of the base field GF(p) and i^2 = -1.
- * 
+ * <p>
  * The FourQ curve is defined over this quadratic extension field,
  * allowing for more efficient curve operations compared to curves
  * over prime fields of similar security levels.
@@ -21,7 +21,7 @@ import java.math.BigInteger;
 public class FP2 {
     /**
      * Creates a copy of a GF(p^2) element.
-     * 
+     * <p>
      * Since BigInteger objects are immutable, this simply returns the input.
      * 
      * @param a the element to copy
@@ -38,7 +38,7 @@ public class FP2 {
 
     /**
      * Squares an element in GF(p^2) using optimized formulas.
-     * 
+     * <p>
      * For element a = a0 + a1*i, computes a^2 using the identity:
      * a^2 = (a0 + a1)(a0 - a1) + 2*a0*a1*i
      * This saves one multiplication compared to general multiplication.
@@ -59,7 +59,7 @@ public class FP2 {
 
     /**
      * Multiplies two elements in GF(p^2) using the relation i^2 = -1.
-     * 
+     * <p>
      * For elements a = a0 + a1*i and b = b0 + b1*i, computes:
      * c = a*b = (a0*b0 - a1*b1) + (a0*b1 + a1*b0)*i
      * 
@@ -106,7 +106,7 @@ public class FP2 {
 
     /**
      * Computes the multiplicative inverse of an element in GF(p^2).
-     * 
+     * <p>
      * For element a = a0 + a1*i, computes a^(-1) using the formula:
      * a^(-1) = (a0 - a1*i) / (a0^2 + a1^2)
      * where the division is performed in the base field GF(p).

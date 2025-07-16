@@ -1,10 +1,7 @@
 package types.point;
 
-import constants.Params;
-import exceptions.TablePointCastException;
 import types.data.F2Element;
 
-import java.math.BigInteger;
 import java.util.Objects;
 
 public class AffinePoint implements TablePoint {
@@ -23,18 +20,9 @@ public class AffinePoint implements TablePoint {
         this.y = F2Element.ONE.dup();
     }
 
-    public ExtendedPoint toExtendedPoint() {
-        return new ExtendedPoint(this.x, this.y, new F2Element(BigInteger.ONE, BigInteger.ZERO), this.x, this.y);
-    }
-
     @Override
     public AffinePoint dup() {
         return new AffinePoint(x, y, t);
-    }
-
-    @Override
-    public int getTableLength() {
-        return Params.VPOINTS_FIXEDBASE;
     }
 
     @Override
@@ -46,16 +34,6 @@ public class AffinePoint implements TablePoint {
     @Override
     public int hashCode() {
         return Objects.hash(x, y, t);
-    }
-
-    @Override
-    public PreComputedExtendedPoint toPreComputedExtendedPoint() {
-        throw new TablePointCastException("Trying to cast Affine to unsupported PreComputedExtendedPoint via TableLookup.");
-    }
-
-    @Override
-    public AffinePoint toAffinePoint() {
-        return this;
     }
 
     @Override
@@ -85,15 +63,6 @@ public class AffinePoint implements TablePoint {
     @Override
     public void setT(F2Element t) {
         this.t = t;
-    }
-
-    @Override
-    public F2Element getZ() {
-        return null;
-    }
-
-    @Override
-    public void setZ(F2Element z) {
     }
 
     @Override

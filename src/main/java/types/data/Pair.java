@@ -9,7 +9,7 @@ import java.util.Objects;
 
 /**
  * A robust generic pair data structure that holds two related values.
- * 
+ * <p>
  * This implementation provides a feature-complete pair class similar to Kotlin's Pair,
  * with proper equals/hashCode implementation, serialization support, and utility methods.
  * 

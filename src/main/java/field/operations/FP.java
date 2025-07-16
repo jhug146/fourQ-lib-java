@@ -1,5 +1,6 @@
 package field.operations;
 
+import constants.Key;
 import types.data.Pair;
 import constants.Params;
 
@@ -7,14 +8,14 @@ import java.math.BigInteger;
 
 /**
  * Finite field arithmetic operations for FourQ over GF(2^127-1).
- * 
+ * <p>
  * This class implements arithmetic in the base field GF(p) where p = 2^127-1
  * is a Mersenne prime. The implementation includes:
  * - Montgomery arithmetic for efficient modular operations
  * - Modular addition, subtraction, and multiplication
  * - Scalar reduction and conversion utilities
  * - Optimized operations for the Mersenne prime structure
- * 
+ * <p>
  * The PUtil nested interface provides low-level field operations optimized
  * for the specific prime p = 2^127-1.
  * 
@@ -24,7 +25,7 @@ import java.math.BigInteger;
 public class FP {
     /**
      * Performs Montgomery multiplication modulo the curve order.
-     * 
+     * <p>
      * Montgomery multiplication allows efficient modular arithmetic by
      * avoiding expensive division operations. This method is essential
      * for scalar arithmetic in signature operations.
@@ -51,7 +52,7 @@ public class FP {
 
     /**
      * Reduces a value modulo the curve order using Montgomery arithmetic.
-     * 
+     * <p>
      * This method efficiently computes key mod order by using Montgomery
      * multiplication operations, which is faster than standard modular reduction.
      * 
@@ -78,7 +79,7 @@ public class FP {
 
     /**
      * Converts an even scalar to odd by adding the curve order if necessary.
-     * 
+     * <p>
      * Many ECC algorithms require odd scalars for efficiency. Since the curve
      * order is odd, adding it to an even scalar makes it odd without changing
      * the result of scalar multiplication.
@@ -111,7 +112,7 @@ public class FP {
 
         // Calculate the maximum value for NWORDS_ORDER words
         // Assuming 32-bit words: max = 2^(NWORDS_ORDER * 32) - 1
-        int bitsPerWord = 32;  // TODO or 64 if using 64-bit words
+        int bitsPerWord = Key.KEY_SIZE;
         int totalBits = Params.NWORDS_ORDER * bitsPerWord;
         BigInteger maxValue = BigInteger.ONE.shiftLeft(totalBits); //First value that cannot be represented in system
 
@@ -135,14 +136,14 @@ public class FP {
 
         // Borrow occurred
         // Simulate fixed-width wraparound: a - b + 2^n
-        int totalBits = Params.NWORDS_ORDER * 32; //TODO make '32' change based on system
+        int totalBits = Params.NWORDS_ORDER * Key.KEY_SIZE;
         BigInteger modulus = BigInteger.ONE.shiftLeft(totalBits), wrappedResult = a.subtract(b).add(modulus);
         return new Pair<>(wrappedResult, 1);
     }
 
     /**
      * Low-level field arithmetic operations for GF(2^127-1).
-     * 
+     * <p>
      * This interface provides optimized implementations for arithmetic
      * in the Mersenne prime field p = 2^127-1, taking advantage of
      * the special structure of Mersenne primes for faster reductions.
@@ -196,8 +197,6 @@ public class FP {
         }
 
         static BigInteger fpExp1251(BigInteger a) {
-            // TODO: The "1251" in the name might refer to a specific windowing or addition chain strategy,
-            //  not the literal exponent 1251
             BigInteger exponent = BigInteger.ONE.shiftLeft(125).subtract(BigInteger.ONE);
             return modPow1271(a, exponent);
         }

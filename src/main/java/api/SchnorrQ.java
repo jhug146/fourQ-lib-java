@@ -18,6 +18,7 @@ import types.point.FieldPoint;
 
 import static exceptions.ValidationErrors.*;
 import static utils.ByteArrayReverseMode.*;
+import static utils.ByteArrayUtils.addLeadingZeros;
 import static utils.ByteArrayUtils.reverseByteArray;
 
 
@@ -55,6 +56,7 @@ public class SchnorrQ {
      * @throws EncryptionException if the cryptographic operations fail
      * @throws IllegalArgumentException if secretKey is null
      */
+    @NotNull
     public static BigInteger schnorrQKeyGeneration(@NotNull BigInteger secretKey) throws EncryptionException {
         BigInteger hash = new BigInteger(1, HashFunction.computeHash(secretKey, true));
         final FieldPoint point = ECC.eccMulFixed(hash);
@@ -71,6 +73,7 @@ public class SchnorrQ {
      * @return a Pair containing (privateKey, publicKey) as BigInteger values
      * @throws EncryptionException if key generation fails due to cryptographic errors
      */
+    @NotNull
     public static Pair<BigInteger, BigInteger> schnorrQFullKeyGeneration() throws EncryptionException {
         final BigInteger secretKey = CryptoUtils.randomBytes(Key.KEY_SIZE);
         final BigInteger publicKey = schnorrQKeyGeneration(secretKey);
@@ -94,6 +97,7 @@ public class SchnorrQ {
      * @throws EncryptionException if signing fails due to cryptographic errors
      * @throws IllegalArgumentException if secretKey or publicKey is null
      */
+    @NotNull
     public static BigInteger schnorrQSign(
             @NotNull BigInteger secretKey,
             @NotNull BigInteger publicKey,
@@ -198,26 +202,15 @@ public class SchnorrQ {
         final BigInteger sig32 = signature.mod(Key.POW_256);
         final byte[] sig32Array = addLeadingZeros(sig32.toByteArray(), Key.KEY_SIZE + 1);
         // Compute s*G + H*publicKey using double scalar multiplication
-        final BigInteger s = new BigInteger(1, ByteArrayUtils.reverseByteArray(sig32Array, REMOVE_TRAILING_ZERO));
 
-        BigInteger a = BigIntegerUtils.reverseBigInteger(sig32, REMOVE_TRAILING_ZERO);
-        FieldPoint b = CryptoUtils.decode(publicKey);
-        BigInteger c = new BigInteger(1, HashFunction.computeHash(bytes, true));
         FieldPoint affPoint = ECC.eccMulDouble(
-                s,
-                b,       // Implicitly checks that public key lies on the curve
-                c
+                new BigInteger(1, ByteArrayUtils.reverseByteArray(sig32Array, REMOVE_TRAILING_ZERO)),
+                CryptoUtils.decode(publicKey),       // Implicitly checks that public key lies on the curve
+                new BigInteger(1, HashFunction.computeHash(bytes, true))
         );
 
         final BigInteger encoded = CryptoUtils.encode(affPoint);
         // Verify that computed point equals the commitment R from signature
         return encoded.equals(signature.divide(Key.POW_256));
-    }
-
-    public static byte[] addLeadingZeros(byte[] array, int targetLength) {
-        if (array.length == targetLength) return array;
-        byte[] padded = new byte[targetLength];
-        System.arraycopy(array, 0, padded, targetLength - array.length, array.length);
-        return padded;
     }
 }

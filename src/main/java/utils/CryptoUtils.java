@@ -162,7 +162,7 @@ public class CryptoUtils {
         t3 = FP.PUtil.fpMul1271(t, t3);                 // t3 = t3*t
         BigInteger r = FP.PUtil.fpExp1251(t3);          // r = t3^(2^125-1)
         t3 = FP.PUtil.fpMul1271(t0, r);                 // t3 = t0*r
-        BigInteger x0 = FP.PUtil.fpMul1271(t, t3);      // x0 = t*t3 //TODO in C this is coming from some pointer P->x0
+        BigInteger x0 = FP.PUtil.fpMul1271(t, t3);      // x0 = t*t3
         t1 = FP.PUtil.fpSqr1271(x0);
         t1 = FP.PUtil.fpMul1271(t0, t1);                // t1 = t0*x0^2
         x0 = FP.PUtil.fpDiv1271(x0);                    // x0 = x0/2
