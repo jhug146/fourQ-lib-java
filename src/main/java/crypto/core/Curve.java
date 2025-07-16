@@ -90,124 +90,6 @@ public class Curve {
         );
     }
 
-    public static int[] mLSBSetRecode(
-            @NotNull BigInteger inputScalar,
-            int[] digits
-    ) {
-        final int d = Params.D_FIXEDBASE;                              // ceil(bitlength(order)/(w*v))*v
-
-        BigInteger scalar = inputScalar;
-
-        // Initialize
-        digits[d-1] = 0;
-
-        // Initial shift right by 1
-        scalar = scalar.shiftRight(1);
-
-        // Part 1: Extract signs for indices 0 to d-2
-        for (int i = 0; i < d-1; i++) {
-            // Extract LSB and convert to sign convention
-            int lsb = scalar.testBit(0) ? 1 : 0;
-            digits[i] = lsb - 1;                                // Convert: 0 -> -1 (negative), 1 -> 0 (positive)
-
-            // Shift right by 1
-            scalar = scalar.shiftRight(1);
-        }
-
-        // Part 2: Extract digits for indices d to l-1
-        for (int i = d; i < Params.L_FIXEDBASE; i++) {
-            // Extract LSB as digit value
-            digits[i] = scalar.testBit(0) ? 1 : 0;
-
-            // Shift right by 1
-            scalar = scalar.shiftRight(1);
-
-            // Conditional addition based on sign
-            int signIndex = i % d;                              // Equivalent to i-(i/d)*d
-            int comp = (-digits[signIndex]) & digits[i];
-
-            // Add temp to scalar (equivalent to floor(scalar/2) + comp)
-            if (comp != 0) {
-                scalar = scalar.add(BigInteger.ONE);
-            }
-        }
-
-        return digits;
-    }
-
-    /**
-     * Decomposes a scalar using 4-dimensional GLV for parallel computation.
-     * <p>
-     * The Gallant-Lambert-Vanstone (GLV) method decomposes a large scalar k
-     * into four smaller scalars k1, k2, k3, k4 such that:
-     * k*P = k1*P + k2*φ(P) + k3*ψ(P) + k4*φ(ψ(P))
-     * <p>
-     * This allows parallel computation of four smaller scalar multiplications,
-     * significantly reducing the total computation time.
-     * 
-     * @param k the scalar to decompose (range [0, 2^256-1])
-     * @return array of 4 sub-scalars for efficient multiplication
-     */
-    @NotNull
-    public static BigInteger[] decompose(@NotNull BigInteger k) {
-        // Phase 1: Compute initial coefficients using truncated multiplication
-        BigInteger a1 = mulTruncate(k, Params.ELL1);
-        BigInteger a2 = mulTruncate(k, Params.ELL2);
-        BigInteger a3 = mulTruncate(k, Params.ELL3);
-        BigInteger a4 = mulTruncate(k, Params.ELL4);
-
-        // Phase 2: Compute first scalar with parity adjustment
-        BigInteger temp = k
-                .subtract(a1.multiply(Params.B11))
-                .subtract(a2.multiply(Params.B21))
-                .subtract(a3.multiply(Params.B31))
-                .subtract(a4.multiply(Params.B41))
-                .add(Params.C1);
-
-        // Phase 3: Parity check and conditional adjustment
-        // If temp is even then mask = 0xFF...FF, else mask = 0
-        boolean isEven = !temp.testBit(0);
-        BigInteger mask = isEven ? Params.MASK_ALL_ONES : BigInteger.ZERO;
-
-        // Phase 4: Compute the 4 decomposed scalars
-        BigInteger[] scalars = new BigInteger[4];
-
-        scalars[0] = temp.add(mask.and(Params.B41));
-
-        scalars[1] = a1.multiply(Params.B12)
-                .add(a2)
-                .subtract(a3.multiply(Params.B32))
-                .subtract(a4.multiply(Params.B42))
-                .add(Params.C2)
-                .add(mask.and(Params.B42));
-
-        scalars[2] = a3.multiply(Params.B33)
-                .subtract(a1.multiply(Params.B13))
-                .subtract(a2)
-                .add(a4.multiply(Params.B43))
-                .add(Params.C3)
-                .subtract(mask.and(Params.B43));
-
-        scalars[3] = a1.multiply(Params.B14)
-                .subtract(a2.multiply(Params.B24))
-                .subtract(a3.multiply(Params.B34))
-                .add(a4.multiply(Params.B44))
-                .add(Params.C4)
-                .subtract(mask.and(Params.B44));
-
-        return scalars;
-    }
-
-    /**
-     * Truncated multiplication: computes floor((k * ell) / 2^256)
-     * This extracts the high bits of the multiplication
-     */
-    @NotNull
-    private static BigInteger mulTruncate(@NotNull BigInteger k, @NotNull BigInteger ell) {
-        BigInteger product = k.multiply(ell);
-        return product.shiftRight(256);  // Equivalent to dividing by 2^256
-    }
-
     /**
      * Co-factor clearing operation for elliptic curve points.
      *
@@ -215,7 +97,7 @@ public class Curve {
      *          where T₁ = Ta×Tb corresponds to (X₁:Y₁:Z₁:T₁)
      */
     @NotNull
-    public static ExtendedPoint cofactorClearing(@NotNull ExtendedPoint p) {
+    static ExtendedPoint cofactorClearing(@NotNull ExtendedPoint p) {
         PreComputedExtendedPoint q = Conversion.r1ToR2(p);  // Converting from (X,Y,Z,Ta,Tb) to (X+Y,Y-X,2Z,2dT)
         p = ECC.eccDouble(p);                                   // P = 2*P using representations (X,Y,Z,Ta,Tb) <- 2*(X,Y,Z)
         p = ECC.eccAdd(q, p);                                   // P = P+Q using representations (X,Y,Z,Ta,Tb) <- (X,Y,Z,Ta,Tb) + (X+Y,Y-X,2Z,2dT)

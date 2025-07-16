@@ -9,7 +9,6 @@ import constants.Params;
 
 
 public class PUtilTests {
-
     private static final BigInteger PRIME = Params.PRIME_1271;
     private static final BigInteger ONE = BigInteger.ONE;
     private static final BigInteger ZERO = BigInteger.ZERO;

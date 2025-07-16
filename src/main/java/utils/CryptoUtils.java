@@ -141,7 +141,7 @@ public class CryptoUtils {
         y.im = y.im.clearBit(127);
 
         F2Element u = FP2.fp2Sqr1271(y);
-        F2Element v = FP2.fp2Mul1271(u, Params.PARAMETER_d);
+        F2Element v = FP2.fp2Mul1271(u, Params.PARAMETER_D);
         u = FP2.fp2Sub1271(u, F2Element.ONE);
         v = FP2.fp2Add1271(v, F2Element.ONE);
 

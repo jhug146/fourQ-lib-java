@@ -18,7 +18,7 @@ public class Conversion {
                 fp2Add1271(point.getX(), point.getY()),
                 fp2Sub1271(point.getY(), point.getX()),
                 fp2Add1271(point.getZ(), point.getZ()),
-                fp2Mul1271(t, Params.PARAMETER_d)
+                fp2Mul1271(t, Params.PARAMETER_D)
         );
     }
 

@@ -43,7 +43,7 @@ public class ECC {
      */
     @NotNull
     public static FieldPoint eccSet() {
-        return new FieldPoint(Params.GENERATOR_x, Params.GENERATOR_y);
+        return new FieldPoint(Params.GENERATOR_X, Params.GENERATOR_Y);
     }
 
     /**
@@ -244,7 +244,7 @@ public class ECC {
         F2Element t3 = fp2Sub1271(t1, t2);                              // y^2 - x^2 = -x^2 + y^2
 
         t1 = fp2Mul1271(t1, t2);                                        // x^2*y^2
-        t2 = fp2Mul1271(Params.PARAMETER_d, t1);                        // dx^2*y^2
+        t2 = fp2Mul1271(Params.PARAMETER_D, t1);                        // dx^2*y^2
 
         // Create F2Element representing 1 + 0i
         F2Element one = new F2Element(
