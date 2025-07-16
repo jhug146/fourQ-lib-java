@@ -4,6 +4,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Optional;
+
+import static utils.ByteArrayReverseMode.KEEP_LEADING_ZERO;
 
 public class ByteArrayUtils {
     public static String byteArrayToString(byte[] bytes) {
@@ -12,9 +15,10 @@ public class ByteArrayUtils {
         return sb.toString();
     }
 
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public static byte[] reverseByteArray(
             byte @NotNull [] src,
-            @NotNull ByteArrayReverseMode mode
+            @NotNull Optional<ByteArrayReverseMode> mode
     ) {
         if (src.length == 0) return new byte[0];
         else if (src.length == 1) return new byte[] { src[0] };
@@ -22,7 +26,8 @@ public class ByteArrayUtils {
         byte[] rev = new byte[src.length];
         for (int i = 0; i < src.length; i++) rev[i] = src[src.length - 1 - i];
 
-        switch (mode) {
+        if (mode.isEmpty() || mode.get() == KEEP_LEADING_ZERO) return rev;
+        switch (mode.get()) {
             case REMOVE_LEADING_ZERO -> {
                 if (rev[0] == 0) rev = Arrays.copyOfRange(rev, 1, rev.length);
             }
@@ -31,7 +36,6 @@ public class ByteArrayUtils {
                     rev = Arrays.copyOfRange(rev, 0, rev.length - 1);
                 }
             }
-            case KEEP_LEADING_ZERO -> {} // Do nothing.
             case KEEP_LEADING_PADDING -> {
                 final int leadingZeros = leadingZeroes(src);
                 if (leadingZeros > 0) {
@@ -41,7 +45,6 @@ public class ByteArrayUtils {
                 }
             }
         }
-
         return rev;
     }
 

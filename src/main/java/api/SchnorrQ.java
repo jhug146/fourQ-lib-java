@@ -2,6 +2,7 @@ package api;
 
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Optional;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -126,7 +127,7 @@ public class SchnorrQ {
         // Use Montgomery arithmetic for efficient modular operations
         // Sequentially builds up the sigEnd BigInteger.
         final BigInteger sigEnd = BigIntegerUtils.buildBigInteger(
-            new BigInteger(1, ByteArrayUtils.reverseByteArray(kHash, REMOVE_LEADING_ZERO)),
+            new BigInteger(1, ByteArrayUtils.reverseByteArray(kHash, Optional.of(REMOVE_LEADING_ZERO))),
             CryptoUtils::toMontgomery,
             x -> FP.montgomeryMultiplyModOrder(x, CryptoUtils.toMontgomery(hHash2)),
             CryptoUtils::fromMontgomery,
@@ -135,7 +136,7 @@ public class SchnorrQ {
 
         return new BigInteger(1, ByteArrayUtils.concat(
             BigIntegerUtils.bigIntegerToByte(sigStart, Key.KEY_SIZE, false),
-            reverseByteArray(BigIntegerUtils.bigIntegerToByte(sigEnd, Key.KEY_SIZE, false), KEEP_LEADING_ZERO)
+            reverseByteArray(BigIntegerUtils.bigIntegerToByte(sigEnd, Key.KEY_SIZE, false), Optional.empty())
         ));
     }
 

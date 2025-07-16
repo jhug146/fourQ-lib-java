@@ -6,6 +6,7 @@ import types.data.F2Element;
 
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.Function;
 
 import static utils.ByteArrayReverseMode.KEEP_LEADING_PADDING;
@@ -20,11 +21,11 @@ public class BigIntegerUtils {
 
         final BigInteger real = new BigInteger(1, ByteArrayUtils.reverseByteArray(
             addLeadingZeros(divModRes[0].toByteArray(), targetLength),
-            REMOVE_TRAILING_ZERO));
+            Optional.of(REMOVE_TRAILING_ZERO)));
 
         final BigInteger imag = new BigInteger(1, ByteArrayUtils.reverseByteArray(
             addLeadingZeros(divModRes[1].toByteArray(), targetLength),
-            REMOVE_TRAILING_ZERO));
+            Optional.of(REMOVE_TRAILING_ZERO)));
 
         return new F2Element(real, imag);
     }

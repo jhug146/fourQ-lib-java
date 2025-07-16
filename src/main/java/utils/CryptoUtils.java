@@ -15,6 +15,7 @@ import types.point.FieldPoint;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.Optional;
 
 import static utils.BigIntegerUtils.addLeadingZeros;
 import static utils.ByteArrayReverseMode.REMOVE_TRAILING_ZERO;
@@ -214,6 +215,6 @@ public class CryptoUtils {
     public static @NotNull BigInteger extractSignatureTopBytesReverse(@NotNull BigInteger signature) {
         final BigInteger sig32 = signature.mod(Key.POW_256);
         final byte[] sig32Array = addLeadingZeros(sig32.toByteArray(), Key.KEY_SIZE + 1);
-        return new BigInteger(1, ByteArrayUtils.reverseByteArray(sig32Array, REMOVE_TRAILING_ZERO));
+        return new BigInteger(1, ByteArrayUtils.reverseByteArray(sig32Array, Optional.of(REMOVE_TRAILING_ZERO)));
     }
 }

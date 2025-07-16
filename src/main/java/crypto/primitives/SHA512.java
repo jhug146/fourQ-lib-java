@@ -3,6 +3,7 @@ package crypto.primitives;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Optional;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -56,7 +57,7 @@ public class SHA512 implements HashFunction {
         try {
             MessageDigest digest = MessageDigest.getInstance(ENCRYPTION_STANDARD);
             if (reverse) {
-                return ByteArrayUtils.reverseByteArray(digest.digest(bytes), REMOVE_LEADING_ZERO);
+                return ByteArrayUtils.reverseByteArray(digest.digest(bytes), Optional.of(REMOVE_LEADING_ZERO));
             }
             return digest.digest(bytes);
         } catch (NoSuchAlgorithmException e) {
