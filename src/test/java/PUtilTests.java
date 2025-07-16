@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigInteger;
 
-import field.operations.FP.PUtil;
+import fieldoperations.FP.PUtil;
 
 
 public class PUtilTests {

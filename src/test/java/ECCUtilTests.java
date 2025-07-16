@@ -2,7 +2,7 @@ import constants.Params;
 import crypto.core.Curve;
 import crypto.core.ECC;
 import exceptions.EncryptionException;
-import field.operations.FP2;
+import fieldoperations.FP2;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;

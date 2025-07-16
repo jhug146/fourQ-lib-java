@@ -2,6 +2,7 @@ package utils;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 
 public class ByteArrayUtils {
@@ -58,6 +59,11 @@ public class ByteArrayUtils {
         System.arraycopy(a, 0, out, 0, a.length);
         System.arraycopy(b, 0, out, a.length, b.length);
         return out;
+    }
+
+    // Wraps System.arraycopy() calls.
+    public static void copyByteArrayToByteArray(byte[] src, int srcPos, byte[] dest, int destPos, int length) {
+        System.arraycopy(src, srcPos, dest, destPos, length);
     }
 
 }

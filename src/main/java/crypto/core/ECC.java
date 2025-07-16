@@ -3,18 +3,19 @@ package crypto.core;
 import constants.Params;
 import crypto.primitives.Table;
 import exceptions.EncryptionException;
-import field.operations.FP;
+import fieldoperations.FP;
 import org.jetbrains.annotations.NotNull;
 import types.data.F2Element;
 import types.point.AffinePoint;
 import types.point.ExtendedPoint;
 import types.point.FieldPoint;
 import types.point.PreComputedExtendedPoint;
+import utils.BigIntegerUtils;
 
 import java.math.BigInteger;
 
 import static constants.Params.T_VARBASE;
-import static field.operations.FP2.*;
+import static fieldoperations.FP2.*;
 
 /**
  * Core elliptic curve cryptography operations for the FourQ curve.
@@ -143,8 +144,7 @@ public class ECC {
             r = Curve.cofactorClearing(r);
         }
 
-        BigInteger kOdd = FP.moduloOrder(k);
-        kOdd = FP.conversionToOdd(kOdd);
+        BigInteger kOdd = BigIntegerUtils.buildBigInteger(k, FP::moduloOrder, FP::conversionToOdd);
         PreComputedExtendedPoint[] table = eccPrecomp(r);
         int[] digits = Curve.fixedWindowRecode(kOdd, signMasks);
 

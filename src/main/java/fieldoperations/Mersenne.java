@@ -1,4 +1,4 @@
-package field.operations;
+package fieldoperations;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;

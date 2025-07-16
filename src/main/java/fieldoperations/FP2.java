@@ -1,4 +1,4 @@
-package field.operations;
+package fieldoperations;
 
 import types.data.F2Element;
 

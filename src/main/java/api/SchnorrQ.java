@@ -11,13 +11,15 @@ import crypto.core.ECC;
 import crypto.primitives.HashFunction;
 import exceptions.EncryptionException;
 import exceptions.InvalidArgumentException;
-import field.operations.FP;
+import fieldoperations.FP;
 import org.jetbrains.annotations.NotNull;
 import types.data.Pair;
 import types.point.FieldPoint;
 
 import static exceptions.ValidationErrors.*;
+import static utils.BigIntegerUtils.copyBigIntegerToByteArray;
 import static utils.ByteArrayReverseMode.*;
+import static utils.ByteArrayUtils.copyByteArrayToByteArray;
 import static utils.ByteArrayUtils.reverseByteArray;
 
 
@@ -94,72 +96,38 @@ public class SchnorrQ {
      * @throws EncryptionException if signing fails due to cryptographic errors
      * @throws IllegalArgumentException if secretKey or publicKey is null
      */
-    public static BigInteger schnorrQSign(
-            @NotNull BigInteger secretKey,
-            @NotNull BigInteger publicKey,
-            byte[] message
-    ) throws EncryptionException {
+    public static BigInteger schnorrQSign(@NotNull BigInteger secretKey, @NotNull BigInteger publicKey, byte[] message) throws EncryptionException {
         final byte[] kHash = HashFunction.computeHash(secretKey, false);
-        byte[] bytes = new byte[message.length + 2 * Key.KEY_SIZE];
+        final byte[] bytes = schnorrCreateBuffer(message);
+        
         // Use second half of kHash as nonce seed for deterministic signing
-        System.arraycopy(
-                kHash,
-                Key.KEY_SIZE,
-                bytes,
-                Key.KEY_SIZE,
-                Key.KEY_SIZE
-        );
-        System.arraycopy(
-                message,
-                0,
-                bytes,
-                Key.KEY_SIZE * 2,
-                message.length
-        );
+        copyByteArrayToByteArray(kHash, Key.KEY_SIZE, bytes, Key.KEY_SIZE, Key.KEY_SIZE);
+        copyByteArrayToByteArray(message, 0, bytes, Key.KEY_SIZE * 2, message.length);
 
         // Compute nonce r = H(nonce_seed || message)
-        BigInteger rHash = new BigInteger(
-                1,
-                HashFunction.computeHash(
-                        Arrays.copyOfRange(bytes, Key.KEY_SIZE, bytes.length),
-                        true
-                )
-        );
-        final FieldPoint rPoint = ECC.eccMulFixed(rHash);
-        final BigInteger sigStart = CryptoUtils.encode(rPoint);
+        final BigInteger rHash = new BigInteger(1, HashFunction.computeHash(Arrays.copyOfRange(bytes, Key.KEY_SIZE, bytes.length), true));
+        final BigInteger sigStart = CryptoUtils.encode(ECC.eccMulFixed(rHash));
 
         // Prepare challenge hash input: R || publicKey || message
-        byte[] publicKeyBytes = BigIntegerUtils.bigIntegerToByte(publicKey, Key.KEY_SIZE, false);
-        System.arraycopy(
-                BigIntegerUtils.bigIntegerToByte(sigStart, Key.KEY_SIZE, false),
-                0,
-                bytes,
-                0,
-                Key.KEY_SIZE
-        );
-        System.arraycopy(
-                publicKeyBytes,
-                0,
-                bytes,
-                Key.KEY_SIZE,
-                Key.KEY_SIZE
-        );
+        copyBigIntegerToByteArray(sigStart, Key.KEY_SIZE, bytes, 0);
+        copyBigIntegerToByteArray(publicKey, Key.KEY_SIZE, bytes, Key.KEY_SIZE);
 
-        BigInteger hHash2 = new BigInteger(1, HashFunction.computeHash(bytes, true));
-        rHash = FP.moduloOrder(rHash);
-        hHash2 = FP.moduloOrder(hHash2);
+        final BigInteger hHash2 = FP.moduloOrder(new BigInteger(1, HashFunction.computeHash(bytes, true)));
 
         // Use Montgomery arithmetic for efficient modular operations
-        BigInteger sigEnd = CryptoUtils.toMontgomery(new BigInteger(1, ByteArrayUtils.reverseByteArray(kHash, REMOVE_LEADING_ZERO)));
-        hHash2 = CryptoUtils.toMontgomery(hHash2);
-        sigEnd = FP.montgomeryMultiplyModOrder(sigEnd, hHash2);
-        sigEnd = CryptoUtils.fromMontgomery(sigEnd);
-        // Compute s = r - H * secretKey (mod order)
-        sigEnd = FP.subtractModOrder(rHash, sigEnd);
+        // Sequentially builds up the sigEnd BigInteger.
+        final BigInteger sigEnd = BigIntegerUtils.buildBigInteger(
+            new BigInteger(1, ByteArrayUtils.reverseByteArray(kHash, REMOVE_LEADING_ZERO)),
+            CryptoUtils::toMontgomery,
+            x -> FP.montgomeryMultiplyModOrder(x, CryptoUtils.toMontgomery(hHash2)),
+            CryptoUtils::fromMontgomery,
+            x -> FP.subtractModOrder(FP.moduloOrder(rHash), x)
+        );
 
-        byte[] sigStartBytes = BigIntegerUtils.bigIntegerToByte(sigStart, Key.KEY_SIZE, false);
-        byte[] sigEndBytes   = reverseByteArray(BigIntegerUtils.bigIntegerToByte(sigEnd, Key.KEY_SIZE, false), KEEP_LEADING_ZERO);
-        return new BigInteger(1, ByteArrayUtils.concat(sigStartBytes, sigEndBytes));
+        return new BigInteger(1, ByteArrayUtils.concat(
+            BigIntegerUtils.bigIntegerToByte(sigStart, Key.KEY_SIZE, false),
+            reverseByteArray(BigIntegerUtils.bigIntegerToByte(sigEnd, Key.KEY_SIZE, false), KEEP_LEADING_ZERO)
+        ));
     }
 
     /**
@@ -179,45 +147,37 @@ public class SchnorrQ {
      * @param signature the signature to verify as a 64-byte BigInteger (must be non-null)
      * @param message the original message bytes that was signed
      * @return true if the signature is valid, false otherwise
-     * @throws EncryptionException if verification fails due to cryptographic errors
+     * @throws exceptions.ValidationException if verification fails due to cryptographic errors
      * @throws InvalidArgumentException if inputs fail validation checks
      * @throws IllegalArgumentException if publicKey or signature is null
      */
     public static boolean schnorrQVerify(@NotNull BigInteger publicKey, @NotNull BigInteger signature, byte[] message) throws EncryptionException {
-        // Security check: ensure specific bit is zero for both inputs
-        if (publicKey.testBit(Key.PUB_TEST_BIT)) { publicKeyError(); }
-        if (signature.testBit(Key.SIG_TEST_BIT)) { signatureError(); }
-        // Validate signature is within acceptable range
-        if (!isSignatureSizeTooLarge(signature)) { signatureSizeError(); }
+        validateVerifyInputs(publicKey, signature);
 
-        final byte[] bytes = new byte[message.length + 2 * Key.KEY_SIZE];
-        System.arraycopy(BigIntegerUtils.bigIntegerToByte(signature, Key.KEY_SIZE*2, false), 0, bytes, 0, Key.KEY_SIZE);
-        System.arraycopy(BigIntegerUtils.bigIntegerToByte(publicKey, Key.KEY_SIZE, false), 0, bytes, Key.KEY_SIZE, Key.KEY_SIZE);
-        System.arraycopy(message, 0, bytes, 2 * Key.KEY_SIZE, message.length);
+        final byte[] bytes = schnorrCreateBuffer(message);
+        copyBigIntegerToByteArray(signature, Key.KEY_SIZE*2, bytes, 0);
+        copyBigIntegerToByteArray(publicKey, Key.KEY_SIZE, bytes, Key.KEY_SIZE);
+        copyByteArrayToByteArray(message, 0, bytes, 2 * Key.KEY_SIZE, message.length);
 
-        final BigInteger sig32 = signature.mod(Key.POW_256);
-        final byte[] sig32Array = addLeadingZeros(sig32.toByteArray(), Key.KEY_SIZE + 1);
         // Compute s*G + H*publicKey using double scalar multiplication
-        final BigInteger s = new BigInteger(1, ByteArrayUtils.reverseByteArray(sig32Array, REMOVE_TRAILING_ZERO));
-
-        BigInteger a = BigIntegerUtils.reverseBigInteger(sig32, REMOVE_TRAILING_ZERO);
-        FieldPoint b = CryptoUtils.decode(publicKey);
-        BigInteger c = new BigInteger(1, HashFunction.computeHash(bytes, true));
-        FieldPoint affPoint = ECC.eccMulDouble(
-                s,
-                b,       // Implicitly checks that public key lies on the curve
-                c
+        final FieldPoint affPoint = ECC.eccMulDouble(
+                CryptoUtils.extractSignatureTopBytesReverse(signature),
+                CryptoUtils.decode(publicKey),       // Implicitly checks that public key lies on the curve
+                new BigInteger(1, HashFunction.computeHash(bytes, true))
         );
 
-        final BigInteger encoded = CryptoUtils.encode(affPoint);
         // Verify that computed point equals the commitment R from signature
-        return encoded.equals(signature.divide(Key.POW_256));
+        return CryptoUtils.encode(affPoint).equals(signature.divide(Key.POW_256));
     }
 
-    public static byte[] addLeadingZeros(byte[] array, int targetLength) {
-        if (array.length == targetLength) return array;
-        byte[] padded = new byte[targetLength];
-        System.arraycopy(array, 0, padded, targetLength - array.length, array.length);
-        return padded;
+    private static void validateVerifyInputs(BigInteger publicKey, BigInteger signature) throws InvalidArgumentException {
+        // Security check: ensure specific bit is zero for both inputs
+        if (publicKey.testBit(Key.PUB_TEST_BIT)) publicKeyError();
+        else if (signature.testBit(Key.SIG_TEST_BIT)) signatureError();
+        else if (!isSignatureSizeTooLarge(signature)) signatureSizeError();
+    }
+
+    private static byte[] schnorrCreateBuffer(byte[] message) {
+        return new byte[message.length + 2 * Key.KEY_SIZE];
     }
 }

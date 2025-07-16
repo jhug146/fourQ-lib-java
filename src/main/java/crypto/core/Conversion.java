@@ -7,7 +7,7 @@ import types.point.AffinePoint;
 import types.point.ExtendedPoint;
 import types.point.PreComputedExtendedPoint;
 
-import static field.operations.FP2.*;
+import static fieldoperations.FP2.*;
 
 public class Conversion {
     static ExtendedPoint r5ToR1(AffinePoint p) {

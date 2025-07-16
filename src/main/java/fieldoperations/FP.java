@@ -1,7 +1,8 @@
-package field.operations;
+package fieldoperations;
 
 import types.data.Pair;
 import constants.Params;
+import utils.BigIntegerUtils;
 
 import java.math.BigInteger;
 
@@ -37,9 +38,12 @@ public class FP {
         BigInteger rma = round256(ma);
         BigInteger rmb = round256(mb);
         BigInteger product = rma.multiply(rmb);
-        BigInteger q = round256(product).multiply(round256(Params.MONTGOMERY_r_PRIME));
-        BigInteger temp = round256(q).multiply(round256(Params.CURVE_ORDER));
-        BigInteger result = product.add(temp).shiftRight(256); // divide by 2^256
+
+        BigInteger result = BigIntegerUtils.buildBigInteger(product,
+                x -> round256(x).multiply(round256(Params.MONTGOMERY_r_PRIME)),
+                x -> round256(x).multiply(round256(Params.CURVE_ORDER)),
+                x -> product.add(x).shiftRight(256)
+        );
 
         if (result.compareTo(Params.CURVE_ORDER) >= 0) {
             result = result.subtract(Params.CURVE_ORDER);
@@ -188,11 +192,12 @@ public class FP {
 
         // Field inversion, af = a^-1 = a^(p-2) mod p
         static BigInteger fpInv1271(BigInteger a) {
-            BigInteger outputBuilder = fpExp1251(a);
-            outputBuilder = fpSqr1271(outputBuilder);
-            outputBuilder = fpSqr1271(outputBuilder);
-            outputBuilder = fpMul1271(a, outputBuilder);
-            return outputBuilder;
+            return BigIntegerUtils.buildBigInteger(a,
+                FP.PUtil::fpExp1251,
+                FP.PUtil::fpSqr1271,
+                FP.PUtil::fpSqr1271, 
+                x -> FP.PUtil.fpMul1271(a, x)
+            );
         }
 
         static BigInteger fpExp1251(BigInteger a) {

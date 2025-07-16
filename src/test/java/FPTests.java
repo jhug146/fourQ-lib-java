@@ -5,7 +5,7 @@ import java.math.BigInteger;
 
 import types.data.Pair;
 import constants.Params;
-import field.operations.FP;
+import fieldoperations.FP;
 
 
 public class FPTests {

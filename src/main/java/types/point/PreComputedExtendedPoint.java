@@ -1,8 +1,7 @@
 package types.point;
 
 import constants.Params;
-import field.operations.FP2;
-import org.jetbrains.annotations.NotNull;
+import fieldoperations.FP2;
 import types.data.F2Element;
 
 import java.math.BigInteger;

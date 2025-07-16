@@ -7,53 +7,52 @@ import types.data.F2Element;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-import static api.SchnorrQ.addLeadingZeros;
 import static utils.ByteArrayReverseMode.KEEP_LEADING_PADDING;
 import static utils.ByteArrayReverseMode.REMOVE_TRAILING_ZERO;
+import static utils.ByteArrayUtils.copyByteArrayToByteArray;
 
 public class BigIntegerUtils {
     public static F2Element convertBigIntegerToF2Element(@NotNull BigInteger val) {
-        final BigInteger realPart = val.divide(Key.POW_128);
-        final byte[] realArray = addLeadingZeros(realPart.toByteArray(), Key.KEY_SIZE / 2 + 1);
-        // Compute s*G + H*publicKey using double scalar multiplication
-        final BigInteger real = new BigInteger(1, ByteArrayUtils.reverseByteArray(realArray, REMOVE_TRAILING_ZERO));
+       final BigInteger[] divModRes = val.divideAndRemainder(Key.POW_128);
+       final int targetLength = Key.KEY_SIZE / 2 + 1;
 
-        final BigInteger imagPart = val.mod(Key.POW_128);
-        final byte[] imagArray = addLeadingZeros(imagPart.toByteArray(), Key.KEY_SIZE / 2 + 1);
-        // Compute s*G + H*publicKey using double scalar multiplication
-        final BigInteger imag = new BigInteger(1, ByteArrayUtils.reverseByteArray(imagArray, REMOVE_TRAILING_ZERO));
+        final BigInteger real = new BigInteger(1, ByteArrayUtils.reverseByteArray(
+            addLeadingZeros(divModRes[0].toByteArray(), targetLength),
+            REMOVE_TRAILING_ZERO));
+        
+        final BigInteger imag = new BigInteger(1, ByteArrayUtils.reverseByteArray(
+            addLeadingZeros(divModRes[1].toByteArray(), targetLength),
+            REMOVE_TRAILING_ZERO));
 
         return new F2Element(real, imag);
     }
 
-    public static BigInteger reverseBigInteger(BigInteger val, ByteArrayReverseMode handleZero) {
-        return new BigInteger(
-                1,
-                ByteArrayUtils.reverseByteArray(
-                        val.toByteArray(),
-                        handleZero
-                )
-        );
+    public static byte[] bigIntegerToByte(BigInteger publicKey, int keySize, boolean removePadZeros) {
+        byte[] raw = publicKey.toByteArray();
+        if (removePadZeros) return (raw[0] == 0) ? Arrays.copyOfRange(raw, 1, raw.length) : raw;
+        if (raw.length == keySize) return raw;
+        if (raw.length < keySize) return addLeadingZeros(raw, keySize);
+        return Arrays.copyOfRange(raw, raw.length - keySize, raw.length);
     }
 
-    public static byte[] bigIntegerToByte(
-            BigInteger publicKey,
-            int keySize,
-            boolean removePadZeros
-    ) {
-        byte[] raw = publicKey.toByteArray();
-        if (removePadZeros) {
-            if (raw[0] == 0) raw = Arrays.copyOfRange(raw, 1, raw.length);
-            return raw;
-        }
-        if (raw.length == keySize) return raw;
+    public static byte[] addLeadingZeros(byte[] array, int targetLength) {
+        if (array.length == targetLength) return array;
+        byte[] padded = new byte[targetLength];
+        copyByteArrayToByteArray(array, 0, padded, targetLength - array.length, array.length);
+        return padded;
+    }
 
-        if (raw.length < keySize) {
-            byte[] padded = new byte[keySize];
-            System.arraycopy(raw, 0, padded, keySize - raw.length, raw.length);
-            return padded;
+    // Takes an initial BigInteger and a series of function operations that are applied sequentially.
+    @SafeVarargs
+    public static BigInteger buildBigInteger(BigInteger initial, java.util.function.Function<BigInteger, BigInteger>... operations) {
+        BigInteger result = initial;
+        for (java.util.function.Function<BigInteger, BigInteger> operation : operations) {
+            result = operation.apply(result);
         }
+        return result;
+    }
 
-        return Arrays.copyOfRange(raw, raw.length - keySize, raw.length);
+    public static void copyBigIntegerToByteArray(BigInteger value, int size, byte[] destination, int offset) {
+        copyByteArrayToByteArray(bigIntegerToByte(value, size, false), 0, destination, offset, size);
     }
 }

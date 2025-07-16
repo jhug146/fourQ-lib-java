@@ -1,18 +1,23 @@
 package utils;
 
+import constants.Key;
 import constants.Params;
 import crypto.core.Curve;
 import crypto.core.ECC;
 import exceptions.EncryptionException;
 import exceptions.ValidationException;
-import field.operations.FP;
-import field.operations.FP2;
+import fieldoperations.FP;
+import fieldoperations.FP2;
+import org.jetbrains.annotations.NotNull;
 import types.point.ExtendedPoint;
 import types.data.F2Element;
 import types.point.FieldPoint;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
+
+import static utils.BigIntegerUtils.addLeadingZeros;
+import static utils.ByteArrayReverseMode.REMOVE_TRAILING_ZERO;
 
 /**
  * Cryptographic utility functions for FourQ operations.
@@ -202,4 +207,9 @@ public class CryptoUtils {
         return point;
     }
 
+    public static @NotNull BigInteger extractSignatureTopBytesReverse(@NotNull BigInteger signature) {
+        final BigInteger sig32 = signature.mod(Key.POW_256);
+        final byte[] sig32Array = addLeadingZeros(sig32.toByteArray(), Key.KEY_SIZE + 1);
+        return new BigInteger(1, ByteArrayUtils.reverseByteArray(sig32Array, REMOVE_TRAILING_ZERO));
+    }
 }
