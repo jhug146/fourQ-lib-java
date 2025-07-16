@@ -188,7 +188,7 @@ public class SchnorrQ {
         if (publicKey.testBit(Key.PUB_TEST_BIT)) { publicKeyError(); }
         if (signature.testBit(Key.SIG_TEST_BIT)) { signatureError(); }
         // Validate signature is within acceptable range
-        if (!isSignatureSizeTooLarge(signature)) { signatureSizeError(); }
+        if (isSignatureSizeTooLarge(signature)) { signatureSizeError(); }
 
         final byte[] bytes = new byte[message.length + 2 * Key.KEY_SIZE];
         System.arraycopy(BigIntegerUtils.bigIntegerToByte(signature, Key.KEY_SIZE*2, false), 0, bytes, 0, Key.KEY_SIZE);
