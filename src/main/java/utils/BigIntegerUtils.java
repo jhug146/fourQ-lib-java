@@ -8,7 +8,6 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 import static utils.ByteArrayReverseMode.KEEP_LEADING_PADDING;
-import static utils.ByteArrayReverseMode.KEEP_LEADING_ZERO;
 
 public class BigIntegerUtils {
     public static F2Element convertBigIntegerToF2Element(@NotNull BigInteger val) {

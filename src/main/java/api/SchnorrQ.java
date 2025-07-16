@@ -191,7 +191,7 @@ public class SchnorrQ {
         if (checkSignatureSize(signature)) { signatureSizeError(); }
 
         final byte[] bytes = new byte[message.length + 2 * Key.KEY_SIZE];
-        System.arraycopy(signature.toByteArray(), 0, bytes, 0, Key.KEY_SIZE);
+        System.arraycopy(BigIntegerUtils.bigIntegerToByte(signature, Key.KEY_SIZE*2, false), 0, bytes, 0, Key.KEY_SIZE);
         System.arraycopy(BigIntegerUtils.bigIntegerToByte(publicKey, Key.KEY_SIZE, false), 0, bytes, Key.KEY_SIZE, Key.KEY_SIZE);
         System.arraycopy(message, 0, bytes, 2 * Key.KEY_SIZE, message.length);
 
