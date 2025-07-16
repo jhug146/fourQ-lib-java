@@ -4,6 +4,7 @@ import constants.Params;
 import crypto.core.Curve;
 import crypto.core.ECC;
 import exceptions.EncryptionException;
+import exceptions.ValidationException;
 import field.operations.FP;
 import field.operations.FP2;
 import types.point.ExtendedPoint;
@@ -194,7 +195,7 @@ public class CryptoUtils {
             testPoint.getX().im = FP.PUtil.fpNeg1271(testPoint.getX().im);
             point.getX().im = testPoint.getX().im;
             if (!ECC.eccPointValidate(testPoint)) {       // Final point validation
-                throw new EncryptionException("Error validating point in decode.");
+                throw new ValidationException("Error validating point in decode.");
             }
         }
 

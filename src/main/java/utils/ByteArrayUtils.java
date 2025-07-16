@@ -25,6 +25,11 @@ public class ByteArrayUtils {
             case REMOVE_LEADING_ZERO -> {
                 if (rev[0] == 0) rev = Arrays.copyOfRange(rev, 1, rev.length);
             }
+            case REMOVE_TRAILING_ZERO -> {
+                if (rev[rev.length - 1] == 0) {
+                    rev = Arrays.copyOfRange(rev, 0, rev.length - 1);
+                }
+            }
             case KEEP_LEADING_ZERO -> {} // Do nothing.
             case KEEP_LEADING_PADDING -> {
                 final int leadingZeros = leadingZeroes(src);

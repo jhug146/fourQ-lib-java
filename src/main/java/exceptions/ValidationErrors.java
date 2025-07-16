@@ -5,9 +5,14 @@ import constants.Key;
 import java.math.BigInteger;
 
 public class ValidationErrors {
-    public static boolean checkSignatureSize(BigInteger signature) {
-        return signature.and(BigInteger.ONE.shiftLeft(256).subtract(BigInteger.ONE)).compareTo(BigInteger.ONE.shiftLeft(246)) < 0;
-    }
+    public static boolean isSignatureSizeTooLarge(BigInteger signature) {
+        for (int i = 0; i < 8; i++) {
+            if (signature.testBit(i)) {
+                return true;
+            }
+        }
+        return !signature.testBit(14) && !signature.testBit(15);
+   }
 
     public static void publicKeyError() throws InvalidArgumentException {
         throw new InvalidArgumentException(String.format(

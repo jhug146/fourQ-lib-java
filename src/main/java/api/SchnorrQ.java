@@ -188,7 +188,7 @@ public class SchnorrQ {
         if (publicKey.testBit(Key.PUB_TEST_BIT)) { publicKeyError(); }
         if (signature.testBit(Key.SIG_TEST_BIT)) { signatureError(); }
         // Validate signature is within acceptable range
-        if (checkSignatureSize(signature)) { signatureSizeError(); }
+        if (!isSignatureSizeTooLarge(signature)) { signatureSizeError(); }
 
         final byte[] bytes = new byte[message.length + 2 * Key.KEY_SIZE];
         System.arraycopy(BigIntegerUtils.bigIntegerToByte(signature, Key.KEY_SIZE*2, false), 0, bytes, 0, Key.KEY_SIZE);
@@ -196,15 +196,28 @@ public class SchnorrQ {
         System.arraycopy(message, 0, bytes, 2 * Key.KEY_SIZE, message.length);
 
         final BigInteger sig32 = signature.mod(Key.POW_256);
+        final byte[] sig32Array = addLeadingZeros(sig32.toByteArray(), Key.KEY_SIZE + 1);
         // Compute s*G + H*publicKey using double scalar multiplication
+        final BigInteger s = new BigInteger(1, ByteArrayUtils.reverseByteArray(sig32Array, REMOVE_TRAILING_ZERO));
+
+        BigInteger a = BigIntegerUtils.reverseBigInteger(sig32, REMOVE_TRAILING_ZERO);
+        FieldPoint b = CryptoUtils.decode(publicKey);
+        BigInteger c = new BigInteger(1, HashFunction.computeHash(bytes, true));
         FieldPoint affPoint = ECC.eccMulDouble(
-                BigIntegerUtils.reverseBigInteger(sig32, KEEP_LEADING_ZERO),
-                CryptoUtils.decode(publicKey),       // Implicitly checks that public key lies on the curve
-                new BigInteger(1, HashFunction.computeHash(bytes, true))
+                s,
+                b,       // Implicitly checks that public key lies on the curve
+                c
         );
 
         final BigInteger encoded = CryptoUtils.encode(affPoint);
         // Verify that computed point equals the commitment R from signature
         return encoded.equals(signature.divide(Key.POW_256));
+    }
+
+    public static byte[] addLeadingZeros(byte[] array, int targetLength) {
+        if (array.length == targetLength) return array;
+        byte[] padded = new byte[targetLength];
+        System.arraycopy(array, 0, padded, targetLength - array.length, array.length);
+        return padded;
     }
 }

@@ -7,13 +7,23 @@ import types.data.F2Element;
 import java.math.BigInteger;
 import java.util.Arrays;
 
+import static api.SchnorrQ.addLeadingZeros;
 import static utils.ByteArrayReverseMode.KEEP_LEADING_PADDING;
+import static utils.ByteArrayReverseMode.REMOVE_TRAILING_ZERO;
 
 public class BigIntegerUtils {
     public static F2Element convertBigIntegerToF2Element(@NotNull BigInteger val) {
-        BigInteger realPart = reverseBigInteger(val.divide(Key.POW_128), KEEP_LEADING_PADDING);
-        BigInteger imagPart = reverseBigInteger(val.mod(Key.POW_128), KEEP_LEADING_PADDING);
-        return new F2Element(realPart, imagPart);
+        final BigInteger realPart = val.divide(Key.POW_128);
+        final byte[] realArray = addLeadingZeros(realPart.toByteArray(), Key.KEY_SIZE / 2 + 1);
+        // Compute s*G + H*publicKey using double scalar multiplication
+        final BigInteger real = new BigInteger(1, ByteArrayUtils.reverseByteArray(realArray, REMOVE_TRAILING_ZERO));
+
+        final BigInteger imagPart = val.mod(Key.POW_128);
+        final byte[] imagArray = addLeadingZeros(imagPart.toByteArray(), Key.KEY_SIZE / 2 + 1);
+        // Compute s*G + H*publicKey using double scalar multiplication
+        final BigInteger imag = new BigInteger(1, ByteArrayUtils.reverseByteArray(imagArray, REMOVE_TRAILING_ZERO));
+
+        return new F2Element(real, imag);
     }
 
     public static BigInteger reverseBigInteger(BigInteger val, ByteArrayReverseMode handleZero) {
