@@ -174,7 +174,7 @@ public class SchnorrQ {
         // Security check: ensure specific bit is zero for both inputs
         if (publicKey.testBit(Key.PUB_TEST_BIT)) publicKeyError();
         else if (signature.testBit(Key.SIG_TEST_BIT)) signatureError();
-        else if (!isSignatureSizeTooLarge(signature)) signatureSizeError();
+        else if (isSignatureSizeTooLarge(signature)) signatureSizeError();
     }
 
     private static byte[] schnorrCreateBuffer(byte[] message) {

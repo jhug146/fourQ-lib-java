@@ -6,6 +6,7 @@ import types.data.F2Element;
 
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.function.Function;
 
 import static utils.ByteArrayReverseMode.KEEP_LEADING_PADDING;
 import static utils.ByteArrayReverseMode.REMOVE_TRAILING_ZERO;
@@ -44,9 +45,9 @@ public class BigIntegerUtils {
 
     // Takes an initial BigInteger and a series of function operations that are applied sequentially.
     @SafeVarargs
-    public static BigInteger buildBigInteger(BigInteger initial, java.util.function.Function<BigInteger, BigInteger>... operations) {
+    public static BigInteger buildBigInteger(BigInteger initial, Function<BigInteger, BigInteger>... operations) {
         BigInteger result = initial;
-        for (java.util.function.Function<BigInteger, BigInteger> operation : operations) {
+        for (Function<BigInteger, BigInteger> operation : operations) {
             result = operation.apply(result);
         }
         return result;
