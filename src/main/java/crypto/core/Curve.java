@@ -40,7 +40,7 @@ public class Curve {
      * @param signMasks output array for sign information
      * @return array of recoded digits
      */
-    static int[] fixedWindowRecode(BigInteger scalar, int[] signMasks) {
+    static int[] fixedWindowRecode(@NotNull BigInteger scalar, int[] signMasks) {
         int[] digits = new int[T_VARBASE + 1];
         BigInteger val1 = BigInteger.ONE.shiftLeft(W_VARBASE.intValue()).subtract(BigInteger.ONE);
         BigInteger val2 = BigInteger.ONE.shiftLeft(W_VARBASE.intValue() - 1);
@@ -59,7 +59,7 @@ public class Curve {
         return digits;
     }
 
-    static void computeDigit(int pos, int[] digits, int[] signMasks, BigInteger temp) {
+    static void computeDigit(int pos, int[] digits, int[] signMasks, @NotNull BigInteger temp) {
         boolean isNegative = temp.signum() < 0;
         signMasks[pos] = isNegative ? 0x00000000 : 0xFFFFFFFF;
         int tempInt = temp.intValue();
@@ -78,7 +78,8 @@ public class Curve {
      * @param point the affine point (x,y) to convert
      * @return the point in extended projective coordinates
      */
-    public static ExtendedPoint pointSetup(FieldPoint point) {
+    @NotNull
+    public static ExtendedPoint pointSetup(@NotNull FieldPoint point) {
         return new ExtendedPoint(
                 point.getX(),
                 point.getY(),
@@ -88,9 +89,9 @@ public class Curve {
         );
     }
 
-    public static int @NotNull [] mLSBSetRecode(
-            BigInteger inputScalar,
-            int @NotNull [] digits
+    public static int[] mLSBSetRecode(
+            @NotNull BigInteger inputScalar,
+            int[] digits
     ) {
         final int d = Params.D_FIXEDBASE;                              // ceil(bitlength(order)/(w*v))*v
 
@@ -146,7 +147,8 @@ public class Curve {
      * @param k the scalar to decompose (range [0, 2^256-1])
      * @return array of 4 sub-scalars for efficient multiplication
      */
-    public static BigInteger[] decompose(BigInteger k) {
+    @NotNull
+    public static BigInteger[] decompose(@NotNull BigInteger k) {
         // Phase 1: Compute initial coefficients using truncated multiplication
         BigInteger a1 = mulTruncate(k, Params.ELL1);
         BigInteger a2 = mulTruncate(k, Params.ELL2);
@@ -199,7 +201,8 @@ public class Curve {
      * Truncated multiplication: computes floor((k * ell) / 2^256)
      * This extracts the high bits of the multiplication
      */
-    private static BigInteger mulTruncate(BigInteger k, BigInteger ell) {
+    @NotNull
+    private static BigInteger mulTruncate(@NotNull BigInteger k, @NotNull BigInteger ell) {
         BigInteger product = k.multiply(ell);
         return product.shiftRight(256);  // Equivalent to dividing by 2^256
     }
@@ -210,7 +213,8 @@ public class Curve {
      * @param p the input point P = (X₁,Y₁,Z₁,Ta,Tb) in extended twisted Edwards coordinates,
      *          where T₁ = Ta×Tb corresponds to (X₁:Y₁:Z₁:T₁)
      */
-    public static ExtendedPoint cofactorClearing(ExtendedPoint p) {
+    @NotNull
+    public static ExtendedPoint cofactorClearing(@NotNull ExtendedPoint p) {
         PreComputedExtendedPoint q = Conversion.r1ToR2(p);  // Converting from (X,Y,Z,Ta,Tb) to (X+Y,Y-X,2Z,2dT)
         p = ECC.eccDouble(p);                                   // P = 2*P using representations (X,Y,Z,Ta,Tb) <- 2*(X,Y,Z)
         p = ECC.eccAdd(q, p);                                   // P = P+Q using representations (X,Y,Z,Ta,Tb) <- (X,Y,Z,Ta,Tb) + (X+Y,Y-X,2Z,2dT)

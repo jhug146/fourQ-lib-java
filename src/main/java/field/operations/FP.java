@@ -1,6 +1,7 @@
 package field.operations;
 
 import constants.Key;
+import org.jetbrains.annotations.NotNull;
 import types.data.Pair;
 import constants.Params;
 
@@ -34,7 +35,8 @@ public class FP {
      * @param mb second operand in Montgomery form
      * @return the product ma * mb in Montgomery form, reduced modulo curve order
      */
-    public static BigInteger montgomeryMultiplyModOrder(BigInteger ma, BigInteger mb) {
+    @NotNull
+    public static BigInteger montgomeryMultiplyModOrder(@NotNull BigInteger ma, @NotNull BigInteger mb) {
         BigInteger rma = round256(ma);
         BigInteger rmb = round256(mb);
         BigInteger product = rma.multiply(rmb);
@@ -48,8 +50,6 @@ public class FP {
         return result;
     }
 
-
-
     /**
      * Reduces a value modulo the curve order using Montgomery arithmetic.
      * <p>
@@ -59,7 +59,8 @@ public class FP {
      * @param key the value to reduce modulo the curve order
      * @return key mod order
      */
-    public static BigInteger moduloOrder(BigInteger key) {
+    @NotNull
+    public static BigInteger moduloOrder(@NotNull BigInteger key) {
         BigInteger res = montgomeryMultiplyModOrder(key, Params.MONTGOMERY_R_PRIME);
         return montgomeryMultiplyModOrder(
                 res,
@@ -68,12 +69,14 @@ public class FP {
     }
 
     // Subtraction modulo the curve order, c = a+b mod order
-    public static BigInteger subtractModOrder(BigInteger a, BigInteger b) {
+    @NotNull
+    public static BigInteger subtractModOrder(@NotNull BigInteger a, @NotNull BigInteger b) {
         return a.subtract(b).mod(Params.CURVE_ORDER);
     }
 
     // Addition modulo the curve order, c = a+b mod order
-    public static BigInteger addModOrder(BigInteger a, BigInteger b) {
+    @NotNull
+    public static BigInteger addModOrder(@NotNull BigInteger a, @NotNull BigInteger b) {
         return a.add(b).mod(Params.CURVE_ORDER);
     }
 
@@ -87,7 +90,8 @@ public class FP {
      * @param scalar the scalar to convert
      * @return an odd scalar equivalent to the input modulo the curve order
      */
-    public static BigInteger conversionToOdd(BigInteger scalar) {
+    @NotNull
+    public static BigInteger conversionToOdd(@NotNull BigInteger scalar) {
         if (scalar.testBit(0)) {
             return scalar;  // Already odd
         }
@@ -102,11 +106,13 @@ public class FP {
      * @return a * b
      * @implNote The following assumes that BigInteger performance limitations are negligible.
      */
-    public static BigInteger multiply(BigInteger a, BigInteger b) {
+    @NotNull
+    public static BigInteger multiply(@NotNull BigInteger a, @NotNull BigInteger b) {
         return a.multiply(b);
     }
 
-    public static Pair<BigInteger, Integer> mpAdd(BigInteger a, BigInteger b) {
+    @NotNull
+    public static Pair<BigInteger, Integer> mpAdd(@NotNull BigInteger a, @NotNull BigInteger b) {
         // Add the two numbers
         BigInteger sum = a.add(b);
 
@@ -127,7 +133,8 @@ public class FP {
         }
     }
 
-    public static Pair<BigInteger, Integer> mpSubtract(BigInteger a, BigInteger b) {
+    @NotNull
+    public static Pair<BigInteger, Integer> mpSubtract(@NotNull BigInteger a, @NotNull BigInteger b) {
         // For fixed-width arithmetic, handle negative results
         if (a.compareTo(b) >= 0) {
             // No borrow
@@ -150,34 +157,26 @@ public class FP {
      */
     public interface PUtil {
         // Modular correction, output = a mod (2^127-1)
-        static BigInteger mod1271(BigInteger a) {
+        @NotNull
+        static BigInteger fpMod1271(@NotNull BigInteger a) {
             return a.mod(Params.PRIME_1271);
         }
 
         // Field multiplication using schoolbook method, c = a*b mod p
-        static BigInteger fpMul1271(BigInteger a, BigInteger b) {
+        @NotNull
+        static BigInteger fpMul1271(@NotNull BigInteger a, @NotNull BigInteger b) {
             return Mersenne.mersenneReduce127(multiply(a, b));
         }
 
         // Field squaring using schoolbook method, output = a^2 mod p
-        static BigInteger fpSqr1271(BigInteger a) {
+        @NotNull
+        static BigInteger fpSqr1271(@NotNull BigInteger a) {
             return PUtil.fpMul1271(a, a);
         }
 
-        // Zeroing a field element, a = 0
-        //  NB: There is no mutable BigInteger interface, which renders this functionality
-        //          heavily redundant.
-        static BigInteger fpZero1271() {
-            return BigInteger.ZERO;
-        }
-
-        // Copy of a field element, out = a
-        static BigInteger fpCopy1271(BigInteger a) {
-            return a.subtract(BigInteger.ZERO);
-        }
-
         // Field negation, a = -a mod (2^127-1)
-        static BigInteger fpNeg1271(BigInteger a) {
+        @NotNull
+        static BigInteger fpNeg1271(@NotNull BigInteger a) {
             // Ensure input is in valid range first
             a = a.mod(Params.PRIME_1271);
 
@@ -188,7 +187,8 @@ public class FP {
         }
 
         // Field inversion, af = a^-1 = a^(p-2) mod p
-        static BigInteger fpInv1271(BigInteger a) {
+        @NotNull
+        static BigInteger fpInv1271(@NotNull BigInteger a) {
             BigInteger outputBuilder = fpExp1251(a);
             outputBuilder = fpSqr1271(outputBuilder);
             outputBuilder = fpSqr1271(outputBuilder);
@@ -196,20 +196,23 @@ public class FP {
             return outputBuilder;
         }
 
-        static BigInteger fpExp1251(BigInteger a) {
+        @NotNull
+        static BigInteger fpExp1251(@NotNull BigInteger a) {
             BigInteger exponent = BigInteger.ONE.shiftLeft(125).subtract(BigInteger.ONE);
-            return modPow1271(a, exponent);
+            return fpModPow1271(a, exponent);
         }
 
         // Optimized modular exponentiation for 2^127-1
-        static BigInteger modPow1271(BigInteger base, BigInteger exponent) {
+        @NotNull
+        static BigInteger fpModPow1271(@NotNull BigInteger base, @NotNull BigInteger exponent) {
             // Use Java's built-in with Mersenne optimization
             BigInteger result = base.modPow(exponent, Params.PRIME_1271);
             return Mersenne.mersenneReduce127(result);
         }
 
         // Field addition, c = a+b mod (2^127-1)
-        static BigInteger fpAdd1271(BigInteger a, BigInteger b) {
+        @NotNull
+        static BigInteger fpAdd1271(@NotNull BigInteger a, @NotNull BigInteger b) {
             BigInteger sum = a.add(b);
 
             // Quick path: if sum < 2^127, no reduction needed
@@ -232,7 +235,8 @@ public class FP {
         }
 
         // Field subtraction, c = a-b mod (2^127-1)
-        static BigInteger fpSub1271(BigInteger a, BigInteger b) {
+        @NotNull
+        static BigInteger fpSub1271(@NotNull BigInteger a, @NotNull BigInteger b) {
             BigInteger diff = a.subtract(b);
 
             // If result is negative, add the prime to make it positive
@@ -244,7 +248,8 @@ public class FP {
         }
 
         // Field division by two, output = a/2 mod (2^127-1)
-        static BigInteger fpDiv1271(BigInteger a) {
+        @NotNull
+        static BigInteger fpDiv1271(@NotNull BigInteger a) {
             // If input is odd, add (2^127-1) to make it even before dividing
             // Check if least significant bit is 1 (odd)
             BigInteger dividend = a.testBit(0) ? a.add(Params.PRIME_1271) : a;
@@ -252,7 +257,8 @@ public class FP {
         }
     }
 
-    private static BigInteger round256(BigInteger val) {
+    @NotNull
+    private static BigInteger round256(@NotNull BigInteger val) {
         return val.mod(BigInteger.ONE.shiftLeft(256));
     }
 }

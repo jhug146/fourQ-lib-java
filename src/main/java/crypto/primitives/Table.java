@@ -12,7 +12,7 @@ public class Table {
             @NotNull T[] table,
             int digit,
             int signMask
-    ) throws NullPointerException {
+    ) {
         //noinspection unchecked
         T point = (T) table[digit].dup();
         if (signMask == -1) {

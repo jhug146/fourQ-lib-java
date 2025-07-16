@@ -40,6 +40,7 @@ public class ECC {
      * 
      * @return the generator point G in affine coordinates (x,y)
      */
+    @NotNull
     public static FieldPoint eccSet() {
         return new FieldPoint(Params.GENERATOR_x, Params.GENERATOR_y);
     }
@@ -56,7 +57,7 @@ public class ECC {
      * @throws EncryptionException if the scalar multiplication fails
      */
     @NotNull
-    public static FieldPoint eccMulFixed(BigInteger val) throws EncryptionException {
+    public static FieldPoint eccMulFixed(@NotNull BigInteger val) throws EncryptionException {
         return ECC.eccMul(ECC.eccSet(), val,false);
     }
 
@@ -73,9 +74,10 @@ public class ECC {
      * @return the point k*P in affine coordinates
      * @throws EncryptionException if point validation fails or multiplication errors occur
      */
+    @NotNull
     public static FieldPoint eccMul(
-            FieldPoint p,
-            BigInteger k,
+            @NotNull FieldPoint p,
+            @NotNull BigInteger k,
             boolean clearCofactor
     ) throws EncryptionException {
         PreComputedExtendedPoint s;
@@ -120,7 +122,8 @@ public class ECC {
      * @param p the input point P in extended coordinates
      * @return the point 2P in extended coordinates
      */
-    public static ExtendedPoint eccDouble(ExtendedPoint p) {
+    @NotNull
+    public static ExtendedPoint eccDouble(@NotNull ExtendedPoint p) {
         F2Element t1 = fp2Sqr1271(p.getX());                 // t1 = X1^2
         F2Element t2 = fp2Sqr1271(p.getY());                 // t2 = Y1^2
         F2Element t3 = fp2Add1271(p.getX(), p.getY());       // t3 = X1+Y1
@@ -146,16 +149,17 @@ public class ECC {
      * @param p the point in extended projective coordinates
      * @return the same point in affine coordinates (x,y)
      */
-    public static FieldPoint eccNorm(ExtendedPoint p) {
+    @NotNull
+    public static FieldPoint eccNorm(@NotNull ExtendedPoint p) {
         final F2Element zInv = fp2Inv1271(p.getZ());
         final F2Element x = fp2Mul1271(p.getX(), zInv);
         final F2Element y = fp2Mul1271(p.getY(), zInv);
 
-        x.im = FP.PUtil.mod1271(x.im);
-        x.real = FP.PUtil.mod1271(x.real);
+        x.im = FP.PUtil.fpMod1271(x.im);
+        x.real = FP.PUtil.fpMod1271(x.real);
 
-        y.im = FP.PUtil.mod1271(y.im);
-        y.real = FP.PUtil.mod1271(y.real);
+        y.im = FP.PUtil.fpMod1271(y.im);
+        y.real = FP.PUtil.fpMod1271(y.real);
         return new FieldPoint(x, y);
     }
 
@@ -174,9 +178,9 @@ public class ECC {
      */
     @NotNull
     public static FieldPoint eccMulDouble(
-            BigInteger k,
-            FieldPoint q,
-            BigInteger l
+            @NotNull BigInteger k,
+            @NotNull FieldPoint q,
+            @NotNull BigInteger l
     ) throws EncryptionException {
         // Step 1: Compute l*Q
         FieldPoint lQ = eccMul(q, l, false);
@@ -196,14 +200,15 @@ public class ECC {
         return eccNorm(result);
     }
 
+    @NotNull
     private static ExtendedPoint eccAddCore(
-            PreComputedExtendedPoint p,
-            PreComputedExtendedPoint q
+            @NotNull PreComputedExtendedPoint p,
+            @NotNull PreComputedExtendedPoint q
     ) {
-        F2Element z = fp2Mul1271(p.t, q.t);
-        F2Element t1 = fp2Mul1271(p.z, q.z);
-        F2Element x = fp2Mul1271(p.xy, q.xy);
-        F2Element y = fp2Mul1271(p.yx, q.yx);
+        F2Element z = fp2Mul1271(p.getT(), q.getT());
+        F2Element t1 = fp2Mul1271(p.getZ(), q.getZ());
+        F2Element x = fp2Mul1271(p.getX(), q.getX());
+        F2Element y = fp2Mul1271(p.getY(), q.getY());
         F2Element t2 = fp2Sub1271(t1, z);
         t1 = fp2Add1271(t1, z);
         F2Element tb = fp2Sub1271(x, y);
@@ -217,9 +222,10 @@ public class ECC {
         );
     }
 
+    @NotNull
     static ExtendedPoint eccAdd(
-            PreComputedExtendedPoint q,
-            ExtendedPoint p
+            @NotNull PreComputedExtendedPoint q,
+            @NotNull ExtendedPoint p
     ) {
         return eccAddCore(q, Conversion.r1ToR3(p));
     }
@@ -250,8 +256,8 @@ public class ECC {
 
         // Reduce modulo (2^127-1)
         t1 = new F2Element(
-                FP.PUtil.mod1271(t1.real),
-                FP.PUtil.mod1271(t1.im)
+                FP.PUtil.fpMod1271(t1.real),
+                FP.PUtil.fpMod1271(t1.im)
         );
 
         // Check if the result is zero (both real and imaginary parts must be zero) to be on the curve.

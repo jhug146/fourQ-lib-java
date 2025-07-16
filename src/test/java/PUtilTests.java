@@ -16,7 +16,7 @@ public class PUtilTests {
     @Test
     void testMod1271() {
         BigInteger a = PRIME.multiply(BigInteger.TEN).add(BigInteger.valueOf(123));
-        assertEquals(BigInteger.valueOf(123), PUtil.mod1271(a));
+        assertEquals(BigInteger.valueOf(123), PUtil.fpMod1271(a));
     }
 
     @Test
@@ -70,17 +70,6 @@ public class PUtilTests {
     }
 
     @Test
-    void testFpZero1271() {
-        assertEquals(ZERO, PUtil.fpZero1271());
-    }
-
-    @Test
-    void testFpCopy1271() {
-        BigInteger a = new BigInteger("123456789");
-        assertEquals(a, PUtil.fpCopy1271(a));
-    }
-
-    @Test
     void testFpInv1271() {
         BigInteger a = BigInteger.valueOf(12345);
         BigInteger inv = PUtil.fpInv1271(a);
@@ -107,7 +96,7 @@ public class PUtilTests {
         BigInteger base = BigInteger.valueOf(12345);
         BigInteger exp = BigInteger.valueOf(6789);
         BigInteger expected = base.modPow(exp, PRIME);
-        assertEquals(expected, PUtil.modPow1271(base, exp));
+        assertEquals(expected, PUtil.fpModPow1271(base, exp));
     }
 
     @Test

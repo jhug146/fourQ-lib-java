@@ -11,6 +11,7 @@ import static utils.ByteArrayUtils.addLeadingZeros;
 import static utils.ByteArrayReverseMode.REMOVE_TRAILING_ZERO;
 
 public class BigIntegerUtils {
+    @NotNull
     public static F2Element convertBigIntegerToF2Element(@NotNull BigInteger val) {
         final BigInteger realPart = val.divide(Key.POW_128);
         final byte[] realArray = addLeadingZeros(realPart.toByteArray(), Key.KEY_SIZE / 2 + 1);
@@ -26,7 +27,7 @@ public class BigIntegerUtils {
     }
 
     public static byte[] bigIntegerToByte(
-            BigInteger publicKey,
+            @NotNull BigInteger publicKey,
             int keySize,
             boolean removePadZeros
     ) {

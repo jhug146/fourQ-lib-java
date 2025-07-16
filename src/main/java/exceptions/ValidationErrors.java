@@ -1,11 +1,12 @@
 package exceptions;
 
 import constants.Key;
+import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
 
 public class ValidationErrors {
-    public static boolean isSignatureSizeTooLarge(BigInteger signature) {
+    public static boolean isSignatureSizeTooLarge(@NotNull BigInteger signature) {
         for (int i = 0; i < 8; i++) {
             if (signature.testBit(i)) {
                 return true;

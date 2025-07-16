@@ -6,8 +6,8 @@ import java.util.Arrays;
 
 public class ByteArrayUtils {
     public static byte[] reverseByteArray(
-            byte @NotNull [] src,
-            ByteArrayReverseMode mode
+            byte[] src,
+            @NotNull ByteArrayReverseMode mode
     ) {
         if (src.length == 0) return new byte[0];
         else if (src.length == 1) return new byte[] { src[0] };

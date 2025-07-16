@@ -1,5 +1,6 @@
 package types.data;
 
+import constants.Params;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
@@ -21,12 +22,12 @@ import java.util.Objects;
  */
 public class F2Element {
     public static final F2Element ONE = new F2Element(BigInteger.ONE, BigInteger.ZERO);
+    public static final F2Element ZERO = new F2Element(BigInteger.ZERO, BigInteger.ZERO);
 
     public BigInteger real;
     public BigInteger im;
     /**
      * Constructs a new quadratic field element.
-     * 
      * @param _real the real part (coefficient of 1)
      * @param _im the imaginary part (coefficient of i)
      */
@@ -37,7 +38,6 @@ public class F2Element {
 
     /**
      * Tests whether this element is the zero element (0 + 0i).
-     * 
      * @return true if both real and imaginary parts are zero
      */
     public boolean isZero() {
@@ -57,7 +57,6 @@ public class F2Element {
 
     /**
      * Creates a duplicate of this quadratic field element.
-     * 
      * @return a new F2Element with the same real and imaginary parts
      */
     @NotNull
@@ -70,6 +69,6 @@ public class F2Element {
 
     @Override
     public String toString() {
-        return "0x" + real.toString(16) + " + 0x" + im.toString(16) + "i";
+        return "0x" + real.toString(Params.HEX_RADIX) + " + 0x" + im.toString(Params.HEX_RADIX) + "i";
     }
 }
