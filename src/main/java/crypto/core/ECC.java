@@ -42,7 +42,7 @@ public class ECC {
      * @return the generator point G in affine coordinates (x,y)
      */
     @NotNull
-    public static FieldPoint eccSet() {
+    public static FieldPoint getGeneratorPoint() {
         return new FieldPoint(Params.GENERATOR_X, Params.GENERATOR_Y);
     }
 
@@ -59,7 +59,7 @@ public class ECC {
      */
     @NotNull
     public static FieldPoint eccMulFixed(@NotNull BigInteger val) throws EncryptionException {
-        return ECC.eccMul(ECC.eccSet(), val,false);
+        return ECC.eccMul(ECC.getGeneratorPoint(), val,false);
     }
 
     /**

@@ -78,7 +78,7 @@ class ECCUtilTests {
 
     private void createTestPoints() {
         // Generator point
-        FieldPoint generator = ECC.eccSet();
+        FieldPoint generator = ECC.getGeneratorPoint();
         testPointsAffine.add(convertToAffine(generator));
         testPointsExtended.add(convertToExtended(generator));
         testPointsField.add(generator);
@@ -182,8 +182,8 @@ class ECCUtilTests {
         @Order(1)
         @DisplayName("Generator point deterministic creation")
         void testGeneratorDeterministic() {
-            FieldPoint gen1 = ECC.eccSet();
-            FieldPoint gen2 = ECC.eccSet();
+            FieldPoint gen1 = ECC.getGeneratorPoint();
+            FieldPoint gen2 = ECC.getGeneratorPoint();
 
             assertPointsEqual(gen1, gen2);
         }
@@ -192,7 +192,7 @@ class ECCUtilTests {
         @Order(2)
         @DisplayName("Generator point mathematical properties")
         void testGeneratorProperties() {
-            FieldPoint generator = ECC.eccSet();
+            FieldPoint generator = ECC.getGeneratorPoint();
 
             // Check coordinates are in valid field range
             assertFieldElementValid(generator.getX(), "Generator X coordinate");
@@ -207,7 +207,7 @@ class ECCUtilTests {
         @Order(3)
         @DisplayName("Generator point conversion consistency")
         void testGeneratorConversions() {
-            FieldPoint field = ECC.eccSet();
+            FieldPoint field = ECC.getGeneratorPoint();
             ExtendedPoint extended = convertToExtended(field);
 
             // Verify conversions preserve the point
@@ -222,7 +222,7 @@ class ECCUtilTests {
         @ValueSource(ints = {1, 2, 3, 5, 7, 11, 13, 17, 19, 23})
         @DisplayName("Generator multiplication by small primes")
         void testGeneratorMultiplicationSmallPrimes(int multiplier) throws EncryptionException {
-            FieldPoint genField = ECC.eccSet();
+            FieldPoint genField = ECC.getGeneratorPoint();
             FieldPoint result = ECC.eccMul(genField, BigInteger.valueOf(multiplier), false);
 
             assertNotNull(result, "Multiplication by " + multiplier + " should succeed");
@@ -375,7 +375,7 @@ class ECCUtilTests {
         @Order(41)
         @DisplayName("Variable-base scalar multiplication basic")
         void testVariableBaseMulBasic() throws EncryptionException {
-            FieldPoint genField = ECC.eccSet();
+            FieldPoint genField = ECC.getGeneratorPoint();
 
             long startTime = System.currentTimeMillis();
 
@@ -398,7 +398,7 @@ class ECCUtilTests {
         @Order(42)
         @DisplayName("Scalar multiplication by one")
         void testScalarMulByOne() throws EncryptionException {
-            FieldPoint genField = ECC.eccSet();
+            FieldPoint genField = ECC.getGeneratorPoint();
 
             FieldPoint result = ECC.eccMul(genField, BigInteger.ONE, false);
 
@@ -413,7 +413,7 @@ class ECCUtilTests {
         @Order(43)
         @DisplayName("Scalar multiplication by zero")
         void testScalarMulByZero() {
-            FieldPoint genField = ECC.eccSet();
+            FieldPoint genField = ECC.getGeneratorPoint();
 
             // Multiplication by zero behavior depends on implementation
             // It might succeed (returning point at infinity) or return null
@@ -429,7 +429,7 @@ class ECCUtilTests {
         @Order(44)
         @DisplayName("Scalar multiplication mathematical properties")
         void testScalarMulProperties() throws EncryptionException {
-            FieldPoint generator = ECC.eccSet();
+            FieldPoint generator = ECC.getGeneratorPoint();
 
             // Test 2*P = P + P (conceptually)
             FieldPoint result2 = ECC.eccMul(generator, BigInteger.valueOf(2), false);
@@ -448,7 +448,7 @@ class ECCUtilTests {
         @Order(45)
         @DisplayName("Scalar multiplication with cofactor clearing")
         void testScalarMulWithCofactor() throws EncryptionException {
-            FieldPoint genField = ECC.eccSet();
+            FieldPoint genField = ECC.getGeneratorPoint();
             BigInteger scalar = BigInteger.valueOf(7);
 
             FieldPoint result1 = ECC.eccMul(genField, scalar, false);
@@ -466,7 +466,7 @@ class ECCUtilTests {
         @Order(46)
         @DisplayName("Double scalar multiplication")
         void testDoubleScalarMul() {
-            FieldPoint genField = ECC.eccSet();
+            FieldPoint genField = ECC.getGeneratorPoint();
 
             BigInteger k = BigInteger.valueOf(3);
             BigInteger l = BigInteger.valueOf(5);
@@ -481,7 +481,7 @@ class ECCUtilTests {
         @ValueSource(ints = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29})
         @DisplayName("Scalar multiplication by small primes")
         void testScalarMulSmallPrimes(int prime) throws EncryptionException {
-            FieldPoint genField = ECC.eccSet();
+            FieldPoint genField = ECC.getGeneratorPoint();
 
             FieldPoint result = ECC.eccMul(genField, BigInteger.valueOf(prime), false);
 
