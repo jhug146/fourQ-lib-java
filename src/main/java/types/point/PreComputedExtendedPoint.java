@@ -1,5 +1,6 @@
 package types.point;
 
+import org.jetbrains.annotations.NotNull;
 import constants.Params;
 import fieldoperations.FP2;
 import types.data.F2Element;
@@ -7,104 +8,61 @@ import types.data.F2Element;
 import java.math.BigInteger;
 
 public class PreComputedExtendedPoint implements TablePoint {
-    public F2Element xy;
-    public F2Element yx;
-    public F2Element z;
-    public F2Element t;
+    @NotNull private F2Element xy;
+    @NotNull private F2Element yx;
+    @NotNull private final F2Element z;
+    @NotNull private F2Element t;
 
-    public PreComputedExtendedPoint(F2Element _xy, F2Element _yx, F2Element _z, F2Element _t) {
+    public PreComputedExtendedPoint(@NotNull F2Element _xy, @NotNull F2Element _yx, @NotNull F2Element _z, @NotNull F2Element _t) {
         xy = _xy;
         yx = _yx;
         z = _z;
         t = _t;
     }
 
-    public PreComputedExtendedPoint() {
-        this.xy = F2Element.ONE.dup();
-        this.yx = F2Element.ONE.dup();
-        this.z = F2Element.ONE.dup();
-        this.t = F2Element.ONE.dup();
-    }
-
-    @Override
-    public int getTableLength() {
-        return Params.PRE_COMPUTE_TABLE_LENGTH;
-    }
-
+    @NotNull
     public PreComputedExtendedPoint dup() {
         return new PreComputedExtendedPoint(this.xy, this.yx, this.z, this.t);
     }
 
     @Override
-    public AffinePoint toAffinePoint() {
-        F2Element xy_f2 = xy;
-        F2Element yx_f2 = yx;
-
-        // Assuming z = 1, we can directly compute affine coordinates
-        F2Element two = new F2Element(BigInteger.valueOf(2), BigInteger.ZERO);
-        F2Element twoInverse = FP2.fp2Inv1271(two);
-
-        // x = (xy - yx) / 2, y = (xy + yx) / 2
-        F2Element twoX = FP2.fp2Sub1271(xy_f2, yx_f2);
-        F2Element twoY = FP2.fp2Add1271(xy_f2, yx_f2);
-
-        F2Element x = FP2.fp2Mul1271(twoX, twoInverse);
-        F2Element y = FP2.fp2Mul1271(twoY, twoInverse);
-
-        AffinePoint ret = new AffinePoint();
-        ret.setX(x);
-        ret.setY(y);
-        ret.setT(new F2Element(BigInteger.ONE, BigInteger.ZERO));
-
-        return ret;
-    }
-
-    @Override
-    public PreComputedExtendedPoint toPreComputedExtendedPoint() {
-        return this;
-    }
-
-    @Override
+    @NotNull
     public F2Element getX() {
         return xy;
     }
 
     @Override
-    public void setX(F2Element x) {
+    public void setX(@NotNull F2Element x) {
         this.xy = x;
     }
 
     @Override
+    @NotNull
     public F2Element getY() {
         return yx;
     }
 
     @Override
-    public void setY(F2Element y) {
+    public void setY(@NotNull F2Element y) {
         this.yx = y;
     }
 
+    @NotNull
+    public F2Element getZ() { return z; }
+
     @Override
+    @NotNull
     public F2Element getT() {
         return t;
     }
 
     @Override
-    public void setT(F2Element t) {
+    public void setT(@NotNull F2Element t) {
         this.t = t;
     }
 
     @Override
-    public F2Element getZ() {
-        return z;
-    }
-
-    @Override
-    public void setZ(F2Element z) {
-        this.z = z;
-    }
-
-    @Override
+    @NotNull
     public String toString() {
         return "(xy = " + xy + ", yx = " + yx + ", z = " + z + ", t = " + t + ")";
     }

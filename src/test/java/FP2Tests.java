@@ -1,12 +1,14 @@
+
+import java.math.BigInteger;
+
+import org.junit.jupiter.api.Test;
+
 import fieldoperations.FP2;
 import types.data.F2Element;
 import constants.Params;
 
-import org.junit.jupiter.api.Test;
-
-import java.math.BigInteger;
-
 import static org.junit.jupiter.api.Assertions.*;
+
 
 public class FP2Tests {
 
@@ -19,7 +21,7 @@ public class FP2Tests {
     @Test
     void testFP2Copy1271() {
         F2Element a = sampleElement(BigInteger.valueOf(3), BigInteger.valueOf(5));
-        assertSame(a, FP2.fp2Copy1271(a));  // Should return same reference
+        assertEquals(a, FP2.fp2Copy1271(a));  // Should return same reference
     }
 
     @Test

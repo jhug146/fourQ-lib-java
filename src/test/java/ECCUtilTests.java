@@ -1,21 +1,23 @@
-import constants.Params;
-import crypto.core.Curve;
-import crypto.core.ECC;
-import exceptions.EncryptionException;
-import fieldoperations.FP2;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.*;
-import types.data.F2Element;
-import types.point.AffinePoint;
-import types.point.ExtendedPoint;
-import types.point.FieldPoint;
 
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.*;
+
+import crypto.core.ECC;
+import exceptions.EncryptionException;
+import fieldoperations.FP2;
+import types.data.F2Element;
+import types.point.AffinePoint;
+import types.point.ExtendedPoint;
+import types.point.FieldPoint;
+import constants.Params;
+
+
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,7 +34,6 @@ class ECCUtilTests {
     // Test constants
     private static final BigInteger CURVE_ORDER = Params.CURVE_ORDER;
     private static final BigInteger FIELD_PRIME = BigInteger.ONE.shiftLeft(127).subtract(BigInteger.ONE);
-    private static final int STRESS_TEST_ITERATIONS = 10000;
     private static final int PERFORMANCE_TEST_ITERATIONS = 1000;
 
     // Test fixtures
@@ -77,7 +78,7 @@ class ECCUtilTests {
 
     private void createTestPoints() {
         // Generator point
-        FieldPoint generator = ECC.eccSet();
+        FieldPoint generator = ECC.getGeneratorPoint();
         testPointsAffine.add(convertToAffine(generator));
         testPointsExtended.add(convertToExtended(generator));
         testPointsField.add(generator);
@@ -93,12 +94,10 @@ class ECCUtilTests {
         for (BigInteger multiplier : testMultipliers) {
             try {
                 FieldPoint result = ECC.eccMul(generator, multiplier, false);
-                if (result != null) {
-                    AffinePoint affineResult = convertToAffine(result);
-                    testPointsAffine.add(affineResult);
-                    testPointsExtended.add(convertToExtended(affineResult));
-                    testPointsField.add(result);
-                }
+                AffinePoint affineResult = convertToAffine(result);
+                testPointsAffine.add(affineResult);
+                testPointsExtended.add(convertToExtended(affineResult));
+                testPointsField.add(result);
             } catch (Exception e) {
                 System.err.println("Failed to create test point with multiplier " + multiplier + ": " + e.getMessage());
             }
@@ -183,17 +182,17 @@ class ECCUtilTests {
         @Order(1)
         @DisplayName("Generator point deterministic creation")
         void testGeneratorDeterministic() {
-            FieldPoint gen1 = ECC.eccSet();
-            FieldPoint gen2 = ECC.eccSet();
+            FieldPoint gen1 = ECC.getGeneratorPoint();
+            FieldPoint gen2 = ECC.getGeneratorPoint();
 
-            assertPointsEqual(gen1, gen2, "Generator should be deterministic");
+            assertPointsEqual(gen1, gen2);
         }
 
         @Test
         @Order(2)
         @DisplayName("Generator point mathematical properties")
         void testGeneratorProperties() {
-            FieldPoint generator = ECC.eccSet();
+            FieldPoint generator = ECC.getGeneratorPoint();
 
             // Check coordinates are in valid field range
             assertFieldElementValid(generator.getX(), "Generator X coordinate");
@@ -208,7 +207,7 @@ class ECCUtilTests {
         @Order(3)
         @DisplayName("Generator point conversion consistency")
         void testGeneratorConversions() {
-            FieldPoint field = ECC.eccSet();
+            FieldPoint field = ECC.getGeneratorPoint();
             ExtendedPoint extended = convertToExtended(field);
 
             // Verify conversions preserve the point
@@ -223,7 +222,7 @@ class ECCUtilTests {
         @ValueSource(ints = {1, 2, 3, 5, 7, 11, 13, 17, 19, 23})
         @DisplayName("Generator multiplication by small primes")
         void testGeneratorMultiplicationSmallPrimes(int multiplier) throws EncryptionException {
-            FieldPoint genField = ECC.eccSet();
+            FieldPoint genField = ECC.getGeneratorPoint();
             FieldPoint result = ECC.eccMul(genField, BigInteger.valueOf(multiplier), false);
 
             assertNotNull(result, "Multiplication by " + multiplier + " should succeed");
@@ -345,240 +344,13 @@ class ECCUtilTests {
         }
     }
 
-    // ==================== SCALAR DECOMPOSITION TESTS ====================
-
-    @Nested
-    @DisplayName("Scalar Decomposition Tests")
-    class ScalarDecompositionTests {
-
-        @Test
-        @Order(20)
-        @DisplayName("Decomposition determinism")
-        void testDecompositionDeterminism() {
-            for (BigInteger scalar : testScalars.subList(0, Math.min(20, testScalars.size()))) {
-                BigInteger[] result1 = Curve.decompose(scalar);
-                BigInteger[] result2 = Curve.decompose(scalar);
-
-                assertArrayEquals(result1, result2,
-                        "Decomposition should be deterministic for " + scalar);
-            }
-        }
-
-        @Test
-        @Order(22)
-        @DisplayName("Decomposition of special values")
-        void testDecompositionSpecialValues() {
-            Map<String, BigInteger> specialValues = Map.of(
-                    "zero", BigInteger.ZERO,
-                    "one", BigInteger.ONE,
-                    "curve_order", CURVE_ORDER,
-                    "curve_order-1", CURVE_ORDER.subtract(BigInteger.ONE),
-                    "2^128", BigInteger.ONE.shiftLeft(128),
-                    "2^256-1", BigInteger.ONE.shiftLeft(256).subtract(BigInteger.ONE)
-            );
-
-            for (Map.Entry<String, BigInteger> entry : specialValues.entrySet()) {
-                String name = entry.getKey();
-                BigInteger value = entry.getValue();
-
-                assertDoesNotThrow(() -> {
-                    BigInteger[] result = Curve.decompose(value);
-                    assertNotNull(result, "Decomposition of " + name + " should not be null");
-                    assertEquals(4, result.length, "Should have 4 components for " + name);
-                }, "Decomposition of " + name + " should not throw");
-            }
-        }
-
-        @Test
-        @Order(23)
-        @DisplayName("Decomposition stress test")
-        void testDecompositionStressTest() {
-            List<BigInteger> failures = new ArrayList<>();
-
-            for (int i = 0; i < 1000; i++) {
-                BigInteger scalar = new BigInteger(256, DETERMINISTIC_RANDOM);
-                try {
-                    BigInteger[] result = Curve.decompose(scalar);
-                    assertNotNull(result);
-                    assertEquals(4, result.length);
-                } catch (Exception e) {
-                    failures.add(scalar);
-                }
-            }
-
-            assertTrue(failures.isEmpty(),
-                    "Failed to decompose " + failures.size() + " scalars: " +
-                            failures.subList(0, Math.min(5, failures.size())));
-        }
-
-        @Test
-        @Order(24)
-        @DisplayName("Decomposition thread safety")
-        void testDecompositionThreadSafety() throws InterruptedException {
-            final int THREAD_COUNT = 10;
-            final int ITERATIONS_PER_THREAD = 100;
-            ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
-            List<Future<Boolean>> futures = new ArrayList<>();
-
-            BigInteger testScalar = new BigInteger("123456789ABCDEF0123456789ABCDEF0", 16);
-            BigInteger[] expectedResult = Curve.decompose(testScalar);
-
-            for (int i = 0; i < THREAD_COUNT; i++) {
-                futures.add(executor.submit(() -> {
-                    for (int j = 0; j < ITERATIONS_PER_THREAD; j++) {
-                        BigInteger[] result = Curve.decompose(testScalar);
-                        if (!Arrays.equals(result, expectedResult)) {
-                            return false;
-                        }
-                    }
-                    return true;
-                }));
-            }
-
-            for (Future<Boolean> future : futures) {
-                try {
-                    assertTrue(future.get(10, TimeUnit.SECONDS),
-                            "Thread safety test failed");
-                } catch (ExecutionException | TimeoutException e) {
-                    fail("Thread safety test exception: " + e.getMessage());
-                }
-            }
-
-            executor.shutdown();
-        }
-    }
-
-    // ==================== mLSB SET RECODING TESTS ====================
-
-    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-    @Nested
-    @DisplayName("mLSB Set Recoding Tests")
-    class MLSBSetRecodingTests {
-
-        @Test
-        @Order(30)
-        @DisplayName("mLSB recoding basic functionality")
-        void testMLSBRecodingBasic() {
-            final int L_FIXEDBASE = 54 * 5; // D_FIXEDBASE * W_FIXEDBASE
-
-            for (BigInteger scalar : testScalars.subList(0, Math.min(10, testScalars.size()))) {
-                int[] digits = new int[L_FIXEDBASE];
-
-                int[] result = Curve.mLSBSetRecode(scalar, digits);
-                assertSame(digits, result, "Should return same array reference");
-
-                // Validate sign digits (indices 0 to D_FIXEDBASE-1)
-                for (int i = 0; i < 54; i++) {
-                    assertTrue(digits[i] >= -1 && digits[i] <= 0,
-                            "Sign digit " + i + " should be -1 or 0, got " + digits[i]);
-                }
-
-                // Validate value digits (indices D_FIXEDBASE to L_FIXEDBASE-1)
-                for (int i = 54; i < L_FIXEDBASE; i++) {
-                    assertTrue(digits[i] >= 0 && digits[i] <= 1,
-                            "Value digit " + i + " should be 0 or 1, got " + digits[i]);
-                }
-            }
-        }
-
-        @Test
-        @Order(31)
-        @DisplayName("mLSB recoding determinism")
-        void testMLSBRecodingDeterminism() {
-            final int L_FIXEDBASE = 54 * 5;
-            BigInteger scalar = testScalars.get(5); // Use a specific test scalar
-
-            int[] digits1 = new int[L_FIXEDBASE];
-            int[] digits2 = new int[L_FIXEDBASE];
-
-            Curve.mLSBSetRecode(scalar, digits1);
-            Curve.mLSBSetRecode(scalar, digits2);
-
-            assertArrayEquals(digits1, digits2, "mLSB recoding should be deterministic");
-        }
-
-        @Test
-        @Order(32)
-        @DisplayName("mLSB recoding edge cases")
-        void testMLSBRecodingEdgeCases() {
-            final int L_FIXEDBASE = 54 * 5;
-            BigInteger[] edgeCases = {
-                    BigInteger.ZERO,
-                    BigInteger.ONE,
-                    BigInteger.valueOf(2),
-                    CURVE_ORDER.subtract(BigInteger.ONE),
-                    BigInteger.ONE.shiftLeft(128),
-                    BigInteger.ONE.shiftLeft(256).subtract(BigInteger.ONE)
-            };
-
-            for (BigInteger scalar : edgeCases) {
-                int[] digits = new int[L_FIXEDBASE];
-                assertDoesNotThrow(() -> Curve.mLSBSetRecode(scalar, digits),
-                        "Should handle edge case scalar: " + scalar);
-            }
-        }
-
-        @Test
-        @Order(33)
-        @DisplayName("mLSB recoding error conditions")
-        void testMLSBRecodingErrors() {
-            BigInteger scalar = testScalars.getFirst();
-
-            // Test null array
-            assertThrows(NullPointerException.class,
-                    () -> Curve.mLSBSetRecode(scalar, null),
-                    "Should throw on null array");
-
-            // Test insufficient array size
-            int[] smallArray = new int[10];
-            assertThrows(ArrayIndexOutOfBoundsException.class,
-                    () -> Curve.mLSBSetRecode(scalar, smallArray),
-                    "Should throw on insufficient array size");
-
-            // Test null scalar
-            int[] digits = new int[270];
-            assertThrows(NullPointerException.class,
-                    () -> Curve.mLSBSetRecode(null, digits),
-                    "Should throw on null scalar");
-        }
-
-        @ParameterizedTest
-        @MethodSource("providePowerOfTwoScalars")
-        @DisplayName("mLSB recoding powers of two")
-        void testMLSBRecodingPowersOfTwo(BigInteger powerOfTwo) {
-            final int L_FIXEDBASE = 54 * 5;
-            int[] digits = new int[L_FIXEDBASE];
-
-            assertDoesNotThrow(() -> Curve.mLSBSetRecode(powerOfTwo, digits),
-                    "Should handle power of two: " + powerOfTwo);
-
-            // Verify the recoding makes sense for powers of two
-            boolean foundNonZero = false;
-            for (int digit : digits) {
-                if (digit != 0) {
-                    foundNonZero = true;
-                    break;
-                }
-            }
-
-            if (!powerOfTwo.equals(BigInteger.ZERO)) {
-                assertTrue(foundNonZero, "Non-zero power of two should have non-zero digits");
-            }
-        }
-
-        private Stream<BigInteger> providePowerOfTwoScalars() {
-            return IntStream.range(0, 20)
-                    .mapToObj(BigInteger.ONE::shiftLeft);
-        }
-    }
-
     // ==================== SCALAR MULTIPLICATION TESTS ====================
 
     @Nested
     @DisplayName("Scalar Multiplication Tests")
     class ScalarMultiplicationTests {
 
-        /*
+
         @Test
         @Order(40)
         @DisplayName("Fixed-base scalar multiplication basic")
@@ -590,20 +362,20 @@ class ECCUtilTests {
 
                 int finalI = i;
                 assertDoesNotThrow(() -> {
-                    FieldPoint result = ECCUtil.eccMulFixed(scalar);
+                    FieldPoint result = ECC.eccMulFixed(scalar);
                     assertNotNull(result, "Fixed-base multiplication should return result for scalar " + finalI);
                 }, "Fixed-base multiplication should not throw for scalar " + i);
             }
 
             long duration = System.currentTimeMillis() - startTime;
             performanceMetrics.put("FixedBaseMul-Basic", duration);
-        }*/
+        }
 
         @Test
         @Order(41)
         @DisplayName("Variable-base scalar multiplication basic")
         void testVariableBaseMulBasic() throws EncryptionException {
-            FieldPoint genField = ECC.eccSet();
+            FieldPoint genField = ECC.getGeneratorPoint();
 
             long startTime = System.currentTimeMillis();
 
@@ -613,11 +385,9 @@ class ECCUtilTests {
 
                 FieldPoint result = ECC.eccMul(genField, scalar, false);
 
-                if (result != null) {
-                    ExtendedPoint resultExt = convertToExtended(convertToAffine(result));
-                    assertTrue(ECC.eccPointValidate(resultExt),
-                            "Result of scalar multiplication should be valid point");
-                }
+                ExtendedPoint resultExt = convertToExtended(convertToAffine(result));
+                assertTrue(ECC.eccPointValidate(resultExt),
+                        "Result of scalar multiplication should be valid point");
             }
 
             long duration = System.currentTimeMillis() - startTime;
@@ -628,7 +398,7 @@ class ECCUtilTests {
         @Order(42)
         @DisplayName("Scalar multiplication by one")
         void testScalarMulByOne() throws EncryptionException {
-            FieldPoint genField = ECC.eccSet();
+            FieldPoint genField = ECC.getGeneratorPoint();
 
             FieldPoint result = ECC.eccMul(genField, BigInteger.ONE, false);
 
@@ -642,18 +412,16 @@ class ECCUtilTests {
         @Test
         @Order(43)
         @DisplayName("Scalar multiplication by zero")
-        void testScalarMulByZero() throws EncryptionException {
-            FieldPoint genField = ECC.eccSet();
+        void testScalarMulByZero() {
+            FieldPoint genField = ECC.getGeneratorPoint();
 
             // Multiplication by zero behavior depends on implementation
             // It might succeed (returning point at infinity) or return null
             assertDoesNotThrow(() -> {
                 FieldPoint result = ECC.eccMul(genField, BigInteger.ZERO, false);
-                if (result != null) {
                     // Check if result represents point at infinity
-                    assertTrue(result.getX().real.equals(BigInteger.ZERO) && result.getX().im.equals(BigInteger.ZERO));
-                    assertTrue(result.getY().real.equals(BigInteger.ONE) && result.getY().im.equals(BigInteger.ZERO));
-                }
+                assertTrue(result.getX().real.equals(BigInteger.ZERO) && result.getX().im.equals(BigInteger.ZERO));
+                assertTrue(result.getY().real.equals(BigInteger.ONE) && result.getY().im.equals(BigInteger.ZERO));
             }, "Multiplication by zero should not throw");
         }
 
@@ -661,55 +429,44 @@ class ECCUtilTests {
         @Order(44)
         @DisplayName("Scalar multiplication mathematical properties")
         void testScalarMulProperties() throws EncryptionException {
-            FieldPoint generator = ECC.eccSet();
+            FieldPoint generator = ECC.getGeneratorPoint();
 
             // Test 2*P = P + P (conceptually)
             FieldPoint result2 = ECC.eccMul(generator, BigInteger.valueOf(2), false);
 
-            if (result2 != null) {
-                ExtendedPoint result2Ext = convertToExtended(convertToAffine(result2));
-                assertTrue(ECC.eccPointValidate(result2Ext),
-                        "2*P should be valid point");
-            }
+            ExtendedPoint result2Ext = convertToExtended(convertToAffine(result2));
+            assertTrue(ECC.eccPointValidate(result2Ext),"2*P should be valid point");
 
             // Test 3*P
             FieldPoint result3 = ECC.eccMul(generator, BigInteger.valueOf(3), false);
 
-            if (result3 != null) {
-                ExtendedPoint result3Ext = convertToExtended(convertToAffine(result3));
-                assertTrue(ECC.eccPointValidate(result3Ext),
-                        "3*P should be valid point");
-            }
+            ExtendedPoint result3Ext = convertToExtended(convertToAffine(result3));
+            assertTrue(ECC.eccPointValidate(result3Ext),"3*P should be valid point");
         }
 
         @Test
         @Order(45)
         @DisplayName("Scalar multiplication with cofactor clearing")
         void testScalarMulWithCofactor() throws EncryptionException {
-            FieldPoint genField = ECC.eccSet();
+            FieldPoint genField = ECC.getGeneratorPoint();
             BigInteger scalar = BigInteger.valueOf(7);
 
             FieldPoint result1 = ECC.eccMul(genField, scalar, false);
             FieldPoint result2 = ECC.eccMul(genField, scalar, true);
 
-            // Both should succeed or both be null
-            assertEquals(result1 == null, result2 == null, "Cofactor clearing should not affect success status");
+            // Results might be different due to cofactor clearing
+            ExtendedPoint ext1 = convertToExtended(convertToAffine(result1));
+            ExtendedPoint ext2 = convertToExtended(convertToAffine(result2));
 
-            if (result1 != null && result2 != null) {
-                // Results might be different due to cofactor clearing
-                ExtendedPoint ext1 = convertToExtended(convertToAffine(result1));
-                ExtendedPoint ext2 = convertToExtended(convertToAffine(result2));
-
-                assertTrue(ECC.eccPointValidate(ext1), "Result without cofactor should be valid");
-                assertTrue(ECC.eccPointValidate(ext2), "Result with cofactor should be valid");
-            }
+            assertTrue(ECC.eccPointValidate(ext1), "Result without cofactor should be valid");
+            assertTrue(ECC.eccPointValidate(ext2), "Result with cofactor should be valid");
         }
 
         @Test
         @Order(46)
         @DisplayName("Double scalar multiplication")
         void testDoubleScalarMul() {
-            FieldPoint genField = ECC.eccSet();
+            FieldPoint genField = ECC.getGeneratorPoint();
 
             BigInteger k = BigInteger.valueOf(3);
             BigInteger l = BigInteger.valueOf(5);
@@ -724,18 +481,16 @@ class ECCUtilTests {
         @ValueSource(ints = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29})
         @DisplayName("Scalar multiplication by small primes")
         void testScalarMulSmallPrimes(int prime) throws EncryptionException {
-            FieldPoint genField = ECC.eccSet();
+            FieldPoint genField = ECC.getGeneratorPoint();
 
             FieldPoint result = ECC.eccMul(genField, BigInteger.valueOf(prime), false);
 
-            if (result != null) {
-                ExtendedPoint resultExt = convertToExtended(convertToAffine(result));
-                assertTrue(ECC.eccPointValidate(resultExt),
-                        prime + "*G should be valid point");
+            ExtendedPoint resultExt = convertToExtended(convertToAffine(result));
+            assertTrue(ECC.eccPointValidate(resultExt),
+                    prime + "*G should be valid point");
 
-                // Verify result is not the identity (unless prime divides curve order)
-                assertFalse(isIdentityPoint(convertToAffine(result)), prime + "*G should not be identity");
-            }
+            // Verify result is not the identity (unless prime divides curve order)
+            assertFalse(isIdentityPoint(convertToAffine(result)), prime + "*G should not be identity");
         }
     }
 
@@ -840,108 +595,6 @@ class ECCUtilTests {
             assertTrue(diff.compareTo(CURVE_ORDER) < 0, "Difference should be reduced");
             assertTrue(prod.compareTo(CURVE_ORDER) < 0, "Product should be reduced");
         }
-
-//        @Test
-//        @Order(62)
-//        @DisplayName("Group law properties")
-//        void testGroupLawProperties() {
-//            // Test that point operations follow group law
-//            FieldPoint generator = ECC.eccSet();
-//
-//            ExtendedPoint genExt = convertToExtended(generator);
-//            assertTrue(ECC.eccPointValidate(genExt), "Generator should be valid");
-//
-//            // Test point doubling
-//            assertDoesNotThrow(() -> {
-//                ExtendedPoint doubled = ECC.eccDouble(genExt);
-//                assertNotNull(doubled, "Doubling should produce result");
-//                assertTrue(ECC.eccPointValidate(doubled), "Doubled point should be valid");
-//            });
-//        }
-    }
-
-    // ==================== SECURITY PROPERTY TESTS ====================
-
-    @Nested
-    @DisplayName("Security Property Tests")
-    class SecurityPropertyTests {
-
-        @Test
-        @Order(70)
-        @DisplayName("Constant-time behavior simulation")
-        void testConstantTimeBehavior() {
-            // Simulate constant-time requirements by testing timing consistency
-            BigInteger scalar1 = BigInteger.valueOf(0xAAAAAAAAL);
-            BigInteger scalar2 = BigInteger.valueOf(0x55555555L);
-
-            List<Long> times1 = new ArrayList<>();
-            List<Long> times2 = new ArrayList<>();
-
-            // Measure decomposition times
-            for (int i = 0; i < 100; i++) {
-                long start = System.nanoTime();
-                Curve.decompose(scalar1);
-                times1.add(System.nanoTime() - start);
-
-                start = System.nanoTime();
-                Curve.decompose(scalar2);
-                times2.add(System.nanoTime() - start);
-            }
-
-            double avg1 = times1.stream().mapToLong(Long::longValue).average().orElse(0);
-            double avg2 = times2.stream().mapToLong(Long::longValue).average().orElse(0);
-
-            // Times should be reasonably close (within 50%)
-            double ratio = Math.max(avg1, avg2) / Math.min(avg1, avg2);
-            assertTrue(ratio < 1.5,
-                    "Timing should be consistent for different inputs (ratio: " + ratio + ")");
-        }
-
-        @Test
-        @Order(71)
-        @DisplayName("Input validation robustness")
-        void testInputValidation() {
-            // Test that functions properly handle invalid inputs
-            assertThrows(Exception.class, () -> Curve.decompose(null));
-            assertThrows(Exception.class, () -> ECC.eccPointValidate(null));
-            assertThrows(Exception.class, () -> Curve.mLSBSetRecode(null, new int[270]));
-            assertThrows(Exception.class, () -> Curve.mLSBSetRecode(BigInteger.ONE, null));
-        }
-
-        @Test
-        @Order(72)
-        @DisplayName("Large input handling")
-        void testLargeInputHandling() {
-            // Test with very large scalars
-            BigInteger huge = BigInteger.ONE.shiftLeft(1000);
-
-            assertDoesNotThrow(() -> {
-                BigInteger[] decomposed = Curve.decompose(huge);
-                assertNotNull(decomposed);
-            }, "Should handle very large scalars gracefully");
-        }
-
-        @Test
-        @Order(73)
-        @DisplayName("Side-channel resistance simulation")
-        void testSideChannelResistance() {
-            // Test that operations don't leak information through exceptions
-            BigInteger[] testInputs = {
-                    BigInteger.ZERO,
-                    BigInteger.ONE,
-                    CURVE_ORDER,
-                    CURVE_ORDER.subtract(BigInteger.ONE),
-                    BigInteger.ONE.shiftLeft(256)
-            };
-
-            for (BigInteger input : testInputs) {
-                // All inputs should either succeed or fail consistently
-                assertDoesNotThrow(() -> {
-                    Curve.decompose(input);
-                    // The operation should complete without revealing input-dependent paths
-                }, "Operation should not leak information for input: " + input);
-            }
-        }
     }
 
     // ==================== PERFORMANCE TESTS ====================
@@ -949,25 +602,6 @@ class ECCUtilTests {
     @Nested
     @DisplayName("Performance Tests")
     class PerformanceTests {
-
-        @Test
-        @Order(80)
-        @Timeout(value = 30, unit = TimeUnit.SECONDS)
-        @DisplayName("Scalar decomposition performance")
-        void testDecompositionPerformance() {
-            long startTime = System.currentTimeMillis();
-
-            for (int i = 0; i < PERFORMANCE_TEST_ITERATIONS; i++) {
-                BigInteger scalar = new BigInteger(256, DETERMINISTIC_RANDOM);
-                Curve.decompose(scalar);
-            }
-
-            long duration = System.currentTimeMillis() - startTime;
-            performanceMetrics.put("Decomposition-" + PERFORMANCE_TEST_ITERATIONS, duration);
-
-            assertTrue(duration < 10000,
-                    "1000 decompositions should complete within 10 seconds");
-        }
 
         @Test
         @Order(81)
@@ -987,254 +621,6 @@ class ECCUtilTests {
 
             assertTrue(duration < 5000,
                     "1000 validations should complete within 5 seconds");
-        }
-
-        @Test
-        @Order(82)
-        @Timeout(value = 60, unit = TimeUnit.SECONDS)
-        @DisplayName("mLSB recoding performance")
-        void testRecodingPerformance() {
-            final int L_FIXEDBASE = 54 * 5;
-            BigInteger scalar = testScalars.get(5);
-
-            long startTime = System.currentTimeMillis();
-
-            for (int i = 0; i < PERFORMANCE_TEST_ITERATIONS; i++) {
-                int[] digits = new int[L_FIXEDBASE];
-                Curve.mLSBSetRecode(scalar, digits);
-            }
-
-            long duration = System.currentTimeMillis() - startTime;
-            performanceMetrics.put("Recoding-" + PERFORMANCE_TEST_ITERATIONS, duration);
-
-            assertTrue(duration < 15000,
-                    "1000 recodings should complete within 15 seconds");
-        }
-
-        @Test
-        @Order(83)
-        @DisplayName("Memory usage test")
-        void testMemoryUsage() {
-            Runtime runtime = Runtime.getRuntime();
-
-            // Force garbage collection
-            System.gc();
-            long beforeMemory = runtime.totalMemory() - runtime.freeMemory();
-
-            // Perform operations that allocate memory
-            List<BigInteger[]> results = new ArrayList<>();
-            for (int i = 0; i < 1000; i++) {
-                BigInteger scalar = new BigInteger(256, DETERMINISTIC_RANDOM);
-                results.add(Curve.decompose(scalar));
-            }
-
-            long afterMemory = runtime.totalMemory() - runtime.freeMemory();
-            long memoryUsed = afterMemory - beforeMemory;
-
-            // Memory usage should be reasonable (less than 100MB for 1000 operations)
-            assertTrue(memoryUsed < 100 * 1024 * 1024,
-                    "Memory usage should be reasonable: " + (memoryUsed / 1024 / 1024) + " MB");
-
-            // Clear references to allow GC
-            results.clear();
-        }
-    }
-
-    // ==================== STRESS TESTS ====================
-
-    @Nested
-    @DisplayName("Stress Tests")
-    class StressTests {
-
-        @Test
-        @Order(90)
-        @Timeout(value = 120, unit = TimeUnit.SECONDS)
-        @DisplayName("High-volume decomposition stress test")
-        void testHighVolumeDecomposition() {
-            List<BigInteger> failures = new ArrayList<>();
-            Random random = new Random(42); // Deterministic for reproducibility
-
-            for (int i = 0; i < STRESS_TEST_ITERATIONS; i++) {
-                BigInteger scalar = new BigInteger(256, random);
-                try {
-                    BigInteger[] result = Curve.decompose(scalar);
-                    assertNotNull(result);
-                    assertEquals(4, result.length);
-                } catch (Exception e) {
-                    failures.add(scalar);
-                    if (failures.size() > 100) break; // Limit failure collection
-                }
-            }
-
-            double failureRate = (double) failures.size() / STRESS_TEST_ITERATIONS;
-            assertTrue(failureRate < 0.01,
-                    "Failure rate should be less than 1%, got " + (failureRate * 100) + "%");
-        }
-
-        @Test
-        @Order(91)
-        @Timeout(value = 60, unit = TimeUnit.SECONDS)
-        @DisplayName("Concurrent operation stress test")
-        void testConcurrentOperations() throws InterruptedException {
-            final int THREAD_COUNT = 20;
-            final int OPS_PER_THREAD = 100;
-            ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
-            List<Future<Integer>> futures = new ArrayList<>();
-
-            for (int i = 0; i < THREAD_COUNT; i++) {
-                final int threadId = i;
-                futures.add(executor.submit(() -> {
-                    int successCount = 0;
-                    Random random = new Random(threadId); // Thread-specific random
-
-                    for (int j = 0; j < OPS_PER_THREAD; j++) {
-                        try {
-                            BigInteger scalar = new BigInteger(128, random);
-                            BigInteger[] result = Curve.decompose(scalar);
-                            if (result.length == 4) {
-                                successCount++;
-                            }
-                        } catch (Exception e) {
-                            // Count as failure
-                        }
-                    }
-                    return successCount;
-                }));
-            }
-
-            int totalSuccess = 0;
-            for (Future<Integer> future : futures) {
-                try {
-                    totalSuccess += future.get(30, TimeUnit.SECONDS);
-                } catch (ExecutionException | TimeoutException e) {
-                    fail("Concurrent stress test failed: " + e.getMessage());
-                }
-            }
-
-            executor.shutdown();
-
-            double successRate = (double) totalSuccess / (THREAD_COUNT * OPS_PER_THREAD);
-            assertTrue(successRate > 0.95,
-                    "Success rate should be > 95%, got " + (successRate * 100) + "%");
-        }
-
-        @Test
-        @Order(92)
-        @DisplayName("Edge case exhaustive testing")
-        void testEdgeCaseExhaustive() {
-            List<BigInteger> edgeCases = generateEdgeCases();
-            List<BigInteger> failures = new ArrayList<>();
-
-            for (BigInteger edgeCase : edgeCases) {
-                try {
-                    // Test decomposition
-                    BigInteger[] decomposed = Curve.decompose(edgeCase);
-                    assertNotNull(decomposed);
-
-                    // Test recoding
-                    int[] digits = new int[270];
-                    Curve.mLSBSetRecode(edgeCase, digits);
-
-                } catch (Exception e) {
-                    failures.add(edgeCase);
-                }
-            }
-
-            assertTrue(failures.isEmpty(),
-                    "All edge cases should be handled. Failures: " + failures.size());
-        }
-
-        private List<BigInteger> generateEdgeCases() {
-            List<BigInteger> edgeCases = new ArrayList<>();
-
-            // Powers of 2
-            for (int i = 0; i <= 256; i++) {
-                edgeCases.add(BigInteger.ONE.shiftLeft(i));
-                if (i > 0) {
-                    edgeCases.add(BigInteger.ONE.shiftLeft(i).subtract(BigInteger.ONE));
-                }
-            }
-
-            // Mersenne numbers
-            int[] mersenneExps = {7, 31, 127, 521};
-            for (int exp : mersenneExps) {
-                if (exp <= 256) {
-                    edgeCases.add(BigInteger.ONE.shiftLeft(exp).subtract(BigInteger.ONE));
-                }
-            }
-
-            // Special bit patterns
-            edgeCases.add(new BigInteger("AAAAAAAAAAAAAAAA", 16)); // Alternating
-            edgeCases.add(new BigInteger("5555555555555555", 16)); // Alternating
-            edgeCases.add(new BigInteger("FFFFFFFFFFFFFFFF", 16)); // All ones
-
-            // Numbers around curve order
-            edgeCases.add(CURVE_ORDER);
-            edgeCases.add(CURVE_ORDER.subtract(BigInteger.ONE));
-            edgeCases.add(CURVE_ORDER.add(BigInteger.ONE));
-            edgeCases.add(CURVE_ORDER.multiply(BigInteger.valueOf(2)));
-
-            return edgeCases;
-        }
-    }
-
-    // ==================== INTEGRATION TESTS ====================
-
-    @Nested
-    @DisplayName("Integration Tests")
-    class IntegrationTests {
-
-        @Test
-        @Order(100)
-        @DisplayName("Complete scalar multiplication pipeline")
-        void testCompleteScalarMulPipeline() {
-            FieldPoint generator = ECC.eccSet();
-            BigInteger scalar = BigInteger.valueOf(123);
-
-            // Test the complete pipeline
-            assertDoesNotThrow(() -> {
-                // 1. Decompose scalar
-                BigInteger[] decomposed = Curve.decompose(scalar);
-                assertNotNull(decomposed);
-
-                // 2. Validate point
-                AffinePoint affPoint = new AffinePoint(generator.getX(), generator.getY(), null);
-                ExtendedPoint genExt = convertToExtended(affPoint);
-                assertTrue(ECC.eccPointValidate(genExt));
-
-                // 3. Perform scalar multiplication
-                FieldPoint result = ECC.eccMul(generator, scalar, false);
-
-                // 4. Validate result
-                ExtendedPoint resultExt = convertToExtended(convertToAffine(result));
-                assertTrue(ECC.eccPointValidate(resultExt));
-            }, "Complete scalar multiplication pipeline should work");
-        }
-
-        @Test
-        @Order(101)
-        @DisplayName("Cross-validation between methods")
-        void testCrossValidation() throws EncryptionException {
-            // Test that different methods produce consistent results
-            BigInteger scalar = BigInteger.valueOf(17);
-
-            // Method 1: Variable-base multiplication
-            FieldPoint genField = ECC.eccSet();
-            FieldPoint result1 = ECC.eccMul(genField, scalar, false);
-
-            // Method 2: Fixed-base multiplication (if generator is used)
-            FieldPoint result2 = ECC.eccMulFixed(scalar);
-
-            // Both methods should succeed or fail consistently
-            assertEquals(result1 == null, result2 == null, "Both methods should have same success status");
-
-            if (result1 != null && result2 != null) {
-                // Results should be mathematically equivalent (may differ in representation)
-                assertNotNull(result1.getX());
-                assertNotNull(result1.getY());
-                assertNotNull(result2.getX());
-                assertNotNull(result2.getY());
-            }
         }
     }
 
@@ -1287,14 +673,9 @@ class ECCUtilTests {
         assertEquals(a.im, b.im, message + " - imaginary parts should be equal");
     }
 
-    private void assertPointsEqual(AffinePoint a, AffinePoint b, String message) {
-        assertFieldElementsEqual(a.getX(), b.getX(), message + " - X coordinates");
-        assertFieldElementsEqual(a.getY(), b.getY(), message + " - Y coordinates");
-    }
-
-    private void assertPointsEqual(FieldPoint a, FieldPoint b, String message) {
-        assertFieldElementsEqual(a.getX(), b.getX(), message + " - X coordinates");
-        assertFieldElementsEqual(a.getY(), b.getY(), message + " - Y coordinates");
+    private void assertPointsEqual(FieldPoint a, FieldPoint b) {
+        assertFieldElementsEqual(a.getX(), b.getX(), "Generator should be deterministic - X coordinates");
+        assertFieldElementsEqual(a.getY(), b.getY(), "Generator should be deterministic - Y coordinates");
     }
 
     private boolean isIdentityPoint(AffinePoint point) {

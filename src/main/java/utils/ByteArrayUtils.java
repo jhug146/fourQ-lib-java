@@ -14,7 +14,7 @@ public class ByteArrayUtils {
 
     public static byte[] reverseByteArray(
             byte @NotNull [] src,
-            ByteArrayReverseMode mode
+            @NotNull ByteArrayReverseMode mode
     ) {
         if (src.length == 0) return new byte[0];
         else if (src.length == 1) return new byte[] { src[0] };
@@ -66,4 +66,10 @@ public class ByteArrayUtils {
         System.arraycopy(src, srcPos, dest, destPos, length);
     }
 
+    public static byte[] addLeadingZeros(byte[] array, int targetLength) {
+        if (array.length == targetLength) return array;
+        byte[] padded = new byte[targetLength];
+        System.arraycopy(array, 0, padded, targetLength - array.length, array.length);
+        return padded;
+    }
 }

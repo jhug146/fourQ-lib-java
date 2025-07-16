@@ -13,6 +13,7 @@ import static utils.ByteArrayReverseMode.REMOVE_TRAILING_ZERO;
 import static utils.ByteArrayUtils.copyByteArrayToByteArray;
 
 public class BigIntegerUtils {
+    @NotNull
     public static F2Element convertBigIntegerToF2Element(@NotNull BigInteger val) {
        final BigInteger[] divModRes = val.divideAndRemainder(Key.POW_128);
        final int targetLength = Key.KEY_SIZE / 2 + 1;
@@ -20,7 +21,7 @@ public class BigIntegerUtils {
         final BigInteger real = new BigInteger(1, ByteArrayUtils.reverseByteArray(
             addLeadingZeros(divModRes[0].toByteArray(), targetLength),
             REMOVE_TRAILING_ZERO));
-        
+
         final BigInteger imag = new BigInteger(1, ByteArrayUtils.reverseByteArray(
             addLeadingZeros(divModRes[1].toByteArray(), targetLength),
             REMOVE_TRAILING_ZERO));

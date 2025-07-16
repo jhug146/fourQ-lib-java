@@ -1,22 +1,16 @@
 package types.point;
 
-import java.math.BigInteger;
+import org.jetbrains.annotations.NotNull;
 
-import exceptions.TableLookupException;
 import types.data.F2Element;
 
 
 public interface TablePoint extends Point {
+    @NotNull
     F2Element getT();
-    F2Element getZ();
 
-    void setT(F2Element t);
-    void setZ(F2Element z);
+    void setT(@NotNull F2Element t);
 
-    int getTableLength() throws TableLookupException;
-
+    @NotNull
     TablePoint dup();
-
-    PreComputedExtendedPoint toPreComputedExtendedPoint();
-    AffinePoint toAffinePoint();
 }

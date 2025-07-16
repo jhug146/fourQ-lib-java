@@ -35,7 +35,7 @@ import static utils.ByteArrayReverseMode.REMOVE_TRAILING_ZERO;
  * @since 1.0
  */
 public class CryptoUtils {
-    private static final SecureRandom secureRandom = new SecureRandom();
+    @NotNull private static final SecureRandom secureRandom = new SecureRandom();
 
     /**
      * Generates cryptographically secure random bytes.
@@ -46,6 +46,7 @@ public class CryptoUtils {
      * @param size the number of random bytes to generate
      * @return a BigInteger containing the random bytes
      */
+    @NotNull
     public static BigInteger randomBytes(int size) {
         byte[] bytes = new byte[size];
         secureRandom.nextBytes(bytes);
@@ -62,7 +63,8 @@ public class CryptoUtils {
      * @param key the value to convert to Montgomery form
      * @return the value in Montgomery form
      */
-    public static BigInteger toMontgomery(BigInteger key) {
+    @NotNull
+    public static BigInteger toMontgomery(@NotNull BigInteger key) {
         return FP.montgomeryMultiplyModOrder(key, Params.MONTGOMERY_R_PRIME);
     }
 
@@ -75,7 +77,8 @@ public class CryptoUtils {
      * @param key the value in Montgomery form to convert back
      * @return the value in normal form
      */
-    public static BigInteger fromMontgomery(BigInteger key) {
+    @NotNull
+    public static BigInteger fromMontgomery(@NotNull BigInteger key) {
         return FP.montgomeryMultiplyModOrder(key, BigInteger.ONE);
     }
 
@@ -89,7 +92,8 @@ public class CryptoUtils {
      * @param P the curve point to encode
      * @return the compressed point as a 32-byte BigInteger
      */
-    public static BigInteger encode(FieldPoint P) {
+    @NotNull
+    public static BigInteger encode(@NotNull FieldPoint P) {
         byte temp1 = (byte) (P.getX().im.testBit(126) ? 0x80 : 0x00);
         byte temp2 = (byte) (P.getX().real.testBit(126) ? 0x80 : 0x00);
 
@@ -131,13 +135,14 @@ public class CryptoUtils {
      * @return the decoded curve point
      * @throws EncryptionException if decoding fails or point is invalid
      */
-    public static FieldPoint decode(BigInteger encoded) throws EncryptionException {
+    @NotNull
+    public static FieldPoint decode(@NotNull BigInteger encoded) throws EncryptionException {
         F2Element y = BigIntegerUtils.convertBigIntegerToF2Element(encoded);
         int signBit = encoded.testBit(7) ? 1 : 0;
         y.im = y.im.clearBit(127);
 
         F2Element u = FP2.fp2Sqr1271(y);
-        F2Element v = FP2.fp2Mul1271(u, Params.PARAMETER_d);
+        F2Element v = FP2.fp2Mul1271(u, Params.PARAMETER_D);
         u = FP2.fp2Sub1271(u, F2Element.ONE);
         v = FP2.fp2Add1271(v, F2Element.ONE);
 
@@ -167,7 +172,7 @@ public class CryptoUtils {
         t3 = FP.PUtil.fpMul1271(t, t3);                 // t3 = t3*t
         BigInteger r = FP.PUtil.fpExp1251(t3);          // r = t3^(2^125-1)
         t3 = FP.PUtil.fpMul1271(t0, r);                 // t3 = t0*r
-        BigInteger x0 = FP.PUtil.fpMul1271(t, t3);      // x0 = t*t3 //TODO in C this is coming from some pointer P->x0
+        BigInteger x0 = FP.PUtil.fpMul1271(t, t3);      // x0 = t*t3
         t1 = FP.PUtil.fpSqr1271(x0);
         t1 = FP.PUtil.fpMul1271(t0, t1);                // t1 = t0*x0^2
         x0 = FP.PUtil.fpDiv1271(x0);                    // x0 = x0/2
@@ -203,7 +208,6 @@ public class CryptoUtils {
                 throw new ValidationException("Error validating point in decode.");
             }
         }
-
         return point;
     }
 

@@ -42,8 +42,8 @@ public class ECC {
      * 
      * @return the generator point G in affine coordinates (x,y)
      */
-    public static FieldPoint eccSet() {
-        return new FieldPoint(Params.GENERATOR_x, Params.GENERATOR_y);
+    public static FieldPoint getGeneratorPoint() {
+        return new FieldPoint(Params.GENERATOR_X, Params.GENERATOR_Y);
     }
 
     /**
@@ -58,60 +58,8 @@ public class ECC {
      * @throws EncryptionException if the scalar multiplication fails
      */
     @NotNull
-    public static FieldPoint eccMulFixed(BigInteger val) throws EncryptionException {
-        return ECC.eccMul(ECC.eccSet(), val,false);
-        /*temp = FP.conversionToOdd(temp);
-        int[] digits = Curve.mLSBSetRecode(temp, new int[270]);  // TODO: No idea how this works
-        int digit = digits[Params.W_FIXEDBASE * Params.D_FIXEDBASE - 1];
-        int startI = (Params.W_FIXEDBASE - 1) * Params.D_FIXEDBASE - 1;
-        for (int i = startI; i >= 2 * Params.D_FIXEDBASE - 1; i -= Params.D_FIXEDBASE) {
-            digit = 2 * digit + digits[i];
-        }
-
-        // TODO: Both instances of TABLE in this function might need updating
-        AffinePoint affPoint = new AffinePoint();
-        affPoint = Table.tableLookup(
-                (Params.V_FIXEDBASE - 1) * (1 << (Params.W_FIXEDBASE - 1)),
-                digit,
-                digits[Params.D_FIXEDBASE - 1],
-                affPoint
-        ).toAffinePoint();
-        ExtendedPoint exPoint = Conversion.r5ToR1(affPoint);
-
-        for (int j = 0; j < Params.V_FIXEDBASE - 1; j++) {
-            digit = digits[Params.W_FIXEDBASE * Params.D_FIXEDBASE - (j + 1) * Params.E_FIXEDBASE - 1];
-            final int iStart = (Params.W_FIXEDBASE - 1) * Params.D_FIXEDBASE - (j + 1) * Params.E_FIXEDBASE - 1;
-            final int iMin = 2 * Params.D_FIXEDBASE - (j + 1) * Params.E_FIXEDBASE - 1;
-            for (int i = iStart; i >= iMin; i -= Params.D_FIXEDBASE) {
-                digit = 2 * digit + digits[i];
-            }
-            // Extract point in (x+y,y-x,2dt) representation
-            final int signDigit = Params.D_FIXEDBASE - (j + 1) * Params.E_FIXEDBASE - 1;
-            final int tableStart = (Params.V_FIXEDBASE - j - 2) * (1 << (Params.W_FIXEDBASE - 1));
-            affPoint = Table
-                    .tableLookup(tableStart, digit, digits[signDigit], affPoint)
-                    .toAffinePoint();
-            exPoint = eccMixedAdd(affPoint, exPoint);
-        }
-
-        for (int i = Params.E_FIXEDBASE - 2; i >= 0; i--) {
-            exPoint = eccDouble(exPoint);
-            for (int j = 0; j < Params.V_FIXEDBASE; j++) {
-                digit = digits[Params.W_FIXEDBASE * Params.D_FIXEDBASE - j * Params.E_FIXEDBASE + i - Params.E_FIXEDBASE];
-                final int kStart = (Params.W_FIXEDBASE - 1) * Params.D_FIXEDBASE - j * Params.E_FIXEDBASE + i - Params.E_FIXEDBASE;
-                final int kMin = 2 * Params.D_FIXEDBASE - j * Params.E_FIXEDBASE + i - Params.E_FIXEDBASE;
-                for (int k = kStart; k >= kMin; k -= Params.D_FIXEDBASE) {
-                    digit = 2 * digit + digits[k];
-                }
-                final int signDigit = Params.D_FIXEDBASE - j * Params.E_FIXEDBASE + i - Params.E_FIXEDBASE;
-                final int tableStart = (Params.V_FIXEDBASE - j - 1) * (1 << (Params.W_FIXEDBASE - 1));
-                affPoint = Table
-                        .tableLookup(tableStart, digit, signDigit, affPoint)
-                        .toAffinePoint();
-                exPoint = eccMixedAdd(affPoint, exPoint);
-            }
-        }
-        return eccNorm(exPoint);*/
+    public static FieldPoint eccMulFixed(@NotNull BigInteger val) throws EncryptionException {
+        return ECC.eccMul(ECC.getGeneratorPoint(), val,false);
     }
 
     /**
@@ -127,37 +75,28 @@ public class ECC {
      * @return the point k*P in affine coordinates
      * @throws EncryptionException if point validation fails or multiplication errors occur
      */
+    @NotNull
     public static FieldPoint eccMul(
-            FieldPoint p,
-            BigInteger k,
+            @NotNull FieldPoint p,
+            @NotNull BigInteger k,
             boolean clearCofactor
     ) throws EncryptionException {
-        PreComputedExtendedPoint s;
         int[] signMasks = new int[T_VARBASE + 1];
-
         ExtendedPoint r = Curve.pointSetup(p);
 
-        if (!eccPointValidate(r)) {
-            throw new EncryptionException("Point validation failed within eccMul");
-        }
-        if (clearCofactor) {
-            r = Curve.cofactorClearing(r);
-        }
+        if (!eccPointValidate(r)) throw new EncryptionException("Point validation failed within eccMul");
+        if (clearCofactor) r = Curve.cofactorClearing(r);
 
         BigInteger kOdd = BigIntegerUtils.buildBigInteger(k, FP::moduloOrder, FP::conversionToOdd);
         PreComputedExtendedPoint[] table = eccPrecomp(r);
         int[] digits = Curve.fixedWindowRecode(kOdd, signMasks);
 
-        s = Table.tableLookup(table, digits[T_VARBASE], signMasks[T_VARBASE]);
+        PreComputedExtendedPoint s = Table.tableLookup(table, digits[T_VARBASE], signMasks[T_VARBASE]);
         r = Conversion.r2ToR4(s, r);
 
         for (int i = T_VARBASE - 1; i >= 0; i--) {
-            r = eccDouble(r);
-            s = Table.tableLookup(table, digits[i], signMasks[i]);
-            r = eccDouble(r);
-            r = eccDouble(r);
-            r = eccDouble(r);
-            r = eccAdd(s, r);
+            r = eccDouble(eccDouble(eccDouble(eccDouble(r))));
+            r = eccAdd(Table.tableLookup(table, digits[i], signMasks[i]), r);
         }
 
         return eccNorm(r);
@@ -197,7 +136,8 @@ public class ECC {
      * @param p the input point P in extended coordinates
      * @return the point 2P in extended coordinates
      */
-    public static ExtendedPoint eccDouble(ExtendedPoint p) {
+    @NotNull
+    public static ExtendedPoint eccDouble(@NotNull ExtendedPoint p) {
         F2Element t1 = fp2Sqr1271(p.getX());                 // t1 = X1^2
         F2Element t2 = fp2Sqr1271(p.getY());                 // t2 = Y1^2
         F2Element t3 = fp2Add1271(p.getX(), p.getY());       // t3 = X1+Y1
@@ -223,16 +163,17 @@ public class ECC {
      * @param p the point in extended projective coordinates
      * @return the same point in affine coordinates (x,y)
      */
-    public static FieldPoint eccNorm(ExtendedPoint p) {
+    @NotNull
+    public static FieldPoint eccNorm(@NotNull ExtendedPoint p) {
         final F2Element zInv = fp2Inv1271(p.getZ());
         final F2Element x = fp2Mul1271(p.getX(), zInv);
         final F2Element y = fp2Mul1271(p.getY(), zInv);
 
-        x.im = FP.PUtil.mod1271(x.im);
-        x.real = FP.PUtil.mod1271(x.real);
+        x.im = FP.PUtil.fpMod1271(x.im);
+        x.real = FP.PUtil.fpMod1271(x.real);
 
-        y.im = FP.PUtil.mod1271(y.im);
-        y.real = FP.PUtil.mod1271(y.real);
+        y.im = FP.PUtil.fpMod1271(y.im);
+        y.real = FP.PUtil.fpMod1271(y.real);
         return new FieldPoint(x, y);
     }
 
@@ -251,9 +192,9 @@ public class ECC {
      */
     @NotNull
     public static FieldPoint eccMulDouble(
-            BigInteger k,
-            FieldPoint q,
-            BigInteger l
+            @NotNull BigInteger k,
+            @NotNull FieldPoint q,
+            @NotNull BigInteger l
     ) throws EncryptionException {
         // Step 1: Compute l*Q
         FieldPoint lQ = eccMul(q, l, false);
@@ -273,14 +214,15 @@ public class ECC {
         return eccNorm(result);
     }
 
+    @NotNull
     private static ExtendedPoint eccAddCore(
-            PreComputedExtendedPoint p,
-            PreComputedExtendedPoint q
+            @NotNull PreComputedExtendedPoint p,
+            @NotNull PreComputedExtendedPoint q
     ) {
-        F2Element z = fp2Mul1271(p.t, q.t);
-        F2Element t1 = fp2Mul1271(p.z, q.z);
-        F2Element x = fp2Mul1271(p.xy, q.xy);
-        F2Element y = fp2Mul1271(p.yx, q.yx);
+        F2Element z = fp2Mul1271(p.getT(), q.getT());
+        F2Element t1 = fp2Mul1271(p.getZ(), q.getZ());
+        F2Element x = fp2Mul1271(p.getX(), q.getX());
+        F2Element y = fp2Mul1271(p.getY(), q.getY());
         F2Element t2 = fp2Sub1271(t1, z);
         t1 = fp2Add1271(t1, z);
         F2Element tb = fp2Sub1271(x, y);
@@ -294,9 +236,10 @@ public class ECC {
         );
     }
 
+    @NotNull
     static ExtendedPoint eccAdd(
-            PreComputedExtendedPoint q,
-            ExtendedPoint p
+            @NotNull PreComputedExtendedPoint q,
+            @NotNull ExtendedPoint p
     ) {
         return eccAddCore(q, Conversion.r1ToR3(p));
     }
@@ -314,7 +257,7 @@ public class ECC {
         F2Element t3 = fp2Sub1271(t1, t2);                              // y^2 - x^2 = -x^2 + y^2
 
         t1 = fp2Mul1271(t1, t2);                                        // x^2*y^2
-        t2 = fp2Mul1271(Params.PARAMETER_d, t1);                        // dx^2*y^2
+        t2 = fp2Mul1271(Params.PARAMETER_D, t1);                        // dx^2*y^2
 
         // Create F2Element representing 1 + 0i
         F2Element one = new F2Element(
@@ -327,8 +270,8 @@ public class ECC {
 
         // Reduce modulo (2^127-1)
         t1 = new F2Element(
-                FP.PUtil.mod1271(t1.real),
-                FP.PUtil.mod1271(t1.im)
+                FP.PUtil.fpMod1271(t1.real),
+                FP.PUtil.fpMod1271(t1.im)
         );
 
         // Check if the result is zero (both real and imaginary parts must be zero) to be on the curve.
@@ -338,14 +281,14 @@ public class ECC {
     /**
      * Generation of the precomputation table used by the variable-base scalar multiplication eccMul().
      * @param p = (X1,Y1,Z1,Ta,Tb), where T1 = Ta*Tb, corresponding to (X1:Y1:Z1:T1) in extended twisted Edwards coordinates.
-     * @return table T containing NPOINTS_VARBASE points: P, 3P, 5P, ... , (2*NPOINTS_VARBASE-1)P. NPOINTS_VARBASE is fixed to 8 (see FourQ.h).
+     * @return table T containing N_POINTS_VARBASE points: P, 3P, 5P, ... , (2 * N_POINTS_VARBASE - 1)P. N_POINTS_VARBASE is fixed to 8 (see FourQ.h).
      *         Precomputed points use the representation (X+Y,Y-X,2Z,2dT) corresponding to (X:Y:Z:T) in extended twisted Edwards coordinates.
      */
     @NotNull
     public static PreComputedExtendedPoint[] eccPrecomp(@NotNull ExtendedPoint p) {
         // Initialize the output table
         PreComputedExtendedPoint[] t
-                = new PreComputedExtendedPoint[Params.NPOINTS_VARBASE.intValueExact()];
+                = new PreComputedExtendedPoint[Params.N_POINTS_VARBASE.intValueExact()];
 
         PreComputedExtendedPoint p2;
         ExtendedPoint q;
@@ -356,8 +299,8 @@ public class ECC {
         q = eccDouble(q);                               // Q = 2P
         p2 = Conversion.r1ToR3(q);                      // P2 = 2P in R3 format
 
-        // Generate odd multiples: 3P, 5P, 7P, ..., (2*NPOINTS_VARBASE-1)P
-        for (int i = 1; i < Params.NPOINTS_VARBASE.intValueExact(); i++) {
+        // Generate odd multiples: 3P, 5P, 7P, ..., (2 * N_POINTS_VARBASE - 1)P
+        for (int i = 1; i < Params.N_POINTS_VARBASE.intValueExact(); i++) {
             // T[i] = 2P + T[i-1] = (2*i+1)P
             q = eccAddCore(p2, t[i-1]);                 // Add 2P to previous odd multiple
             t[i] = Conversion.r1ToR2(q);                // Convert result to R2 format

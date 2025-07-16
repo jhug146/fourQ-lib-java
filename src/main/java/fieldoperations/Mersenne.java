@@ -8,7 +8,8 @@ import static constants.Params.PRIME_1271;
 
 class Mersenne {
     // Mersenne prime reduction for p = 2^127-1
-    static BigInteger mersenneReduce127(BigInteger x) {
+    @NotNull
+    static BigInteger mersenneReduce127(@NotNull BigInteger x) {
         // For 2^127-1, we use the property that 2^127 ≡ 1 (mod 2^127-1)
         // So any bits beyond position 126 can be added back to the lower bits
 
@@ -35,7 +36,8 @@ class Mersenne {
     }
 
     // More optimized version
-    static BigInteger mersenneReduce127Fast(BigInteger x) {
+    @NotNull
+    static BigInteger mersenneReduce127Fast(@NotNull BigInteger x) {
         // Quick path for numbers that already fit
         if (x.bitLength() <= 127) {
             return x.equals(PRIME_1271) ? BigInteger.ZERO : x;
@@ -66,22 +68,5 @@ class Mersenne {
 
         // Handle the edge case where result equals the prime
         return result.equals(PRIME_1271) ? BigInteger.ZERO : result;
-    }
-
-    // Generic Mersenne reduction for any 2^n - 1
-    static BigInteger mersenneReduce(@NotNull BigInteger x, int n) {
-        BigInteger prime = BigInteger.ONE.shiftLeft(n).subtract(BigInteger.ONE);
-
-        if (x.bitLength() <= n) {
-            return x.equals(prime) ? BigInteger.ZERO : x;
-        }
-
-        while (x.bitLength() > n) {
-            BigInteger xLow = x.and(prime);      // Lower n bits
-            BigInteger xHigh = x.shiftRight(n); // Upper bits
-            x = xHigh.add(xLow);
-        }
-
-        return x.equals(prime) ? BigInteger.ZERO : x;
     }
 }

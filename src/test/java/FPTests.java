@@ -1,11 +1,12 @@
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigInteger;
 
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 import types.data.Pair;
-import constants.Params;
 import fieldoperations.FP;
+import constants.Params;
 
 
 public class FPTests {

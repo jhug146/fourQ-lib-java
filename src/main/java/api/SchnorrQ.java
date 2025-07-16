@@ -3,16 +3,18 @@ package api;
 import java.math.BigInteger;
 import java.util.Arrays;
 
+import org.jetbrains.annotations.NotNull;
+
+import crypto.primitives.HashFunction;
+import crypto.core.ECC;
+import crypto.primitives.SHA512;
 import utils.BigIntegerUtils;
 import utils.ByteArrayUtils;
 import constants.Key;
 import utils.CryptoUtils;
-import crypto.core.ECC;
-import crypto.primitives.HashFunction;
 import exceptions.EncryptionException;
 import exceptions.InvalidArgumentException;
 import fieldoperations.FP;
-import org.jetbrains.annotations.NotNull;
 import types.data.Pair;
 import types.point.FieldPoint;
 
@@ -44,6 +46,7 @@ import static utils.ByteArrayUtils.reverseByteArray;
  * @since 1.0
  */
 public class SchnorrQ {
+    private static final HashFunction hashFunction = new SHA512();
     /**
      * Generates a public key from the given private key using the FourQ curve.
      * <p>
@@ -57,8 +60,9 @@ public class SchnorrQ {
      * @throws EncryptionException if the cryptographic operations fail
      * @throws IllegalArgumentException if secretKey is null
      */
+    @NotNull
     public static BigInteger schnorrQKeyGeneration(@NotNull BigInteger secretKey) throws EncryptionException {
-        BigInteger hash = new BigInteger(1, HashFunction.computeHash(secretKey, true));
+        BigInteger hash = new BigInteger(1, hashFunction.computeHash(secretKey, true));
         final FieldPoint point = ECC.eccMulFixed(hash);
         return CryptoUtils.encode(point);
     }
@@ -73,6 +77,7 @@ public class SchnorrQ {
      * @return a Pair containing (privateKey, publicKey) as BigInteger values
      * @throws EncryptionException if key generation fails due to cryptographic errors
      */
+    @NotNull
     public static Pair<BigInteger, BigInteger> schnorrQFullKeyGeneration() throws EncryptionException {
         final BigInteger secretKey = CryptoUtils.randomBytes(Key.KEY_SIZE);
         final BigInteger publicKey = schnorrQKeyGeneration(secretKey);
@@ -96,23 +101,27 @@ public class SchnorrQ {
      * @throws EncryptionException if signing fails due to cryptographic errors
      * @throws IllegalArgumentException if secretKey or publicKey is null
      */
-    public static BigInteger schnorrQSign(@NotNull BigInteger secretKey, @NotNull BigInteger publicKey, byte[] message) throws EncryptionException {
-        final byte[] kHash = HashFunction.computeHash(secretKey, false);
+    public static BigInteger schnorrQSign(
+            @NotNull BigInteger secretKey,
+            @NotNull BigInteger publicKey,
+            byte[] message
+    ) throws EncryptionException {
+        final byte[] kHash = hashFunction.computeHash(secretKey, false);
         final byte[] bytes = schnorrCreateBuffer(message);
-        
+
         // Use second half of kHash as nonce seed for, deterministic signing
         copyByteArrayToByteArray(kHash, Key.KEY_SIZE, bytes, Key.KEY_SIZE, Key.KEY_SIZE);
         copyByteArrayToByteArray(message, 0, bytes, Key.KEY_SIZE * 2, message.length);
 
         // Compute nonce r = H(nonce_seed || message)
-        final BigInteger rHash = new BigInteger(1, HashFunction.computeHash(Arrays.copyOfRange(bytes, Key.KEY_SIZE, bytes.length), true));
+        final BigInteger rHash = new BigInteger(1, hashFunction.computeHash(Arrays.copyOfRange(bytes, Key.KEY_SIZE, bytes.length), true));
         final BigInteger sigStart = CryptoUtils.encode(ECC.eccMulFixed(rHash));
 
         // Prepare challenge hash input: R || publicKey || message
         copyBigIntegerToByteArray(sigStart, Key.KEY_SIZE, bytes, 0);
         copyBigIntegerToByteArray(publicKey, Key.KEY_SIZE, bytes, Key.KEY_SIZE);
 
-        final BigInteger hHash2 = FP.moduloOrder(new BigInteger(1, HashFunction.computeHash(bytes, true)));
+        final BigInteger hHash2 = FP.moduloOrder(new BigInteger(1, hashFunction.computeHash(bytes, true)));
 
         // Use Montgomery arithmetic for efficient modular operations
         // Sequentially builds up the sigEnd BigInteger.
@@ -151,7 +160,11 @@ public class SchnorrQ {
      * @throws InvalidArgumentException if inputs fail validation checks
      * @throws IllegalArgumentException if publicKey or signature is null
      */
-    public static boolean schnorrQVerify(@NotNull BigInteger publicKey, @NotNull BigInteger signature, byte[] message) throws EncryptionException {
+    public static boolean schnorrQVerify(
+            @NotNull BigInteger publicKey,
+            @NotNull BigInteger signature,
+            byte @NotNull [] message
+    ) throws EncryptionException {
         validateVerifyInputs(publicKey, signature);
 
         final byte[] bytes = schnorrCreateBuffer(message);
@@ -163,7 +176,7 @@ public class SchnorrQ {
         final FieldPoint affPoint = ECC.eccMulDouble(
                 CryptoUtils.extractSignatureTopBytesReverse(signature),
                 CryptoUtils.decode(publicKey),       // Implicitly checks that public key lies on the curve
-                new BigInteger(1, HashFunction.computeHash(bytes, true))
+                new BigInteger(1, hashFunction.computeHash(bytes, true))
         );
 
         // Verify that computed point equals the commitment R from signature
