@@ -21,10 +21,10 @@ import java.util.Random;
 
 public class SchnorrQTests {
     private final int HEX_RADIX = 16;
-    private final BigInteger VALID_PUBLIC_KEY = new BigInteger("7f8872d803af6a1c0331e242f365622b00435e0a7bdd1249bc1eea9962bd7a42", HEX_RADIX);
+    private final BigInteger VALID_PUBLIC_KEY = new BigInteger("41ae5f6d8fcf295b2b67a57b97fe58674818fa17b04844f697f58099dd08856f", HEX_RADIX);
     private final BigInteger VALID_PRIVATE_KEY = new BigInteger("9aa51ec6af8420987dee03b1453a9eeb8e7bf17db8b7a175b6294ba2095410bd", HEX_RADIX);
-    private final BigInteger VALID_SIGNATURE = new BigInteger("8410bda72455e45e770ea272b9599674732782ac19c98d507b057b25d759d653000c4667ffcb8a70ce9d71ae03d12b0b1946cb5b6c76b97f7528a353e49f1800", 16);
-    private final byte[] VALID_MESSAGE = HexFormat.of().parseHex("7918ca5dd6f89e139919b3ec52c2ea662fc1b8bfffb19df3d0cdc101d9437d525b48af31404e45d967f8c6b9bbb01fea71d7a9708946645913255bec69d83fc420eef6603c3b3aa333005ceeb07cd921538292dcc9f636dc1b91c9846908498af63fea");
+    private final BigInteger VALID_SIGNATURE = new BigInteger("f81ec975a9e0d24c480f1456104ca73c2d2785640f45266d03de6b1ef23d9c7edbc5904c4df55027393e3f25cf6a08e889fddd074b2c50e97f5962465e551c00", 16);
+    private final byte[] VALID_MESSAGE = HexFormat.of().parseHex("cb");
 
     private final String FILES_PATH = System.getProperty("user.dir") + "/src/test/java/files";
 
