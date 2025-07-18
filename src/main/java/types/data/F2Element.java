@@ -6,6 +6,9 @@ import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
 
 import constants.Params;
+import utils.StringUtils;
+
+import static utils.StringUtils.buildString;
 
 
 /**
@@ -73,6 +76,12 @@ public class F2Element {
 
     @Override
     public String toString() {
-        return "0x" + real.toString(Params.HEX_RADIX) + " + 0x" + im.toString(Params.HEX_RADIX) + "i";
+        return buildString(sb -> {
+            sb.append("0x");
+            sb.append(real.toString(Params.HEX_RADIX));
+            sb.append(" + 0x");
+            sb.append(im.toString(Params.HEX_RADIX));
+            sb.append("i");
+        });
     }
 }

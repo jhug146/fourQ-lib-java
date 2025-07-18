@@ -5,6 +5,8 @@ import constants.Params;
 import fieldoperations.FP2;
 import types.data.F2Element;
 
+import static utils.StringUtils.buildString;
+
 import java.math.BigInteger;
 
 public class PreComputedExtendedPoint implements TablePoint {
@@ -64,6 +66,16 @@ public class PreComputedExtendedPoint implements TablePoint {
     @Override
     @NotNull
     public String toString() {
-        return "(xy = " + xy + ", yx = " + yx + ", z = " + z + ", t = " + t + ")";
+        return buildString(sb -> {
+            sb.append("(xy = ");
+            sb.append(xy);
+            sb.append(", yx = ");
+            sb.append(yx);
+            sb.append(", z = ");
+            sb.append(z);
+            sb.append(", t = ");
+            sb.append(t);
+            sb.append(")");
+        });
     }
 }

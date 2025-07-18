@@ -4,6 +4,8 @@ import org.jetbrains.annotations.NotNull;
 
 import types.data.F2Element;
 
+import static utils.StringUtils.buildString;
+
 
 public class ExtendedPoint implements Point {
     @NotNull private F2Element x;
@@ -65,6 +67,18 @@ public class ExtendedPoint implements Point {
     @Override
     @NotNull
     public String toString() {
-        return "(" + x + ", " + y + ", " + z + ", " + ta + ", " + tb + ")";
+        return buildString(sb -> {
+            sb.append("(");
+            sb.append(x);
+            sb.append(", ");
+            sb.append(y);
+            sb.append(", ");
+            sb.append(z);
+            sb.append(", ");
+            sb.append(ta);
+            sb.append(", ");
+            sb.append(tb);
+            sb.append(")");
+        });
     }
 }

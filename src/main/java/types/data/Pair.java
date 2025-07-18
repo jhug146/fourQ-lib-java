@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import org.jetbrains.annotations.NotNull;
+
+import static utils.StringUtils.buildString;
 import org.jetbrains.annotations.Nullable;
 
 
@@ -67,7 +69,13 @@ public class Pair<T, S> implements Serializable, Cloneable {
     @Override
     @NotNull
     public String toString() {
-        return "(" + first + ", " + second + ")";
+        return buildString(sb -> {
+            sb.append("(");
+            sb.append(first);
+            sb.append(", ");
+            sb.append(second);
+            sb.append(")");
+        });
     }
     
     @Override

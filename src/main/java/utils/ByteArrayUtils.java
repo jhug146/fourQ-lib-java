@@ -19,7 +19,6 @@ public class ByteArrayUtils {
         for (int i = 0; i < src.length; i++) rev[i] = src[src.length - 1 - i];
 
         if (mode.isEmpty() || mode.get() == KEEP_LEADING_ZERO) return rev;
-        
         return switch (mode.get()) {
             case ByteArrayReverseMode m when m == REMOVE_LEADING_ZERO && rev[0] == 0 ->
                 Arrays.copyOfRange(rev, 1, rev.length);

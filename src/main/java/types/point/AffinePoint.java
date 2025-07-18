@@ -6,6 +6,8 @@ import org.jetbrains.annotations.NotNull;
 
 import types.data.F2Element;
 
+import static utils.StringUtils.buildString;
+
 
 public class AffinePoint implements TablePoint {
     @NotNull private F2Element x;
@@ -78,6 +80,14 @@ public class AffinePoint implements TablePoint {
     @Override
     @NotNull
     public String toString() {
-        return "(" + x + ", " + y + ", " + t + ")";
+        return buildString(sb -> {
+            sb.append("(");
+            sb.append(x);
+            sb.append(", ");
+            sb.append(y);
+            sb.append(", ");
+            sb.append(t);
+            sb.append(")");
+        });
     }
 }
