@@ -47,7 +47,16 @@ import static utils.ByteArrayUtils.reverseByteArray;
  * @since 1.0
  */
 public class SchnorrQ {
-    private static final HashFunction hashFunction = new SHA512();
+    private final HashFunction hashFunction;
+
+    public SchnorrQ() {
+        hashFunction = new SHA512();
+    }
+
+    public SchnorrQ(HashFunction _hash) {
+        hashFunction = _hash;
+    }
+
     /**
      * Generates a public key from the given private key using the FourQ curve.
      * <p>
@@ -62,7 +71,7 @@ public class SchnorrQ {
      * @throws IllegalArgumentException if secretKey is null
      */
     @NotNull
-    public static BigInteger schnorrQKeyGeneration(@NotNull BigInteger secretKey) throws EncryptionException {
+    public BigInteger schnorrQKeyGeneration(@NotNull BigInteger secretKey) throws EncryptionException {
         BigInteger hash = new BigInteger(1, hashFunction.computeHash(secretKey, true));
         final FieldPoint point = ECC.eccMulFixed(hash);
         return CryptoUtils.encode(point);
@@ -79,7 +88,7 @@ public class SchnorrQ {
      * @throws EncryptionException if key generation fails due to cryptographic errors
      */
     @NotNull
-    public static Pair<BigInteger, BigInteger> schnorrQFullKeyGeneration() throws EncryptionException {
+    public Pair<BigInteger, BigInteger> schnorrQFullKeyGeneration() throws EncryptionException {
         final BigInteger secretKey = CryptoUtils.randomBytes(Key.KEY_SIZE);
         final BigInteger publicKey = schnorrQKeyGeneration(secretKey);
         return new Pair<>(secretKey, publicKey);
@@ -102,7 +111,7 @@ public class SchnorrQ {
      * @throws EncryptionException if signing fails due to cryptographic errors
      * @throws IllegalArgumentException if secretKey or publicKey is null
      */
-    public static BigInteger schnorrQSign(
+    public BigInteger schnorrQSign(
             @NotNull BigInteger secretKey,
             @NotNull BigInteger publicKey,
             byte[] message
@@ -161,7 +170,7 @@ public class SchnorrQ {
      * @throws InvalidArgumentException if inputs fail validation checks
      * @throws IllegalArgumentException if publicKey or signature is null
      */
-    public static boolean schnorrQVerify(
+    public boolean schnorrQVerify(
             @NotNull BigInteger publicKey,
             @NotNull BigInteger signature,
             byte @NotNull [] message

@@ -7,16 +7,15 @@ import java.util.HexFormat;
 import java.util.Optional;
 import java.util.Random;
 
-import org.junit.jupiter.api.Test;
-
-import api.SchnorrQ;
 import exceptions.ValidationException;
 import exceptions.EncryptionException;
 import exceptions.InvalidArgumentException;
 import utils.ByteArrayUtils;
 import types.data.Pair;
+import api.SchnorrQ;
 
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static utils.ByteArrayReverseMode.REMOVE_LEADING_ZERO;
@@ -30,10 +29,11 @@ public class SchnorrQTests {
     private final byte[] VALID_MESSAGE = HexFormat.of().parseHex("cb");
 
     private final String FILES_PATH = System.getProperty("user.dir") + "/src/test/java/testfiles";
+    private final SchnorrQ schnorrQ = new SchnorrQ();
 
     @Test
     void testValidSignature() throws EncryptionException {
-        boolean result = SchnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, VALID_SIGNATURE, VALID_MESSAGE);
+        boolean result = schnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, VALID_SIGNATURE, VALID_MESSAGE);
         assertTrue(result, "Valid signature should return true");
     }
 
@@ -41,7 +41,7 @@ public class SchnorrQTests {
     void testInvalidSignature() throws EncryptionException {
         BigInteger tamperedSignature = VALID_SIGNATURE.subtract(BigInteger.ONE);
         try {
-            boolean result = SchnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, tamperedSignature, VALID_MESSAGE);
+            boolean result = schnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, tamperedSignature, VALID_MESSAGE);
             assertFalse(result, "Invalid signature should return false");
         } catch (ValidationException e) {
             assertTrue(
@@ -54,84 +54,84 @@ public class SchnorrQTests {
     @Test
     void testInvalidMessage() throws EncryptionException {
         byte[] tamperedMessage =  ByteArrayUtils.reverseByteArray("The quick brown fox jumps".getBytes(UTF_8), Optional.of(REMOVE_LEADING_ZERO));
-        boolean result = SchnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, VALID_SIGNATURE, tamperedMessage);
+        boolean result = schnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, VALID_SIGNATURE, tamperedMessage);
         assertFalse(result, "Signature should be invalid for altered message");
     }
 
     @Test
     void testInvalidPublicKey() throws EncryptionException {
         BigInteger tamperedKey = VALID_PUBLIC_KEY.add(BigInteger.TEN);
-        boolean result = SchnorrQ.schnorrQVerify(tamperedKey, VALID_SIGNATURE, VALID_MESSAGE);
+        boolean result = schnorrQ.schnorrQVerify(tamperedKey, VALID_SIGNATURE, VALID_MESSAGE);
         assertFalse(result, "Signature should be invalid for wrong public key");
     }
 
     @Test
     void testEmptyMessage() throws EncryptionException {
         byte[] emptyMessage = new byte[0];
-        boolean result = SchnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, VALID_SIGNATURE, emptyMessage);
+        boolean result = schnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, VALID_SIGNATURE, emptyMessage);
         assertFalse(result, "Empty message should not produce valid signature");
     }
 
     @Test
     void testCorruptedSignatureFormat() {
         BigInteger malformedSignature = new BigInteger("-1");  // Possibly invalid
-        assertThrows(EncryptionException.class, () -> SchnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, malformedSignature, VALID_MESSAGE));
+        assertThrows(EncryptionException.class, () -> schnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, malformedSignature, VALID_MESSAGE));
     }
 
     @Test
     void testPublicKey128BitSet() {
         BigInteger keyWithMSB = BigInteger.ONE.shiftLeft(135);  // MSB set
         assertThrows(ValidationException.class, () ->
-                SchnorrQ.schnorrQVerify(keyWithMSB, VALID_SIGNATURE, VALID_MESSAGE)
+                schnorrQ.schnorrQVerify(keyWithMSB, VALID_SIGNATURE, VALID_MESSAGE)
         );
     }
 
     @Test
     void testSignatureHighBitSet() {
         BigInteger sigWithMSB = BigInteger.ONE.shiftLeft(391);
-        assertThrows(InvalidArgumentException.class, () -> SchnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, sigWithMSB, VALID_MESSAGE));
+        assertThrows(InvalidArgumentException.class, () -> schnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, sigWithMSB, VALID_MESSAGE));
     }
 
     @Test
     void testSignatureTrailingBytesInvalid() {
         BigInteger badSig = BigInteger.ONE;
-        assertThrows(InvalidArgumentException.class, () -> SchnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, badSig, VALID_MESSAGE));
+        assertThrows(InvalidArgumentException.class, () -> schnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, badSig, VALID_MESSAGE));
     }
 
     @Test
     void testPublicKeyNotOnCurve() throws EncryptionException {
         BigInteger fakeKey = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16); // clearly invalid
-        assertFalse(SchnorrQ.schnorrQVerify(fakeKey, VALID_SIGNATURE, VALID_MESSAGE));
+        assertFalse(schnorrQ.schnorrQVerify(fakeKey, VALID_SIGNATURE, VALID_MESSAGE));
     }
 
     @Test
     void testVeryLargeMessage() throws Exception {
         byte[] largeMessage = new byte[10_000_000];  // 10 MB
         new java.util.Random().nextBytes(largeMessage);
-        boolean result = SchnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, VALID_SIGNATURE, ByteArrayUtils.reverseByteArray(largeMessage, Optional.of(REMOVE_LEADING_ZERO)));
+        boolean result = schnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, VALID_SIGNATURE, ByteArrayUtils.reverseByteArray(largeMessage, Optional.of(REMOVE_LEADING_ZERO)));
         assertFalse(result);  // Likely fails if signature isn't valid for this message
     }
 
     @Test
     void testValidSignatureRoundTrip() throws Exception {
         BigInteger sk = VALID_PRIVATE_KEY;
-        BigInteger pk = SchnorrQ.schnorrQKeyGeneration(sk);
-        byte[] msg = ByteArrayUtils.reverseByteArray("api.SchnorrQ test message".getBytes(), Optional.of(REMOVE_LEADING_ZERO));
+        BigInteger pk = schnorrQ.schnorrQKeyGeneration(sk);
+        byte[] msg = ByteArrayUtils.reverseByteArray("api.schnorrQ test message".getBytes(), Optional.of(REMOVE_LEADING_ZERO));
 
-        BigInteger sig = SchnorrQ.schnorrQSign(sk, pk, msg);
-        assertTrue(SchnorrQ.schnorrQVerify(pk, sig, msg));
+        BigInteger sig = schnorrQ.schnorrQSign(sk, pk, msg);
+        assertTrue(schnorrQ.schnorrQVerify(pk, sig, msg));
     }
 
     @Test
     void testSignatureChangesWithMessage() throws Exception {
         BigInteger sk = VALID_PRIVATE_KEY;
-        BigInteger pk = SchnorrQ.schnorrQKeyGeneration(sk);
+        BigInteger pk = schnorrQ.schnorrQKeyGeneration(sk);
 
         byte[] msg1 = ByteArrayUtils.reverseByteArray("Message1".getBytes(), Optional.of(REMOVE_LEADING_ZERO));
         byte[] msg2 = ByteArrayUtils.reverseByteArray("Message2".getBytes(), Optional.of(REMOVE_LEADING_ZERO));
 
-        BigInteger sig1 = SchnorrQ.schnorrQSign(sk, pk, msg1);
-        BigInteger sig2 = SchnorrQ.schnorrQSign(sk, pk, msg2);
+        BigInteger sig1 = schnorrQ.schnorrQSign(sk, pk, msg1);
+        BigInteger sig2 = schnorrQ.schnorrQSign(sk, pk, msg2);
 
         assertNotEquals(sig1, sig2, "Signatures for different messages should not match");
     }
@@ -139,40 +139,40 @@ public class SchnorrQTests {
     @Test
     void testTamperedMessageFailsVerification() throws Exception {
         BigInteger sk = VALID_PRIVATE_KEY;
-        BigInteger pk = SchnorrQ.schnorrQKeyGeneration(sk);
+        BigInteger pk = schnorrQ.schnorrQKeyGeneration(sk);
         byte[] msg =  ByteArrayUtils.reverseByteArray("Original".getBytes(), Optional.of(REMOVE_LEADING_ZERO));
 
-        BigInteger sig = SchnorrQ.schnorrQSign(sk, pk, msg);
+        BigInteger sig = schnorrQ.schnorrQSign(sk, pk, msg);
 
         byte[] tampered =  ByteArrayUtils.reverseByteArray("OriginalX".getBytes(), Optional.of(REMOVE_LEADING_ZERO));  // Tampered
-        assertFalse(SchnorrQ.schnorrQVerify(pk, sig, tampered));
+        assertFalse(schnorrQ.schnorrQVerify(pk, sig, tampered));
     }
 
     @Test
     void testLongMessage() throws Exception {
         BigInteger sk = VALID_PRIVATE_KEY;
-        BigInteger pk = SchnorrQ.schnorrQKeyGeneration(sk);
+        BigInteger pk = schnorrQ.schnorrQKeyGeneration(sk);
 
         byte[] longMsg = new byte[10_000_000];
         new Random(12345L).nextBytes(longMsg);
 
-        BigInteger sig = SchnorrQ.schnorrQSign(sk, pk, longMsg);
-        assertTrue(SchnorrQ.schnorrQVerify(pk, sig, longMsg));
+        BigInteger sig = schnorrQ.schnorrQSign(sk, pk, longMsg);
+        assertTrue(schnorrQ.schnorrQVerify(pk, sig, longMsg));
     }
 
     // Extra important tests comparing results to the C code
     @Test
     void testPublicKeyGeneration() throws EncryptionException {
-        BigInteger publicKey = SchnorrQ.schnorrQKeyGeneration(VALID_PRIVATE_KEY);
+        BigInteger publicKey = schnorrQ.schnorrQKeyGeneration(VALID_PRIVATE_KEY);
         assertEquals(publicKey, VALID_PUBLIC_KEY);
     }
 
     @Test
     void testPairGeneration() throws EncryptionException {
-        Pair<BigInteger, BigInteger> keys = SchnorrQ.schnorrQFullKeyGeneration();
+        Pair<BigInteger, BigInteger> keys = schnorrQ.schnorrQFullKeyGeneration();
         BigInteger secretKey = keys.first;
         BigInteger publicKey = keys.second;
-        BigInteger genPublicKey = SchnorrQ.schnorrQKeyGeneration(secretKey);
+        BigInteger genPublicKey = schnorrQ.schnorrQKeyGeneration(secretKey);
         assertEquals(genPublicKey, publicKey);
     }
 
@@ -183,13 +183,13 @@ public class SchnorrQTests {
 
     @Test
     void testSign() throws EncryptionException {
-        BigInteger signature = SchnorrQ.schnorrQSign(VALID_PRIVATE_KEY, VALID_PUBLIC_KEY, VALID_MESSAGE);
+        BigInteger signature = schnorrQ.schnorrQSign(VALID_PRIVATE_KEY, VALID_PUBLIC_KEY, VALID_MESSAGE);
         assertEquals(signature, VALID_SIGNATURE);
     }
 
     @Test
     void testVerify() throws EncryptionException {
-        assertTrue(SchnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, VALID_SIGNATURE, VALID_MESSAGE));
+        assertTrue(schnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, VALID_SIGNATURE, VALID_MESSAGE));
     }
 
     // Takes 3-5 minutes to run sometimes beware
@@ -210,7 +210,7 @@ public class SchnorrQTests {
                 break;
             }
             BigInteger correctPublicKey = new BigInteger(line.substring(14), 16);
-            BigInteger testPublicKey = SchnorrQ.schnorrQKeyGeneration(secretKey);
+            BigInteger testPublicKey = schnorrQ.schnorrQKeyGeneration(secretKey);
             assertEquals(correctPublicKey, testPublicKey);
         }
     }
@@ -219,7 +219,7 @@ public class SchnorrQTests {
     void testBrokenKey() throws EncryptionException {
         BigInteger pubKey = new BigInteger("507edd7fe7d21958f270a5f893260600a22485badcd9b1a7433678fd946c2ee4", 16);
         BigInteger secretKey = new BigInteger("375c79e3c979f6354f60018064ed8ea6bb26c6be7f712d4d814ba80942ecf3c2", 16);
-        BigInteger genPubKey = SchnorrQ.schnorrQKeyGeneration(secretKey);
+        BigInteger genPubKey = schnorrQ.schnorrQKeyGeneration(secretKey);
         assertEquals(pubKey, genPubKey);
     }
 
@@ -230,7 +230,7 @@ public class SchnorrQTests {
         BigInteger correctSignature = new BigInteger("132bf1f7a96c8e5a94202ceeb289ff5c47690bd27a95a5bb7bec35c0c9fcaba8e58c77c6792513d64eb93b42575752b6633e1db6ad86b62e0a53831bd40d0900", 16);
         byte[] message = HexFormat.of().parseHex("f9817e");
 
-        BigInteger genSignature = SchnorrQ.schnorrQSign(secretKey, pubKey, message);
+        BigInteger genSignature = schnorrQ.schnorrQSign(secretKey, pubKey, message);
         var a = correctSignature.equals(genSignature);
         if (!a) {
             System.out.println();
@@ -254,7 +254,7 @@ public class SchnorrQTests {
             BigInteger publicKey = new BigInteger(bufRead.readLine().substring(14), 16);
             byte[] message = HexFormat.of().parseHex(bufRead.readLine().substring(11));
             BigInteger correctSignature = new BigInteger(bufRead.readLine().substring(13), 16);
-            BigInteger genSignature = SchnorrQ.schnorrQSign(secretKey, publicKey, message);
+            BigInteger genSignature = schnorrQ.schnorrQSign(secretKey, publicKey, message);
             assertEquals(correctSignature, genSignature);
         }
     }
@@ -273,7 +273,7 @@ public class SchnorrQTests {
             byte[] message = HexFormat.of().parseHex(bufRead.readLine().substring(11));
             BigInteger signature = new BigInteger(bufRead.readLine().substring(13), 16);
 
-            boolean res = SchnorrQ.schnorrQVerify(publicKey, signature, message);
+            boolean res = schnorrQ.schnorrQVerify(publicKey, signature, message);
             assertTrue(res);
         }
     }
@@ -291,7 +291,7 @@ public class SchnorrQTests {
             byte[] message = HexFormat.of().parseHex(bufRead.readLine().substring(11));
             BigInteger signature = new BigInteger(bufRead.readLine().substring(13), 16);
             try {
-                assertFalse(SchnorrQ.schnorrQVerify(publicKey, signature, message));
+                assertFalse(schnorrQ.schnorrQVerify(publicKey, signature, message));
             } catch (ValidationException e) {
                 // These errors should be thrown for invalid signatures
                 assertTrue(
@@ -315,7 +315,7 @@ public class SchnorrQTests {
             byte[] message = HexFormat.of().parseHex(bufRead.readLine().substring(11));
             BigInteger signature = new BigInteger(bufRead.readLine().substring(13), 16);
             try {
-                assertFalse(SchnorrQ.schnorrQVerify(publicKey, signature, message));
+                assertFalse(schnorrQ.schnorrQVerify(publicKey, signature, message));
             } catch (ValidationException e) {
                 // These errors should be thrown for invalid public keys
                 assertTrue(
@@ -338,7 +338,7 @@ public class SchnorrQTests {
             BigInteger publicKey = new BigInteger(bufRead.readLine().substring(14), 16);
             byte[] message = ByteArrayUtils.reverseByteArray(HexFormat.of().parseHex(bufRead.readLine().substring(11)), Optional.of(REMOVE_LEADING_ZERO));
             BigInteger signature = new BigInteger(bufRead.readLine().substring(13), 16);
-            assertFalse(SchnorrQ.schnorrQVerify(publicKey, signature, message));
+            assertFalse(schnorrQ.schnorrQVerify(publicKey, signature, message));
         }
     }
 }
