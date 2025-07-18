@@ -48,8 +48,10 @@ public class F2Element {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof F2Element f2Element)) return false;
-        return this.real.equals(f2Element.real) && this.im.equals(f2Element.im);
+        return switch (o) {
+            case F2Element f2Element -> this.real.equals(f2Element.real) && this.im.equals(f2Element.im);
+            case null, default -> false;
+        };
     }
 
     @Override

@@ -52,7 +52,7 @@ public class Kangaroo12 implements HashFunction {
             
             // Initialize with personalization parameters
             Kangaroo.KangarooParameters params = new Kangaroo.KangarooParameters.Builder()
-                .setPersonalisation(FOURQ_PERSONALIZATION)
+                .setPersonalisation(FOURQ_PERSONALIZATION) // TODO this is optional
                 .build();
             digest.init(params);
             
@@ -64,9 +64,7 @@ public class Kangaroo12 implements HashFunction {
             digest.doFinal(result, 0);
             
             // Apply byte reversal if requested
-            if (reverse) {
-                return ByteArrayUtils.reverseByteArray(result, Optional.of(REMOVE_LEADING_ZERO));
-            }
+            if (reverse) return ByteArrayUtils.reverseByteArray(result, Optional.of(REMOVE_LEADING_ZERO));
             
             return result;
         } catch (Exception e) {

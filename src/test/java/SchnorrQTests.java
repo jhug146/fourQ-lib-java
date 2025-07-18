@@ -22,8 +22,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static utils.ByteArrayReverseMode.REMOVE_LEADING_ZERO;
 
 
-
-
 public class SchnorrQTests {
     private final int HEX_RADIX = 16;
     private final BigInteger VALID_PUBLIC_KEY = new BigInteger("41ae5f6d8fcf295b2b67a57b97fe58674818fa17b04844f697f58099dd08856f", HEX_RADIX);

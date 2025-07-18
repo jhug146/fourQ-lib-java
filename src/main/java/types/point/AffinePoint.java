@@ -32,8 +32,10 @@ public class AffinePoint implements TablePoint {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof AffinePoint that)) return false;
-        return this.x.equals(that.x) && this.y.equals(that.y);
+        return switch (o) {
+            case AffinePoint that -> this.x.equals(that.x) && this.y.equals(that.y);
+            case null, default -> false;
+        };
     }
 
     @Override

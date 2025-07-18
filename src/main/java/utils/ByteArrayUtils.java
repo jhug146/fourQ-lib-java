@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.Optional;
 
-import static utils.ByteArrayReverseMode.KEEP_LEADING_ZERO;
+import static utils.ByteArrayReverseMode.*;
 
 public class ByteArrayUtils {
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
@@ -19,25 +19,20 @@ public class ByteArrayUtils {
         for (int i = 0; i < src.length; i++) rev[i] = src[src.length - 1 - i];
 
         if (mode.isEmpty() || mode.get() == KEEP_LEADING_ZERO) return rev;
-        switch (mode.get()) {
-            case REMOVE_LEADING_ZERO -> {
-                if (rev[0] == 0) rev = Arrays.copyOfRange(rev, 1, rev.length);
-            }
-            case REMOVE_TRAILING_ZERO -> {
-                if (rev[rev.length - 1] == 0) {
-                    rev = Arrays.copyOfRange(rev, 0, rev.length - 1);
-                }
-            }
-            case KEEP_LEADING_PADDING -> {
+        
+        return switch (mode.get()) {
+            case ByteArrayReverseMode m when m == REMOVE_LEADING_ZERO && rev[0] == 0 ->
+                Arrays.copyOfRange(rev, 1, rev.length);
+            case ByteArrayReverseMode m when m == REMOVE_TRAILING_ZERO && rev[rev.length - 1] == 0 ->
+                Arrays.copyOfRange(rev, 0, rev.length - 1);
+            case ByteArrayReverseMode m when m == KEEP_LEADING_PADDING && leadingZeroes(src) > 0 -> {
                 final int leadingZeros = leadingZeroes(src);
-                if (leadingZeros > 0) {
-                    byte[] padded = new byte[rev.length];
-                    copyByteArrayToByteArray(rev, 0, padded, leadingZeros, rev.length - leadingZeros);
-                    rev = padded;
-                }
+                byte[] padded = new byte[rev.length];
+                copyByteArrayToByteArray(rev, 0, padded, leadingZeros, rev.length - leadingZeros);
+                yield padded;
             }
-        }
-        return rev;
+            default -> rev;
+        };
     }
 
     private static int leadingZeroes(byte[] a) {
