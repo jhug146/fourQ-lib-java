@@ -11,7 +11,7 @@ A library that implements the high-security, high-performance elliptic curve fou
 Add the following dependency to your `build.gradle` file:
 
 ```gradle
-implementation("com.namanmalhotra:fourQ:1.0.0")
+implementation("com.namanmalhotra:fourQ:1.0.1")
 ```
 
 ## Maven
@@ -83,3 +83,7 @@ try {
     System.err.println("Error verifying signature: " + e.getMessage());
 }
 ```
+
+### Test Project
+For more reference on implementation and use cases refer to the following [project](https://github.com/malhotranaman/FourQDependencyTest.git).
+Noting however that this assumes version 1.0.1, but subsequent versions maintain parity.
