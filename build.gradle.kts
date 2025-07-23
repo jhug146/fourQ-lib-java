@@ -11,6 +11,7 @@ repositories {
 }
 
 // This publishing can only occur if the local gradle.properties includes the correct secrets.
+// NB: Publish with ./gradlew publishToMavenCentral --no-configuration-cache
 mavenPublishing {
     publishToMavenCentral()
     signAllPublications()
