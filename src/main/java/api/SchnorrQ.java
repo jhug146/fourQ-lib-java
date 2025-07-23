@@ -4,8 +4,6 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Optional;
 
-import org.jetbrains.annotations.NotNull;
-
 import crypto.primitives.HashFunction;
 import crypto.core.ECC;
 import crypto.primitives.SHA512;
@@ -70,8 +68,8 @@ public class SchnorrQ {
      * @throws EncryptionException if the cryptographic operations fail
      * @throws IllegalArgumentException if secretKey is null
      */
-    @NotNull
-    public BigInteger schnorrQKeyGeneration(@NotNull BigInteger secretKey) throws EncryptionException {
+    public BigInteger schnorrQKeyGeneration(BigInteger secretKey) throws EncryptionException {
+        if (secretKey == null) { throw new InvalidArgumentException("Secret key cannot be null."); }
         BigInteger hash = new BigInteger(1, hashFunction.computeHash(secretKey, true));
         final FieldPoint point = ECC.eccMulFixed(hash);
         return CryptoUtils.encode(point);
@@ -87,7 +85,6 @@ public class SchnorrQ {
      * @return a Pair containing (privateKey, publicKey) as BigInteger values
      * @throws EncryptionException if key generation fails due to cryptographic errors
      */
-    @NotNull
     public Pair<BigInteger, BigInteger> schnorrQFullKeyGeneration() throws EncryptionException {
         final BigInteger secretKey = CryptoUtils.randomBytes(Key.KEY_SIZE);
         final BigInteger publicKey = schnorrQKeyGeneration(secretKey);
@@ -112,10 +109,12 @@ public class SchnorrQ {
      * @throws IllegalArgumentException if secretKey or publicKey is null
      */
     public BigInteger schnorrQSign(
-            @NotNull BigInteger secretKey,
-            @NotNull BigInteger publicKey,
+            BigInteger secretKey,
+            BigInteger publicKey,
             byte[] message
     ) throws EncryptionException {
+        if (secretKey == null) { throw new InvalidArgumentException("Secret key cannot be null."); }
+        if (publicKey == null) { throw new InvalidArgumentException("Public key cannot be null."); }
         final byte[] kHash = hashFunction.computeHash(secretKey, false);
         final byte[] bytes = schnorrCreateBuffer(message);
 
@@ -171,9 +170,9 @@ public class SchnorrQ {
      * @throws IllegalArgumentException if publicKey or signature is null
      */
     public boolean schnorrQVerify(
-            @NotNull BigInteger publicKey,
-            @NotNull BigInteger signature,
-            byte @NotNull [] message
+            BigInteger publicKey,
+            BigInteger signature,
+            byte[] message
     ) throws EncryptionException {
         validateVerifyInputs(publicKey, signature);
 
@@ -195,7 +194,9 @@ public class SchnorrQ {
 
     private static void validateVerifyInputs(BigInteger publicKey, BigInteger signature) throws InvalidArgumentException {
         // Security check: ensure specific bit is zero for both inputs
-        if (publicKey.testBit(Key.PUB_TEST_BIT)) publicKeyError();
+        if (signature == null) { throw new InvalidArgumentException("Signature cannot be null."); }
+        else if (publicKey == null) { throw new InvalidArgumentException("Public key cannot be null."); }
+        else if (publicKey.testBit(Key.PUB_TEST_BIT)) publicKeyError();
         else if (signature.testBit(Key.SIG_TEST_BIT)) signatureError();
         else if (isSignatureSizeTooLarge(signature)) signatureSizeError();
     }

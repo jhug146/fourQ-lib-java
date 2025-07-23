@@ -5,8 +5,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
-import org.jetbrains.annotations.NotNull;
-
 import utils.BigIntegerUtils;
 import utils.ByteArrayUtils;
 import exceptions.EncryptionException;
@@ -36,7 +34,7 @@ public class SHA512 implements HashFunction {
      * @throws EncryptionException if the hash algorithm is not available
      */
     @Override
-    public byte[] computeHash(@NotNull BigInteger input, boolean reverse) throws EncryptionException {
+    public byte[] computeHash(BigInteger input, boolean reverse) throws EncryptionException {
         return computeHash(BigIntegerUtils.bigIntegerToByte(input, Key.KEY_SIZE,false), reverse);
     }
 
@@ -52,7 +50,7 @@ public class SHA512 implements HashFunction {
      * @throws EncryptionException if the hash algorithm is not available
      */
     @Override
-    public byte[] computeHash(byte @NotNull [] bytes, boolean reverse) throws EncryptionException {
+    public byte[] computeHash(byte[] bytes, boolean reverse) throws EncryptionException {
         final String ENCRYPTION_STANDARD = "SHA-512";
         try {
             MessageDigest digest = MessageDigest.getInstance(ENCRYPTION_STANDARD);

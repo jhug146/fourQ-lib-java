@@ -4,7 +4,6 @@ import constants.Params;
 import crypto.primitives.Table;
 import exceptions.EncryptionException;
 import fieldoperations.FP;
-import org.jetbrains.annotations.NotNull;
 import types.data.F2Element;
 import types.point.AffinePoint;
 import types.point.ExtendedPoint;
@@ -19,13 +18,13 @@ import static fieldoperations.FP2.*;
 
 /**
  * Core elliptic curve cryptography operations for the FourQ curve.
- * 
+ * <p>
  * This class implements the fundamental ECC operations including:
  * - Point arithmetic (addition, doubling, multiplication)
  * - Fixed-base and variable-base scalar multiplication
  * - Point validation and normalization
  * - Precomputation table generation
- * 
+ * <p>
  * FourQ uses extended twisted Edwards coordinates for efficient point arithmetic
  * and employs advanced techniques like 4-dimensional GLV decomposition and
  * precomputed tables for high-performance scalar multiplications.
@@ -36,7 +35,7 @@ import static fieldoperations.FP2.*;
 public class ECC {
     /**
      * Returns the generator point of the FourQ elliptic curve.
-     * 
+     * <p>
      * The generator point is a fixed point of prime order that generates
      * the cryptographic subgroup used for all scalar multiplications.
      * 
@@ -48,7 +47,7 @@ public class ECC {
 
     /**
      * Performs fixed-base scalar multiplication k*G where G is the generator.
-     * 
+     * <p>
      * This method is optimized for multiplication with the fixed generator point
      * using precomputed tables and advanced windowing techniques for maximum
      * performance in key generation and signing operations.
@@ -57,14 +56,13 @@ public class ECC {
      * @return the point k*G in affine coordinates
      * @throws EncryptionException if the scalar multiplication fails
      */
-    @NotNull
-    public static FieldPoint eccMulFixed(@NotNull BigInteger val) throws EncryptionException {
+    public static FieldPoint eccMulFixed(BigInteger val) throws EncryptionException {
         return ECC.eccMul(ECC.getGeneratorPoint(), val,false);
     }
 
     /**
      * Performs variable-base scalar multiplication k*P for arbitrary point P.
-     * 
+     * <p>
      * This method implements the sliding window method with precomputed odd multiples
      * for efficient scalar multiplication with arbitrary base points. Optionally
      * performs cofactor clearing for points that may not be in the prime subgroup.
@@ -75,10 +73,9 @@ public class ECC {
      * @return the point k*P in affine coordinates
      * @throws EncryptionException if point validation fails or multiplication errors occur
      */
-    @NotNull
     public static FieldPoint eccMul(
-            @NotNull FieldPoint p,
-            @NotNull BigInteger k,
+            FieldPoint p,
+            BigInteger k,
             boolean clearCofactor
     ) throws EncryptionException {
         int[] signMasks = new int[T_VARBASE + 1];
@@ -128,7 +125,7 @@ public class ECC {
 
     /**
      * Point doubling operation: computes 2P for point P.
-     * 
+     * <p>
      * Uses the fastest known doubling formulas for twisted Edwards curves.
      * Input point P = (X₁:Y₁:Z₁:Ta:Tb) where T₁ = Ta×Tb corresponds to
      * (X₁:Y₁:Z₁:T₁) in extended twisted Edwards coordinates.
@@ -136,8 +133,7 @@ public class ECC {
      * @param p the input point P in extended coordinates
      * @return the point 2P in extended coordinates
      */
-    @NotNull
-    public static ExtendedPoint eccDouble(@NotNull ExtendedPoint p) {
+    public static ExtendedPoint eccDouble(ExtendedPoint p) {
         F2Element t1 = fp2Sqr1271(p.getX());                 // t1 = X1^2
         F2Element t2 = fp2Sqr1271(p.getY());                 // t2 = Y1^2
         F2Element t3 = fp2Add1271(p.getX(), p.getY());       // t3 = X1+Y1
@@ -155,7 +151,7 @@ public class ECC {
 
     /**
      * Normalizes a point from extended projective coordinates to affine coordinates.
-     * 
+     * <p>
      * Converts a point (X:Y:Z:T) in extended twisted Edwards coordinates to
      * affine coordinates (x,y) by computing x = X/Z and y = Y/Z. The resulting
      * coordinates are fully reduced modulo the field prime.
@@ -163,8 +159,7 @@ public class ECC {
      * @param p the point in extended projective coordinates
      * @return the same point in affine coordinates (x,y)
      */
-    @NotNull
-    public static FieldPoint eccNorm(@NotNull ExtendedPoint p) {
+    public static FieldPoint eccNorm(ExtendedPoint p) {
         final F2Element zInv = fp2Inv1271(p.getZ());
         final F2Element x = fp2Mul1271(p.getX(), zInv);
         final F2Element y = fp2Mul1271(p.getY(), zInv);
@@ -179,7 +174,7 @@ public class ECC {
 
     /**
      * Computes double scalar multiplication k*G + l*Q efficiently.
-     * 
+     * <p>
      * This method is optimized for signature verification where we need to compute
      * a linear combination of the generator G and another point Q. It's more
      * efficient than computing k*G and l*Q separately and then adding them.
@@ -190,11 +185,10 @@ public class ECC {
      * @return the point k*G + l*Q in affine coordinates
      * @throws EncryptionException if any scalar multiplication fails
      */
-    @NotNull
     public static FieldPoint eccMulDouble(
-            @NotNull BigInteger k,
-            @NotNull FieldPoint q,
-            @NotNull BigInteger l
+            BigInteger k,
+            FieldPoint q,
+            BigInteger l
     ) throws EncryptionException {
         // Step 1: Compute l*Q
         FieldPoint lQ = eccMul(q, l, false);
@@ -214,10 +208,9 @@ public class ECC {
         return eccNorm(result);
     }
 
-    @NotNull
     private static ExtendedPoint eccAddCore(
-            @NotNull PreComputedExtendedPoint p,
-            @NotNull PreComputedExtendedPoint q
+            PreComputedExtendedPoint p,
+            PreComputedExtendedPoint q
     ) {
         F2Element z = fp2Mul1271(p.getT(), q.getT());
         F2Element t1 = fp2Mul1271(p.getZ(), q.getZ());
@@ -236,10 +229,9 @@ public class ECC {
         );
     }
 
-    @NotNull
     static ExtendedPoint eccAdd(
-            @NotNull PreComputedExtendedPoint q,
-            @NotNull ExtendedPoint p
+            PreComputedExtendedPoint q,
+            ExtendedPoint p
     ) {
         return eccAddCore(q, Conversion.r1ToR3(p));
     }
@@ -251,7 +243,7 @@ public class ECC {
      *
      * @implNote this function does not run in constant time (input point P is assumed to be public)
      */
-    public static boolean eccPointValidate(@NotNull ExtendedPoint p) {
+    public static boolean eccPointValidate(ExtendedPoint p) {
         F2Element t1 = fp2Sqr1271(p.getY());                            // y^2
         F2Element t2 = fp2Sqr1271(p.getX());                            // x^2
         F2Element t3 = fp2Sub1271(t1, t2);                              // y^2 - x^2 = -x^2 + y^2
@@ -284,8 +276,7 @@ public class ECC {
      * @return table T containing N_POINTS_VARBASE points: P, 3P, 5P, ... , (2 * N_POINTS_VARBASE - 1)P. N_POINTS_VARBASE is fixed to 8 (see FourQ.h).
      *         Precomputed points use the representation (X+Y,Y-X,2Z,2dT) corresponding to (X:Y:Z:T) in extended twisted Edwards coordinates.
      */
-    @NotNull
-    public static PreComputedExtendedPoint[] eccPrecomp(@NotNull ExtendedPoint p) {
+    public static PreComputedExtendedPoint[] eccPrecomp(ExtendedPoint p) {
         // Initialize the output table
         PreComputedExtendedPoint[] t
                 = new PreComputedExtendedPoint[Params.N_POINTS_VARBASE.intValueExact()];

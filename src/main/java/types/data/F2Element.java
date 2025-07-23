@@ -3,10 +3,7 @@ package types.data;
 import java.math.BigInteger;
 import java.util.Objects;
 
-import org.jetbrains.annotations.NotNull;
-
 import constants.Params;
-import utils.StringUtils;
 
 import static utils.StringUtils.buildString;
 
@@ -66,7 +63,6 @@ public class F2Element {
      * Creates a duplicate of this quadratic field element.
      * @return a new F2Element with the same real and imaginary parts
      */
-    @NotNull
     public F2Element dup() {
         return new F2Element(
                 this.real,

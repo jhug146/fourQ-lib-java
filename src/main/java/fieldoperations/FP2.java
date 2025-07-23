@@ -2,8 +2,6 @@ package fieldoperations;
 
 import java.math.BigInteger;
 
-import org.jetbrains.annotations.NotNull;
-
 import types.data.F2Element;
 
 
@@ -17,7 +15,7 @@ import types.data.F2Element;
  * The FourQ curve is defined over this quadratic extension field,
  * allowing for more efficient curve operations compared to curves
  * over prime fields of similar security levels.
- * 
+ *
  * @author Naman Malhotra, James Hughff
  * @since 1.0
  */
@@ -26,18 +24,16 @@ public class FP2 {
      * Creates a copy of a GF(p^2) element.
      * <p>
      * Since BigInteger objects are immutable, this simply returns the input.
-     * 
+     *
      * @param a the element to copy
      * @return a copy of the input element
      */
-    @NotNull
-    public static F2Element fp2Copy1271(@NotNull F2Element a) {
+    public static F2Element fp2Copy1271(F2Element a) {
         return new F2Element(a.real, a.im);
     }
 
     // GF(p^2) negation, a = -a in GF((2^127-1)^2)
-    @NotNull
-    public static F2Element fp2Neg1271(@NotNull F2Element a) {
+    public static F2Element fp2Neg1271(F2Element a) {
         return new F2Element(FP.PUtil.fpNeg1271(a.real), FP.PUtil.fpNeg1271(a.im));
     }
 
@@ -47,12 +43,11 @@ public class FP2 {
      * For element a = a0 + a1*i, computes a^2 using the identity:
      * a^2 = (a0 + a1)(a0 - a1) + 2*a0*a1*i
      * This saves one multiplication compared to general multiplication.
-     * 
+     *
      * @param a the element to square
      * @return a^2 in GF(p^2)
      */
-    @NotNull
-    public static F2Element fp2Sqr1271(@NotNull F2Element a) {
+    public static F2Element fp2Sqr1271(F2Element a) {
         BigInteger t3 = FP.PUtil.fpMul1271(a.real, a.im);
         return new F2Element(
                 FP.PUtil.fpMul1271(
@@ -68,13 +63,12 @@ public class FP2 {
      * <p>
      * For elements a = a0 + a1*i and b = b0 + b1*i, computes:
      * c = a*b = (a0*b0 - a1*b1) + (a0*b1 + a1*b0)*i
-     * 
+     *
      * @param a first multiplicand
      * @param b second multiplicand
      * @return the product a*b in GF(p^2)
      */
-    @NotNull
-    public static F2Element fp2Mul1271(@NotNull F2Element a, @NotNull F2Element b) {
+    public static F2Element fp2Mul1271(F2Element a, F2Element b) {
         BigInteger t1 = FP.PUtil.fpMul1271(a.real, b.real);     // t1 = a0*b0
         BigInteger t2 = FP.PUtil.fpMul1271(a.im, b.im);         // t2 = a1*b1
         BigInteger t3 = FP.PUtil.fpAdd1271(a.real, a.im);       // t2 = a1*b1
@@ -90,8 +84,7 @@ public class FP2 {
     }
 
     // GF(p^2) addition, c = a+b in GF((2^127-1)^2)
-    @NotNull
-    public static F2Element fp2Add1271(@NotNull F2Element a, @NotNull F2Element b) {
+    public static F2Element fp2Add1271(F2Element a, F2Element b) {
         return new F2Element(
                 FP.PUtil.fpAdd1271(a.real, b.real),
                 FP.PUtil.fpAdd1271(a.im, b.im)
@@ -99,8 +92,7 @@ public class FP2 {
     }
 
     // GF(p^2) subtraction, c = a-b in GF((2^127-1)^2)
-    @NotNull
-    public static F2Element fp2Sub1271(@NotNull F2Element a, @NotNull F2Element b) {
+    public static F2Element fp2Sub1271(F2Element a, F2Element b) {
         return new F2Element(
                 FP.PUtil.fpSub1271(a.real, b.real),
                 FP.PUtil.fpSub1271(a.im, b.im)
@@ -108,8 +100,7 @@ public class FP2 {
     }
 
     // GF(p^2) addition followed by subtraction, c = 2a-b in GF((2^127-1)^2)
-    @NotNull
-    public static F2Element fp2AddSub1271(@NotNull F2Element a, @NotNull F2Element b) {
+    public static F2Element fp2AddSub1271(F2Element a, F2Element b) {
         a = fp2Add1271(a, a);
         return fp2Sub1271(a, b);
     }
@@ -120,12 +111,11 @@ public class FP2 {
      * For element a = a0 + a1*i, computes a^(-1) using the formula:
      * a^(-1) = (a0 - a1*i) / (a0^2 + a1^2)
      * where the division is performed in the base field GF(p).
-     * 
+     *
      * @param a the element to invert (must be non-zero)
      * @return the multiplicative inverse a^(-1)
      */
-    @NotNull
-    public static F2Element fp2Inv1271(@NotNull F2Element a) {
+    public static F2Element fp2Inv1271(F2Element a) {
         F2Element t1 = new F2Element(
                 FP.PUtil.fpSqr1271(a.real),                 // t1.first = a0^2
                 FP.PUtil.fpSqr1271(a.im)                    // t1.second = a1^2
@@ -140,8 +130,7 @@ public class FP2 {
     }
 
     // GF(p^2) division by two c = a/2 mod p
-    @NotNull
-    public static F2Element fp2Div1271(@NotNull F2Element a) {
+    public static F2Element fp2Div1271(F2Element a) {
         return new F2Element(
                 FP.PUtil.fpDiv1271(a.im),
                 FP.PUtil.fpDiv1271(a.real)

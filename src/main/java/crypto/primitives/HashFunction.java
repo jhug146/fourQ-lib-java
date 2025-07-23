@@ -2,8 +2,6 @@ package crypto.primitives;
 
 import java.math.BigInteger;
 
-import org.jetbrains.annotations.NotNull;
-
 import exceptions.EncryptionException;
 
 /**
@@ -40,7 +38,7 @@ public interface HashFunction {
      *                           invalid input or internal cryptographic errors
      * @throws IllegalArgumentException if input is null
      */
-    byte[] computeHash(@NotNull BigInteger input, boolean reverse) throws EncryptionException;
+    byte[] computeHash(BigInteger input, boolean reverse) throws EncryptionException;
 
     /**
      * Computes the cryptographic hash of a byte array input.
@@ -56,5 +54,5 @@ public interface HashFunction {
      *                           invalid input or internal cryptographic errors
      * @throws IllegalArgumentException if bytes is null
      */
-    byte[] computeHash(byte @NotNull [] bytes, boolean reverse) throws EncryptionException;
+    byte[] computeHash(byte[] bytes, boolean reverse) throws EncryptionException;
 }

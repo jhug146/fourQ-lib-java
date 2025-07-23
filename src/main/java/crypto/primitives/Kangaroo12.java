@@ -3,7 +3,6 @@ package crypto.primitives;
 import java.math.BigInteger;
 import java.util.Optional;
 
-import org.jetbrains.annotations.NotNull;
 import org.bouncycastle.crypto.digests.*;
 
 import utils.BigIntegerUtils;
@@ -40,19 +39,19 @@ public class Kangaroo12 implements HashFunction {
      * @throws EncryptionException if the hash computation fails
      */
     @Override
-    public byte[] computeHash(@NotNull BigInteger input, boolean reverse) throws EncryptionException {
+    public byte[] computeHash(BigInteger input, boolean reverse) throws EncryptionException {
         return computeHash(BigIntegerUtils.bigIntegerToByte(input, Key.KEY_SIZE, false), reverse);
     }
 
     @Override
-    public byte[] computeHash(byte @NotNull [] bytes, boolean reverse) throws EncryptionException {
+    public byte[] computeHash(byte[] bytes, boolean reverse) throws EncryptionException {
         try {
             // Create Kangaroo-12 digest with FourQ personalization
             Kangaroo.KangarooTwelve digest = new Kangaroo.KangarooTwelve();
             
             // Initialize with personalization parameters
             Kangaroo.KangarooParameters params = new Kangaroo.KangarooParameters.Builder()
-                .setPersonalisation(FOURQ_PERSONALIZATION) // TODO this is optional
+                .setPersonalisation(FOURQ_PERSONALIZATION) // this is optional
                 .build();
             digest.init(params);
             

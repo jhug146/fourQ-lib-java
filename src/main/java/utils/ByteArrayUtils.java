@@ -1,6 +1,5 @@
 package utils;
 
-import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -9,8 +8,8 @@ import static utils.ByteArrayReverseMode.*;
 public class ByteArrayUtils {
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public static byte[] reverseByteArray(
-            byte @NotNull [] src,
-            @NotNull Optional<ByteArrayReverseMode> mode
+            byte[] src,
+            Optional<ByteArrayReverseMode> mode
     ) {
         if (src.length == 0) return new byte[0];
         else if (src.length == 1) return new byte[] { src[0] };

@@ -1,5 +1,4 @@
 package fieldoperations;
-import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
 
@@ -8,8 +7,7 @@ import static constants.Params.PRIME_1271;
 
 class Mersenne {
     // Mersenne prime reduction for p = 2^127-1
-    @NotNull
-    static BigInteger mersenneReduce127(@NotNull BigInteger x) {
+    static BigInteger mersenneReduce127(BigInteger x) {
         // For 2^127-1, we use the property that 2^127 ≡ 1 (mod 2^127-1)
         // So any bits beyond position 126 can be added back to the lower bits
 
@@ -36,8 +34,7 @@ class Mersenne {
     }
 
     // More optimized version
-    @NotNull
-    static BigInteger mersenneReduce127Fast(@NotNull BigInteger x) {
+    static BigInteger mersenneReduce127Fast(BigInteger x) {
         // Quick path for numbers that already fit
         if (x.bitLength() <= 127) {
             return x.equals(PRIME_1271) ? BigInteger.ZERO : x;

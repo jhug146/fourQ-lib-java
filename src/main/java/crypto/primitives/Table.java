@@ -1,15 +1,12 @@
 package crypto.primitives;
 
-import org.jetbrains.annotations.NotNull;
-
 import fieldoperations.FP2;
 import types.data.F2Element;
 import types.point.TablePoint;
 
 public class Table {
-    @NotNull
     public static <T extends TablePoint> T tableLookup(
-            @NotNull T[] table,
+            T[] table,
             int digit,
             int signMask
     ) {

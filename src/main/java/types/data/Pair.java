@@ -3,11 +3,7 @@ package types.data;
 import java.io.Serializable;
 import java.util.Objects;
 
-import org.jetbrains.annotations.NotNull;
-
 import static utils.StringUtils.buildString;
-import org.jetbrains.annotations.Nullable;
-
 
 
 /**
@@ -15,10 +11,10 @@ import org.jetbrains.annotations.Nullable;
  * <p>
  * This implementation provides a feature-complete pair class similar to Kotlin's Pair,
  * with proper equals/hashCode implementation, serialization support, and utility methods.
- * 
+ *
  * @param <T> the type of the first element
  * @param <S> the type of the second element
- * 
+ *
  * @author Naman Malhotra, James Hughff
  * @since 1.0
  */
@@ -32,7 +28,7 @@ public class Pair<T, S> implements Serializable, Cloneable {
      * @param first the first element
      * @param second the second element
      */
-    public Pair(@Nullable T first, @Nullable S second) {
+    public Pair(T first, S second) {
         this.first = first;
         this.second = second;
     }
@@ -47,8 +43,7 @@ public class Pair<T, S> implements Serializable, Cloneable {
      * @param second the second element
      * @return a new Pair instance
      */
-    @NotNull
-    public static <T, S> Pair<T, S> of(@Nullable T first, @Nullable S second) {
+    public static <T, S> Pair<T, S> of(T first, S second) {
         return new Pair<>(first, second);
     }
     
@@ -67,7 +62,6 @@ public class Pair<T, S> implements Serializable, Cloneable {
     }
     
     @Override
-    @NotNull
     public String toString() {
         return buildString(sb -> {
             sb.append("(");
@@ -79,7 +73,6 @@ public class Pair<T, S> implements Serializable, Cloneable {
     }
     
     @Override
-    @NotNull
     public Pair<T, S> clone() {
         try {
             @SuppressWarnings("unchecked")

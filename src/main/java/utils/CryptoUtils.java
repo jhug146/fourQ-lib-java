@@ -8,7 +8,6 @@ import exceptions.EncryptionException;
 import exceptions.ValidationException;
 import fieldoperations.FP;
 import fieldoperations.FP2;
-import org.jetbrains.annotations.NotNull;
 import types.point.ExtendedPoint;
 import types.data.F2Element;
 import types.point.FieldPoint;
@@ -36,7 +35,7 @@ import static utils.ByteArrayReverseMode.REMOVE_TRAILING_ZERO;
  * @since 1.0
  */
 public class CryptoUtils {
-    @NotNull private static final SecureRandom secureRandom = new SecureRandom();
+    private static final SecureRandom secureRandom = new SecureRandom();
 
     /**
      * Generates cryptographically secure random bytes.
@@ -47,7 +46,6 @@ public class CryptoUtils {
      * @param size the number of random bytes to generate
      * @return a BigInteger containing the random bytes
      */
-    @NotNull
     public static BigInteger randomBytes(int size) {
         byte[] bytes = new byte[size];
         secureRandom.nextBytes(bytes);
@@ -64,8 +62,7 @@ public class CryptoUtils {
      * @param key the value to convert to Montgomery form
      * @return the value in Montgomery form
      */
-    @NotNull
-    public static BigInteger toMontgomery(@NotNull BigInteger key) {
+    public static BigInteger toMontgomery(BigInteger key) {
         return FP.montgomeryMultiplyModOrder(key, Params.MONTGOMERY_R_PRIME);
     }
 
@@ -78,8 +75,7 @@ public class CryptoUtils {
      * @param key the value in Montgomery form to convert back
      * @return the value in normal form
      */
-    @NotNull
-    public static BigInteger fromMontgomery(@NotNull BigInteger key) {
+    public static BigInteger fromMontgomery(BigInteger key) {
         return FP.montgomeryMultiplyModOrder(key, BigInteger.ONE);
     }
 
@@ -93,8 +89,7 @@ public class CryptoUtils {
      * @param P the curve point to encode
      * @return the compressed point as a 32-byte BigInteger
      */
-    @NotNull
-    public static BigInteger encode(@NotNull FieldPoint P) {
+    public static BigInteger encode(FieldPoint P) {
         byte temp1 = (byte) (P.getX().im.testBit(126) ? 0x80 : 0x00);
         byte temp2 = (byte) (P.getX().real.testBit(126) ? 0x80 : 0x00);
 
@@ -136,8 +131,7 @@ public class CryptoUtils {
      * @return the decoded curve point
      * @throws EncryptionException if decoding fails or point is invalid
      */
-    @NotNull
-    public static FieldPoint decode(@NotNull BigInteger encoded) throws EncryptionException {
+    public static FieldPoint decode(BigInteger encoded) throws EncryptionException {
         F2Element y = BigIntegerUtils.convertBigIntegerToF2Element(encoded);
         int signBit = encoded.testBit(7) ? 1 : 0;
         y.im = y.im.clearBit(127);
@@ -212,7 +206,7 @@ public class CryptoUtils {
         return point;
     }
 
-    public static @NotNull BigInteger extractSignatureTopBytesReverse(@NotNull BigInteger signature) {
+    public static BigInteger extractSignatureTopBytesReverse(BigInteger signature) {
         final BigInteger sig32 = signature.mod(Key.POW_256);
         final byte[] sig32Array = addLeadingZeros(sig32.toByteArray(), Key.KEY_SIZE + 1);
         return new BigInteger(1, ByteArrayUtils.reverseByteArray(sig32Array, Optional.of(REMOVE_TRAILING_ZERO)));

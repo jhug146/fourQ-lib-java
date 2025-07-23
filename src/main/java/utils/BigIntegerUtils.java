@@ -1,7 +1,6 @@
 package utils;
 
 import constants.Key;
-import org.jetbrains.annotations.NotNull;
 import types.data.F2Element;
 
 import java.math.BigInteger;
@@ -9,13 +8,11 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static utils.ByteArrayReverseMode.KEEP_LEADING_PADDING;
 import static utils.ByteArrayReverseMode.REMOVE_TRAILING_ZERO;
 import static utils.ByteArrayUtils.copyByteArrayToByteArray;
 
 public class BigIntegerUtils {
-    @NotNull
-    public static F2Element convertBigIntegerToF2Element(@NotNull BigInteger val) {
+    public static F2Element convertBigIntegerToF2Element(BigInteger val) {
        final BigInteger[] divModRes = val.divideAndRemainder(Key.POW_128);
        final int targetLength = Key.KEY_SIZE / 2 + 1;
 
