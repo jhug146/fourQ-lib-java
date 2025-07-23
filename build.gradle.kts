@@ -14,7 +14,7 @@ repositories {
 mavenPublishing {
     publishToMavenCentral()
     signAllPublications()
-    coordinates("io.github.malhotranaman", "fourQ-lib-java", "1.0.0")
+    coordinates("com.namanmalhotra", "fourQ", "1.0.1")
 
     pom {
         name.set("FourQ Library Java")
