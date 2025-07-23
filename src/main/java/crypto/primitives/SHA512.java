@@ -52,7 +52,7 @@ public class SHA512 implements HashFunction {
      * @throws EncryptionException if the hash algorithm is not available
      */
     @Override
-    public byte[] computeHash(byte[] bytes, boolean reverse) throws EncryptionException {
+    public byte[] computeHash(byte @NotNull [] bytes, boolean reverse) throws EncryptionException {
         final String ENCRYPTION_STANDARD = "SHA-512";
         try {
             MessageDigest digest = MessageDigest.getInstance(ENCRYPTION_STANDARD);

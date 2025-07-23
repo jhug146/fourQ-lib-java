@@ -53,8 +53,8 @@ public class SchnorrQ {
         hashFunction = new SHA512();
     }
 
-    public SchnorrQ(HashFunction _hash) {
-        hashFunction = _hash;
+    public SchnorrQ(HashFunction hash) {
+        this.hashFunction = hash;
     }
 
     /**

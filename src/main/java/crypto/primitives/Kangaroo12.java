@@ -45,7 +45,7 @@ public class Kangaroo12 implements HashFunction {
     }
 
     @Override
-    public byte[] computeHash(byte[] bytes, boolean reverse) throws EncryptionException {
+    public byte[] computeHash(byte @NotNull [] bytes, boolean reverse) throws EncryptionException {
         try {
             // Create Kangaroo-12 digest with FourQ personalization
             Kangaroo.KangarooTwelve digest = new Kangaroo.KangarooTwelve();
