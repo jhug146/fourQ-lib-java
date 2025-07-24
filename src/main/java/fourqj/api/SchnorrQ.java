@@ -93,7 +93,7 @@ public class SchnorrQ {
     }
 
     /**
-     * Creates an fourqj.api.SchnorrQ digital signature for the given message.
+     * Creates a fourqj.api.SchnorrQ digital signature for the given message.
      * <p>
      * The signing process follows the fourqj.api.SchnorrQ protocol:
      * 1. Derive a deterministic nonce from the secret key
@@ -155,7 +155,7 @@ public class SchnorrQ {
     }
 
     /**
-     * Verifies an fourqj.api.SchnorrQ digital signature against a message and public key.
+     * Verifies a fourqj.api.SchnorrQ digital signature against a message and public key.
      * <p>
      * The verification process follows the fourqj.api.SchnorrQ protocol:
      * 1. Parse signature into commitment R and response s
