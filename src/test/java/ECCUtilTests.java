@@ -8,21 +8,21 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
 
-import crypto.core.ECC;
-import exceptions.EncryptionException;
-import fieldoperations.FP2;
-import types.data.F2Element;
-import types.point.AffinePoint;
-import types.point.ExtendedPoint;
-import types.point.FieldPoint;
-import constants.Params;
+import fourqj.crypto.core.ECC;
+import fourqj.exceptions.EncryptionException;
+import fourqj.fieldoperations.FP2;
+import fourqj.types.data.F2Element;
+import fourqj.types.point.AffinePoint;
+import fourqj.types.point.ExtendedPoint;
+import fourqj.types.point.FieldPoint;
+import fourqj.constants.Params;
 
 
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Comprehensive test suite for crypto.util.ECCUtil class covering all mathematical properties,
+ * Comprehensive test suite for fourqj.crypto.util.ECCUtil class covering all mathematical properties,
  * security requirements, edge cases, and performance characteristics.
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -31,7 +31,7 @@ class ECCUtilTests {
 
     private static final Random DETERMINISTIC_RANDOM = new Random(12345L); // For reproducible tests
 
-    // Test constants
+    // Test fourqj.constants
     private static final BigInteger CURVE_ORDER = Params.CURVE_ORDER;
     private static final BigInteger FIELD_PRIME = BigInteger.ONE.shiftLeft(127).subtract(BigInteger.ONE);
     private static final int PERFORMANCE_TEST_ITERATIONS = 1000;

@@ -1,4 +1,3 @@
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -7,19 +6,18 @@ import java.util.HexFormat;
 import java.util.Optional;
 import java.util.Random;
 
-import exceptions.ValidationException;
-import exceptions.EncryptionException;
-import exceptions.InvalidArgumentException;
-import utils.ByteArrayUtils;
-import types.data.Pair;
-import api.SchnorrQ;
+import fourqj.exceptions.ValidationException;
+import fourqj.exceptions.EncryptionException;
+import fourqj.exceptions.InvalidArgumentException;
+import fourqj.api.SchnorrQ;
+import fourqj.utils.ByteArrayUtils;
+import fourqj.types.data.Pair;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static utils.ByteArrayReverseMode.REMOVE_LEADING_ZERO;
-
+import static fourqj.utils.ByteArrayReverseMode.REMOVE_LEADING_ZERO;
 
 public class SchnorrQTests {
     private final int HEX_RADIX = 16;

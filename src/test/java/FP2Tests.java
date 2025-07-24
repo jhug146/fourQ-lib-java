@@ -3,9 +3,9 @@ import java.math.BigInteger;
 
 import org.junit.jupiter.api.Test;
 
-import fieldoperations.FP2;
-import types.data.F2Element;
-import constants.Params;
+import fourqj.fieldoperations.FP2;
+import fourqj.types.data.F2Element;
+import fourqj.constants.Params;
 
 import static org.junit.jupiter.api.Assertions.*;
 

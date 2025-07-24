@@ -4,9 +4,9 @@ import java.math.BigInteger;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-import types.data.Pair;
-import fieldoperations.FP;
-import constants.Params;
+import fourqj.types.data.Pair;
+import fourqj.fieldoperations.FP;
+import fourqj.constants.Params;
 
 
 public class FPTests {

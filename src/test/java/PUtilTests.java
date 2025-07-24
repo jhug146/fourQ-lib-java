@@ -4,8 +4,8 @@ import java.math.BigInteger;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-import fieldoperations.FP.PUtil;
-import constants.Params;
+import fourqj.fieldoperations.FP.PUtil;
+import fourqj.constants.Params;
 
 
 public class PUtilTests {

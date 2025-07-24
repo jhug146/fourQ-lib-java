@@ -1,7 +1,7 @@
 # fourQ-lib-java
 A library that implements the high-security, high-performance elliptic curve fourQ. Useful cryptographic functions are provided which include:
-* SchnorrQ message signing
-* SchnorrQ signature verification
+* fourqj.api.SchnorrQ message signing
+* fourqj.api.SchnorrQ signature verification
 * Public key generation from a private key
 * Public-private key pair generation
 
@@ -20,18 +20,20 @@ To bridge this compatibility gap, the library performs byte array reversals at s
 The library includes utility functions for handling endianness conversions:
 
 ```java
-import utils.ByteArrayUtils;
-import utils.ByteArrayReverseMode;
+import fourqj.utils.ByteArrayUtils;
+import fourqj.utils.ByteArrayReverseMode;
+
 import java.util.Optional;
 
 // Example: Converting between little-endian and big-endian representations
+
 public static byte[] reverseForCompatibility(byte[] data) {
     return ByteArrayUtils.reverseByteArray(data, Optional.empty());
 }
 
-// Usage example
-byte[] littleEndianData = {0x01, 0x02, 0x03, 0x04};
-byte[] bigEndianData = reverseForCompatibility(littleEndianData);
+        // Usage example
+        byte[] littleEndianData = {0x01, 0x02, 0x03, 0x04};
+        byte[] bigEndianData = reverseForCompatibility(littleEndianData);
 // Result: {0x04, 0x03, 0x02, 0x01}
 ```
 
@@ -63,14 +65,14 @@ Add the following dependency to your `pom.xml` file:
 After adding the dependency, import the main class in your Java code:
 
 ```java
-import api.SchnorrQ;
+import fourqj.api.SchnorrQ;
 ```
 
 
 ## Examples
 ### Public Key Generation
 ```java
-final SchnorrQ schnorrQ = new SchnorrQ();
+final fourqj.api.SchnorrQ schnorrQ = new fourqj.api.SchnorrQ();
 final int HEX_RADIX = 16;
 final BigInteger privateKey = new BigInteger("F510847AAB323", HEX_RADIX);
 try {
@@ -82,7 +84,7 @@ try {
 
 ### Public-Private Key Pair Generation
 ```java
-final SchnorrQ schnorrQ = new SchnorrQ();
+final fourqj.api.SchnorrQ schnorrQ = new fourqj.api.SchnorrQ();
 try {
     final Pair<BigInteger, BigInteger> keyPair = schnorrQ.schnorrQFullKeyGeneration();
     final BigInteger privateKey = keyPair.first;
@@ -92,9 +94,9 @@ try {
 }
 ```
 
-### SchnorrQ Message Signing
+### fourqj.api.SchnorrQ Message Signing
 ```java
-final SchnorrQ schnorrQ = new SchnorrQ();
+final fourqj.api.SchnorrQ schnorrQ = new fourqj.api.SchnorrQ();
 final String message = "The quick brown fox jumps over the lazy dog";
 final byte[] messageBytes = message.getBytes();
 try {
@@ -104,9 +106,9 @@ try {
 }
 ```
 
-### SchnorrQ Signature Verification
+### fourqj.api.SchnorrQ Signature Verification
 ```java
-final SchnorrQ schnorrQ = new SchnorrQ();
+final fourqj.api.SchnorrQ schnorrQ = new fourqj.api.SchnorrQ();
 try {
     if (schnorrQ.schnorrQVerify(publicKey, signature, messageBytes)) {
         System.out.println("Signature is valid");

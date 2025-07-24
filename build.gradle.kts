@@ -15,7 +15,7 @@ repositories {
 mavenPublishing {
     publishToMavenCentral()
     signAllPublications()
-    coordinates("com.namanmalhotra", "fourQ", "1.0.1")
+    coordinates("com.namanmalhotra", "fourQ", "1.0.3")
 
     pom {
         name.set("FourQ Library Java")
@@ -56,7 +56,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
 
     // BouncyCastle dependencies for the K12 HashFunction
-    implementation(files("lib/bcprov-jdk18on-1.81.jar"))
+    implementation("org.bouncycastle:bcprov-jdk18on:1.81")
 }
 
 tasks.test {
