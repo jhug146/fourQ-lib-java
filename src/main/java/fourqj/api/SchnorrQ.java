@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import fourqj.constants.Params;
 import fourqj.crypto.primitives.HashFunction;
@@ -116,42 +117,65 @@ public class SchnorrQ {
     ) throws EncryptionException {
         ValidationChain.of(secretKey).notNull("Secret key cannot be null.");
         ValidationChain.of(publicKey).notNull("Public key cannot be null.");
-        final byte[] kHash = hashFunction.computeHash(secretKey, false);
+        return schnorrQSignWithNonceK(() -> hashFunction.computeHash(secretKey, false), publicKey, message);
+    }
+
+    /**
+     * Creates a fourqj.api.SchnorrQ digital signature for the given message.
+     * <p>
+     * This method is similar to {@link #schnorrQSign(BigInteger, BigInteger, byte[])} but it provides an alternative
+     * way to derive the nonce from the secret key. Node: Creating a non-standard nonce k
+     * can lead to information leaks. Do not use this method if you are unsure.
+     * </p>
+     *
+     * @param createNonceKSupplier Supplier for providing the nonce k. Derived from the secret key.
+     * @param publicKey the signer's public key for verification (must be non-null)
+     * @param message the message bytes to be signed
+     * @return the signature as a 64-byte BigInteger (32 bytes R + 32 bytes s)
+     * @throws EncryptionException if signing fails due to cryptographic errors
+     * @throws IllegalArgumentException if nonce k or publicKey is null
+     */
+    public BigInteger schnorrQSignWithNonceK(Supplier<byte[]> createNonceKSupplier, BigInteger publicKey, byte[] message) {
+        final byte[] kHash = createNonceKSupplier.get();
+        ValidationChain.of(kHash).notNull("Nonce k cannot be null.");
+        ValidationChain.of(publicKey).notNull("Public key cannot be null.");
+
         // Build buffer with nonce seed and message using BufferBuilder
         final byte[] bytes = BufferBuilder.forMessage(message)
-            .copyByteArray(kHash, Key.KEY_SIZE, Key.KEY_SIZE, Key.KEY_SIZE)
-            .copyByteArray(message, Key.SIGNATURE_SIZE)
-            .build();
+                .copyByteArray(kHash, Key.KEY_SIZE, Key.KEY_SIZE, Key.KEY_SIZE)
+                .copyByteArray(message, Key.SIGNATURE_SIZE)
+                .build();
 
         // Compute nonce r = H(nonce_seed || message) and encode point
         final BigInteger rHash = CryptoOperationChain.hashToBigInteger(
-            hashFunction, Arrays.copyOfRange(bytes, Key.KEY_SIZE, bytes.length), true).execute();
+                hashFunction, Arrays.copyOfRange(bytes, Key.KEY_SIZE, bytes.length), true).execute();
         final BigInteger sigStart = CryptoUtils.encode(ECC.eccMulFixed(rHash));
 
         // Prepare challenge hash input: R || publicKey || message using BufferBuilder
         final byte[] challengeBytes = BufferBuilder.forMessage(message)
-            .copyBigInteger(sigStart, Key.KEY_SIZE, Params.noOffset)
-            .copyBigInteger(publicKey, Key.KEY_SIZE, Key.KEY_SIZE)
-            .copyByteArray(message, Key.SIGNATURE_SIZE)
-            .build();
+                .copyBigInteger(sigStart, Key.KEY_SIZE, Params.noOffset)
+                .copyBigInteger(publicKey, Key.KEY_SIZE, Key.KEY_SIZE)
+                .copyByteArray(message, Key.SIGNATURE_SIZE)
+                .build();
 
         final BigInteger hHash2 = CryptoOperationChain.hashToModuloOrder(
-            hashFunction, challengeBytes, true).execute();
+                hashFunction, challengeBytes, true).execute();
 
         // Use Montgomery arithmetic for efficient modular operations
         // Sequentially builds up the sigEnd BigInteger.
         final BigInteger sigEnd = BigIntegerUtils.buildBigInteger(
-            new BigInteger(Params.signPositive, ByteArrayUtils.reverseByteArray(kHash, Optional.of(REMOVE_LEADING_ZERO))),
-            CryptoUtils::toMontgomery,
-            x -> FP.montgomeryMultiplyModOrder(x, CryptoUtils.toMontgomery(hHash2)),
-            CryptoUtils::fromMontgomery,
-            x -> FP.subtractModOrder(FP.moduloOrder(rHash), x)
+                new BigInteger(Params.signPositive, ByteArrayUtils.reverseByteArray(kHash, Optional.of(REMOVE_LEADING_ZERO))),
+                CryptoUtils::toMontgomery,
+                x -> FP.montgomeryMultiplyModOrder(x, CryptoUtils.toMontgomery(hHash2)),
+                CryptoUtils::fromMontgomery,
+                x -> FP.subtractModOrder(FP.moduloOrder(rHash), x)
         );
 
         return new BigInteger(Params.signPositive, ByteArrayUtils.concatenate(
-            BigIntegerUtils.bigIntegerToByte(sigStart, Key.KEY_SIZE, false),
-            reverseByteArray(BigIntegerUtils.bigIntegerToByte(sigEnd, Key.KEY_SIZE, false), Optional.empty())
+                BigIntegerUtils.bigIntegerToByte(sigStart, Key.KEY_SIZE, false),
+                reverseByteArray(BigIntegerUtils.bigIntegerToByte(sigEnd, Key.KEY_SIZE, false), Optional.empty())
         ));
+
     }
 
     /**
