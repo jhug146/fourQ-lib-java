@@ -12,12 +12,12 @@ public class ExtendedPoint implements Point {
     private final F2Element ta;
     private final F2Element tb;
 
-    public ExtendedPoint( F2Element _x,  F2Element _y,  F2Element _z,  F2Element _ta,  F2Element _tb) {
-        x = _x;
-        y = _y;
-        z = _z;
-        ta = _ta;
-        tb = _tb;
+    public ExtendedPoint( F2Element x,  F2Element y,  F2Element z,  F2Element ta,  F2Element tb) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.ta = ta;
+        this.tb = tb;
     }
 
     @Override

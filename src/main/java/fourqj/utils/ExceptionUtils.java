@@ -2,8 +2,13 @@ package fourqj.utils;
 
 import java.util.function.Supplier;
 
+/**
+ * Utility class providing functional interfaces for Exceptions.
+ *
+ * @author Naman Malhotra, James Hughff
+ * @since 1.0.3
+ */
 public final class ExceptionUtils {
-
     @FunctionalInterface
     public interface ThrowingSupplier<T> {
         T get() throws Exception;
@@ -60,9 +65,5 @@ public final class ExceptionUtils {
         } catch (Exception e) {
             throw exceptionSupplier.get();
         }
-    }
-
-    private ExceptionUtils() {
-        throw new AssertionError("Utility class should not be instantiated");
     }
 }

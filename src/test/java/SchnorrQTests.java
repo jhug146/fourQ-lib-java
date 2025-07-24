@@ -93,7 +93,7 @@ public class SchnorrQTests {
     @Test
     void testSignatureTrailingBytesInvalid() {
         BigInteger badSig = BigInteger.ONE;
-        assertThrows(InvalidArgumentException.class, () -> schnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, badSig, VALID_MESSAGE));
+        assertThrows(ValidationException.class, () -> schnorrQ.schnorrQVerify(VALID_PUBLIC_KEY, badSig, VALID_MESSAGE));
     }
 
     @Test

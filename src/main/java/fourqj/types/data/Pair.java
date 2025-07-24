@@ -18,7 +18,7 @@ import static fourqj.utils.StringUtils.buildString;
  * @author Naman Malhotra, James Hughff
  * @since 1.0.0
  */
-public class Pair<T, S> implements Serializable, Cloneable {
+public class Pair<T, S> implements Serializable {
     public T first;
     public S second;
     

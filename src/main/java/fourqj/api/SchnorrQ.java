@@ -2,12 +2,14 @@ package fourqj.api;
 
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 
 import fourqj.constants.Params;
 import fourqj.crypto.primitives.HashFunction;
 import fourqj.crypto.core.ECC;
 import fourqj.crypto.primitives.SHA512;
+import fourqj.exceptions.ValidationErrors;
 import fourqj.utils.BigIntegerUtils;
 import fourqj.utils.ByteArrayUtils;
 import fourqj.constants.Key;
@@ -17,12 +19,12 @@ import fourqj.exceptions.InvalidArgumentException;
 import fourqj.fieldoperations.FP;
 import fourqj.types.data.Pair;
 import fourqj.types.point.FieldPoint;
+import fourqj.utils.SchnorrQUtils;
 
 import static fourqj.exceptions.ValidationErrors.*;
-import static fourqj.utils.BigIntegerUtils.copyBigIntegerToByteArray;
 import static fourqj.utils.ByteArrayReverseMode.*;
-import static fourqj.utils.ByteArrayUtils.copyByteArrayToByteArray;
 import static fourqj.utils.ByteArrayUtils.reverseByteArray;
+import static fourqj.utils.SchnorrQUtils.*;
 
 
 /**
@@ -70,10 +72,8 @@ public class SchnorrQ {
      * @throws IllegalArgumentException if secretKey is null
      */
     public BigInteger schnorrQKeyGeneration(BigInteger secretKey) throws EncryptionException {
-        if (secretKey == null) { throw new InvalidArgumentException("Secret key cannot be null."); }
-        BigInteger hash = new BigInteger(Params.signPositive, hashFunction.computeHash(secretKey, true));
-        final FieldPoint point = ECC.eccMulFixed(hash);
-        return CryptoUtils.encode(point);
+        ValidationChain.of(secretKey).notNull("Secret key cannot be null.");
+        return SchnorrQUtils.CryptoOperationChain.hashToEncodedPoint(hashFunction, secretKey, true).execute();
     }
 
     /**
@@ -114,24 +114,29 @@ public class SchnorrQ {
             BigInteger publicKey,
             byte[] message
     ) throws EncryptionException {
-        if (secretKey == null) { throw new InvalidArgumentException("Secret key cannot be null."); }
-        if (publicKey == null) { throw new InvalidArgumentException("Public key cannot be null."); }
+        ValidationChain.of(secretKey).notNull("Secret key cannot be null.");
+        ValidationChain.of(publicKey).notNull("Public key cannot be null.");
         final byte[] kHash = hashFunction.computeHash(secretKey, false);
-        final byte[] bytes = SchnorrHelper.createBuffer(message);
+        // Build buffer with nonce seed and message using BufferBuilder
+        final byte[] bytes = BufferBuilder.forMessage(message)
+            .copyByteArray(kHash, Key.KEY_SIZE, Key.KEY_SIZE, Key.KEY_SIZE)
+            .copyByteArray(message, Key.SIGNATURE_SIZE)
+            .build();
 
-        // Use second half of kHash as nonce seed for, deterministic signing
-        copyByteArrayToByteArray(kHash, Key.KEY_SIZE, bytes, Key.KEY_SIZE, Key.KEY_SIZE);
-        copyByteArrayToByteArray(message, Params.noOffset, bytes, Key.SIGNATURE_SIZE, message.length);
-
-        // Compute nonce r = H(nonce_seed || message)
-        final BigInteger rHash = new BigInteger(Params.signPositive, hashFunction.computeHash(Arrays.copyOfRange(bytes, Key.KEY_SIZE, bytes.length), true));
+        // Compute nonce r = H(nonce_seed || message) and encode point
+        final BigInteger rHash = CryptoOperationChain.hashToBigInteger(
+            hashFunction, Arrays.copyOfRange(bytes, Key.KEY_SIZE, bytes.length), true).execute();
         final BigInteger sigStart = CryptoUtils.encode(ECC.eccMulFixed(rHash));
 
-        // Prepare challenge hash input: R || publicKey || message
-        copyBigIntegerToByteArray(sigStart, Key.KEY_SIZE, bytes, Params.noOffset);
-        copyBigIntegerToByteArray(publicKey, Key.KEY_SIZE, bytes, Key.KEY_SIZE);
+        // Prepare challenge hash input: R || publicKey || message using BufferBuilder
+        final byte[] challengeBytes = BufferBuilder.forMessage(message)
+            .copyBigInteger(sigStart, Key.KEY_SIZE, Params.noOffset)
+            .copyBigInteger(publicKey, Key.KEY_SIZE, Key.KEY_SIZE)
+            .copyByteArray(message, Key.SIGNATURE_SIZE)
+            .build();
 
-        final BigInteger hHash2 = FP.moduloOrder(new BigInteger(Params.signPositive, hashFunction.computeHash(bytes, true)));
+        final BigInteger hHash2 = CryptoOperationChain.hashToModuloOrder(
+            hashFunction, challengeBytes, true).execute();
 
         // Use Montgomery arithmetic for efficient modular operations
         // Sequentially builds up the sigEnd BigInteger.
@@ -177,16 +182,18 @@ public class SchnorrQ {
     ) throws EncryptionException {
         SchnorrHelper.validateVerifyInputs(publicKey, signature);
 
-        final byte[] bytes = SchnorrHelper.createBuffer(message);
-        copyBigIntegerToByteArray(signature, Key.SIGNATURE_SIZE, bytes, Params.noOffset);
-        copyBigIntegerToByteArray(publicKey, Key.KEY_SIZE, bytes, Key.KEY_SIZE);
-        copyByteArrayToByteArray(message, Params.noOffset, bytes, Key.SIGNATURE_SIZE, message.length);
+        // Build verification buffer using BufferBuilder
+        final byte[] bytes = BufferBuilder.forMessage(message)
+            .copyBigInteger(signature, Key.SIGNATURE_SIZE, Params.noOffset)
+            .copyBigInteger(publicKey, Key.KEY_SIZE, Key.KEY_SIZE)
+            .copyByteArray(message, Key.SIGNATURE_SIZE)
+            .build();
 
         // Compute s*G + H*publicKey using double scalar multiplication
         final FieldPoint affPoint = ECC.eccMulDouble(
                 CryptoUtils.extractSignatureTopBytesReverse(signature),
                 CryptoUtils.decode(publicKey),       // Implicitly checks that public key lies on the curve
-                new BigInteger(Params.signPositive, hashFunction.computeHash(bytes, true))
+                CryptoOperationChain.hashToBigInteger(hashFunction, bytes, true).execute()
         );
 
         // Verify that computed point equals the commitment R from signature
@@ -196,15 +203,14 @@ public class SchnorrQ {
     private interface SchnorrHelper {
         static void validateVerifyInputs(BigInteger publicKey, BigInteger signature) throws InvalidArgumentException {
             // Security check: ensure specific bit is zero for both inputs
-            if (signature == null) throw new InvalidArgumentException("Signature cannot be null.");
-            else if (publicKey == null) throw new InvalidArgumentException("Public key cannot be null.");
-            else if (publicKey.testBit(Key.PUB_TEST_BIT)) publicKeyError();
-            else if (signature.testBit(Key.SIG_TEST_BIT)) signatureError();
-            else if (isSignatureSizeTooLarge(signature)) signatureSizeError();
-        }
-
-        static byte[] createBuffer(byte[] message) {
-            return new byte[message.length + Key.SIGNATURE_SIZE];
+            ValidationChain.of(signature)
+                .validate(Objects::nonNull, () -> new InvalidArgumentException("Signature cannot be null."))
+                .validate(s -> !s.testBit(Key.SIG_TEST_BIT), ValidationErrors::signatureError)
+                .validate(s -> !isSignatureSizeTooLarge(s), ValidationErrors::signatureSizeError);
+            
+            ValidationChain.of(publicKey)
+                .validate(Objects::nonNull, () -> new InvalidArgumentException("Public key cannot be null."))
+                .validate(pk -> !pk.testBit(Key.PUB_TEST_BIT), ValidationErrors::publicKeyError);
         }
     }
 }

@@ -1,6 +1,6 @@
 package fourqj.exceptions;
 
-public class EncryptionException extends Exception {
+public class EncryptionException extends RuntimeException {
     public EncryptionException(String message) {
         super(message);
     }
